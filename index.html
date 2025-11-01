@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TRIGO AI - Akıllı Yükseklik Ölçer</title>
+    <title>TRIGO AI - Canlı Yükseklik Ölçer</title>
     <!-- Tailwind CSS CDN'i -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter (genel metin) ve Audiowide (logo için) -->
@@ -23,26 +23,26 @@
         /* Dinamik Renkler için CSS Değişkenleri */
         :root {
             /* Light Theme (Varsayılan) */
-            --bg-primary: #ffffff;      /* Beyaz */
-            --bg-secondary: #f3f4f6;    /* Gray-100 */
-            --bg-tertiary: #e5e7eb;     /* Gray-200 */
-            --text-primary: #111827;    /* Gray-900 */
-            --text-secondary: #4b5563;  /* Gray-600 */
-            --ring-color: #d1d5db;      /* Gray-300 */
+            --bg-primary: #ffffff;      
+            --bg-secondary: #f3f4f6;    
+            --bg-tertiary: #e5e7eb;     
+            --text-primary: #111827;    
+            --text-secondary: #4b5563;  
+            --ring-color: #d1d5db;      
             --input-bg: #ffffff;
             --input-border: #d1d5db;
         }
 
         /* Dark Theme Sınıfı */
         .dark-theme {
-            --bg-primary: #111827;      /* Gray-900 */
-            --bg-secondary: #1f2937;    /* Gray-800 */
-            --bg-tertiary: #374151;     /* Gray-700 */
-            --text-primary: #f9fafb;    /* Gray-50 */
-            --text-secondary: #9ca3af;  /* Gray-400 */
-            --ring-color: #374151;      /* Gray-700 */
-            --input-bg: #1f2937;        /* Gray-800 */
-            --input-border: #374151;    /* Gray-700 */
+            --bg-primary: #111827;      
+            --bg-secondary: #1f2937;    
+            --bg-tertiary: #374151;     
+            --text-primary: #f9fafb;    
+            --text-secondary: #9ca3af;  
+            --ring-color: #374151;      
+            --input-bg: #1f2937;        
+            --input-border: #374151;    
         }
         
         /* Tema Uygulaması */
@@ -302,10 +302,10 @@
             </div>
         </div>
 
-        <!-- EKRAN 2: ÖLÇÜM (Varsayılan olarak gizli) -->
+        <!-- EKRAN 2: ÖLÇÜM (Canlı ve Sürekli Gösterim) -->
         <div id="measurement-screen" class="hidden app-card p-6 md:p-8 rounded-2xl shadow-2xl text-center transition-all duration-300">
             
-            <!-- YENİ: BAŞLANGIÇ VERİLERİ PANELI (Context) -->
+            <!-- BAŞLANGIÇ VERİLERİ PANELI (Context) -->
             <div id="inputContext" class="p-3 rounded-xl mb-4 text-left shadow-inner ring-1" style="background-color: var(--bg-primary); border-color: var(--ring-color);">
                 <div class="flex justify-between text-xs font-semibold uppercase tracking-wider">
                     <div class="flex-1 border-r pr-3" style="border-color: var(--ring-color);">
@@ -319,7 +319,7 @@
                 </div>
             </div>
             
-            <p id="liveMeasurementHeader" class="text-sm app-text-secondary mb-2">Cismin tepesine nişan alın</p>
+            <p id="liveMeasurementHeader" class="text-sm app-text-secondary mb-2">Hedefe nişan alın ve sonucu anlık olarak izleyin.</p>
             
             <!-- Nişangah ve Canlı Yükseklik Alanı -->
             <div id="liveDisplayArea">
@@ -354,140 +354,20 @@
                 </div>
             </div>
             
-            <!-- YENİ ALAN: SONUÇ ve GEMINI ANALİZİ -->
-            <div id="resultSummary" class="hidden my-6 p-4 rounded-lg ring-1" style="background-color: var(--bg-tertiary); border-color: var(--ring-color);">
-                <h3 class="text-xl font-bold color-gold mb-2">✅ Ölçüm Tamamlandı!</h3>
-                <p class="text-sm app-text-secondary">Kesinleşmiş Yükseklik:</p>
-                <p id="finalHeightText" class="text-4xl font-extrabold app-text-primary mb-4">0.00 m</p>
-                
-                <!-- GEMINI BUTONU -->
-                <button id="geminiInsightButton" class="w-full bg-green-600 text-white p-3 rounded-lg font-bold text-md hover:bg-green-700 transition-all duration-200 shadow-lg active:scale-95 flex items-center justify-center">
-                    <span class="mr-2">✨</span> Yükseklik Analizi Al
-                </button>
-                
-                <!-- LLM Geri Bildirim Alanı -->
-                <div id="aiInsightOutput" class="mt-4 text-left text-sm app-text-secondary space-y-2">
-                    <!-- Analiz buraya yüklenecek -->
-                </div>
-            </div>
-
             <!-- Sıfırlama Butonu -->
             <button id="resetButton" class="w-full bg-red-600 text-white p-3 rounded-lg font-bold text-md hover:bg-red-700 transition-all duration-200 shadow-lg mt-6 active:scale-95">
-                Sıfırla ve Geri Dön
+                Ölçümü Durdur ve Geri Dön
             </button>
         </div>
     </div>
 
     <!-- JavaScript Kodu (Açı Hesaplamaları, Birimler ve Tema Yönetimi) -->
     <script>
-        // --- GEMINI API SABİTLERİ VE YARDIMCI FONKSİYONLAR ---
-        const apiKey = ""; 
-        const modelName = "gemini-2.5-flash-preview-09-2025";
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-
-        async function fetchWithBackoff(url, options, maxRetries = 5) {
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (response.status !== 429) { 
-                        if (!response.ok) {
-                             throw new Error(`API call failed with status ${response.status}`);
-                        }
-                        return response;
-                    }
-                    console.warn(`Rate limit (429) encountered. Retrying in ${2 ** i}s...`);
-                } catch (error) {
-                    if (i === maxRetries - 1) throw error;
-                    console.error(`Fetch error: ${error.message}. Retrying...`);
-                }
-                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
-            }
-            throw new Error("Maximum retry attempts reached.");
-        }
-
-        async function fetchGeminiInsight(height) {
-            const insightOutput = document.getElementById('aiInsightOutput');
-            const button = document.getElementById('geminiInsightButton');
-            
-            button.disabled = true;
-            button.innerHTML = '<span class="mr-2">🔄</span> Analiz Yükleniyor...';
-            insightOutput.innerHTML = '<p class="text-center app-text-secondary opacity-50">Analiz oluşturuluyor, lütfen bekleyin...</p>';
-
-            const userQuery = `${height.toFixed(2)} metre yüksekliğindeki bir nesnenin (bina, ağaç vb.) yüksekliğini karşılaştırın. Bu yüksekliğin kaç katlı bir binaya denk geldiğini ve dünyadaki bilinen popüler yapılarla (örneğin, Eyfel Kulesi) karşılaştırmasını yapın. Ayrıca bu yüksekliği ölçmek için kullanılan trigonometri (yükseklik açısı) hakkında kısa bir bilgi verin. Yanıtınızı Türkçe olarak verin.`;
-            
-            const systemPrompt = "Sen, ölçüm sonuçlarını analize eden, bilgili ve eğlenceli bir AI Asistanısın. Ölçülen yüksekliği (örneğin 45m) kullanarak, 3-4 cümlelik, karşılaştırmalı ve ilgi çekici bir analiz sun. Bu analizi Google Search sonuçlarını temel alarak oluştur.";
-            
-            const payload = {
-                contents: [{ parts: [{ text: userQuery }] }],
-                tools: [{ "google_search": {} }],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
-            };
-
-            try {
-                const response = await fetchWithBackoff(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-                const candidate = result.candidates?.[0];
-
-                if (candidate && candidate.content?.parts?.[0]?.text) {
-                    const text = candidate.content.parts[0].text;
-                    let sources = [];
-                    const groundingMetadata = candidate.groundingMetadata;
-                    
-                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                        sources = groundingMetadata.groundingAttributions
-                            .map(attribution => ({
-                                uri: attribution.web?.uri,
-                                title: attribution.web?.title,
-                            }))
-                            .filter(source => source.uri && source.title);
-                    }
-
-                    // Analiz sonucunu göster
-                    let outputHTML = `<p class="font-medium color-gold mb-2">Gemini Analizi:</p>`;
-                    outputHTML += `<p>${text.replace(/\n/g, '<br>')}</p>`;
-
-                    if (sources.length > 0) {
-                        outputHTML += `<p class="mt-3 text-xs app-text-secondary opacity-50">Kaynaklar:`;
-                        sources.slice(0, 3).forEach((source, index) => {
-                            outputHTML += `<br><a href="${source.uri}" target="_blank" class="hover:underline color-gold">${index + 1}. ${source.title}</a>`;
-                        });
-                        outputHTML += `</p>`;
-                    }
-
-                    insightOutput.innerHTML = outputHTML;
-                    button.classList.add('bg-gray-500', 'hover:bg-gray-500');
-                    button.classList.remove('bg-green-600', 'hover:bg-green-700');
-                    button.innerHTML = '<span class="mr-2">✅</span> Analiz Tamamlandı';
-
-                } else {
-                    insightOutput.innerHTML = '<p class="text-red-400">Analiz alınamadı. Lütfen daha sonra tekrar deneyin.</p>';
-                }
-            } catch (error) {
-                console.error("Gemini API Error:", error);
-                insightOutput.innerHTML = '<p class="text-red-400">API bağlantı hatası oluştu. Konsolu kontrol edin.</p>';
-            } finally {
-                button.disabled = false;
-                if (!button.classList.contains('bg-gray-500')) {
-                    button.classList.add('bg-green-600', 'hover:bg-green-700');
-                    button.innerHTML = '<span class="mr-2">✨</span> Yükseklik Analizi Al';
-                }
-            }
-        }
-
         // --- UYGULAMA MANTIĞI VE SENSÖR İŞLEMLERİ ---
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM Elementlerini Seçme ---
             const setupScreen = document.getElementById('setup-screen');
             const measurementScreen = document.getElementById('measurement-screen');
-            const liveDisplayArea = document.getElementById('liveDisplayArea');
-            const resultSummary = document.getElementById('resultSummary');
             
             const distanceInput = document.getElementById('distance');
             const userHeightInput = document.getElementById('userHeight');
@@ -502,10 +382,6 @@
             const resetButton = document.getElementById('resetButton');
             const crosshairH = document.getElementById('crosshair-h');
             
-            const finalHeightText = document.getElementById('finalHeightText');
-            const geminiInsightButton = document.getElementById('geminiInsightButton');
-            const aiInsightOutput = document.getElementById('aiInsightOutput');
-
             const themeToggle = document.getElementById('themeToggle'); 
             const contextDistance = document.getElementById('contextDistance');
             const contextUserHeight = document.getElementById('contextUserHeight');
@@ -527,12 +403,9 @@
             let inputUserHeightUnit = 'm';
 
             let angleHistory = [];  
-            let finalMeasuredHeight = 0;
-            const historySize = 20; 
+            const historySize = 20; // Filtre için gereken veri noktası sayısı
             const NEGATIVE_ANGLE_THRESHOLD = -3; 
-            const STABILITY_THRESHOLD = 95; 
-            let measurementCompleted = false;
-
+            
             // --- TEMA YÖNETİMİ ---
             const currentTheme = localStorage.getItem('theme') || 'light';
             
@@ -570,7 +443,8 @@
             
             function formatValue(value, unit) {
                 if (unit === 'mm' || unit === 'cm') {
-                    return value.toFixed(0);
+                    // Sayının virgülden sonraki kısmını temizle ama ondalık nokta varsa tut
+                    return (value % 1 === 0) ? value.toFixed(0) : value.toString();
                 }
                 return value.toFixed(2);
             }
@@ -614,35 +488,42 @@
                 if (angleHistory.length > historySize) {
                     angleHistory.shift(); 
                 }
+                
+                if (angleHistory.length < 2) {
+                    return { stableAngle: newAngle, stabilityPercent: 0 };
+                }
+                
+                // Ortalama (Stabil Açı) hesapla
                 const sum = angleHistory.reduce((a, b) => a + b, 0);
                 const stableAngle = sum / angleHistory.length;
-                if (angleHistory.length < 2) {
-                    return { stableAngle, stabilityPercent: 0 };
-                }
+                
+                // Kararlılık hesapla (Standart sapma ile ters orantılı)
                 const mean = stableAngle;
                 const variance = angleHistory.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / angleHistory.length;
                 const stdDev = Math.sqrt(variance);
+                
+                // stdDev 3'ten büyükse kararlılık 0'a yakın (titreme), 0'a yakınsa kararlılık 100'e yakın
                 let stabilityPercent = 100 * (1 - Math.min(stdDev / 3, 1)); 
                 stabilityPercent = Math.max(0, Math.min(100, stabilityPercent)); 
+                
                 return { stableAngle, stabilityPercent };
             }
 
             function getAIFeedback(angle, stability) {
                 if (angleHistory.length < historySize) return "Kalibrasyon yapılıyor... Lütfen sabit tutun.";
                 if (stability < 75) return "Eliniz titriyor. Cihazı sabit tutmaya çalışın.";
-                if (angle < 5) return "Daha yukarı nişan alın.";
-                if (angle > 85) return "Cihaz çok dik, hedefi kontrol edin.";
-                if (stability > 95) return "Ölçüm stabil. Sonuç hazır!";
+                if (angle < 5) return "Daha yukarı nişan alın (Açı çok düşük).";
+                if (angle > 85) return "Cihaz çok dik, hedefi kontrol edin (Açı çok yüksek).";
+                if (stability > 90) return "Ölçüm stabil, sonuç güvenilir.";
                 return "Hedefin tepesine nişan alınıyor...";
             }
 
             // --- ANA UYGULAMA MANTIĞI ---
             function handleOrientation(event) {
-                if(measurementCompleted) return;
-
                 let rawAngle = event.beta; 
                 
                 if (rawAngle === null || rawAngle === undefined || rawAngle < NEGATIVE_ANGLE_THRESHOLD) {
+                    // Hata durumunda canlı verileri sıfırla/durdur
                     stopCalculation("Cihaz aşağı bakıyor veya sensör hatası var!");
                     return;
                 }
@@ -657,55 +538,32 @@
                 const totalHeight = objectHeightAboveDevice + userHeightMeters;
                 const feedback = getAIFeedback(stableAngle, stabilityPercent);
 
+                // Sürekli olarak arayüzü güncelle
                 updateLiveUI(stableAngle, totalHeight, stabilityPercent, feedback);
-
-                if (stabilityPercent >= STABILITY_THRESHOLD && angleHistory.length === historySize) {
-                    finalMeasuredHeight = totalHeight;
-                    completeMeasurement(finalMeasuredHeight);
-                }
-            }
-
-            function completeMeasurement(finalHeight) {
-                measurementCompleted = true;
-                stopListening(); 
-
-                liveDisplayArea.classList.add('hidden');
-                resultSummary.classList.remove('hidden');
-                finalHeightText.textContent = `${finalHeight.toFixed(2)} m`;
-                
-                geminiInsightButton.onclick = () => fetchGeminiInsight(finalHeight);
-                geminiInsightButton.classList.remove('bg-gray-500', 'hover:bg-gray-500');
-                geminiInsightButton.classList.add('bg-green-600', 'hover:bg-green-700');
-                geminiInsightButton.innerHTML = '<span class="mr-2">✨</span> Yükseklik Analizi Al';
-                aiInsightOutput.innerHTML = '<p class="text-sm app-text-secondary opacity-50">Analiz almak için yukarıdaki butona tıklayın.</p>';
-
-                document.getElementById('liveMeasurementHeader').textContent = "Ölçüm Başarıyla Tamamlandı.";
             }
             
             function stopCalculation(aiMessage) {
-                if(!measurementCompleted) {
-                    heightDisplay.textContent = "--- m";
-                    angleDisplay.textContent = "---°";
-                    stabilityDisplay.textContent = "0%";
-                    stabilityBar.style.width = "0%";
-                    aiFeedback.textContent = `AI: ${aiMessage}`;
-                    angleHistory = []; 
-                    crosshairH.style.transform = `translateX(-50%) translateY(-1px)`;
-                }
+                heightDisplay.textContent = "--- m";
+                angleDisplay.textContent = "---°";
+                stabilityDisplay.textContent = "0%";
+                stabilityBar.style.width = "0%";
+                aiFeedback.textContent = `AI: ${aiMessage}`;
+                angleHistory = []; 
+                crosshairH.style.transform = `translateX(-50%) translateY(-1px)`;
             }
             
             function updateLiveUI(angle, height, stability, feedback) {
-                if(measurementCompleted) return;
-
                 const yShift = -(angle / 90) * 40; 
                 crosshairH.style.transform = `translateX(-50%) translateY(calc(-1px + ${yShift}px))`;
 
                 if (angleHistory.length === historySize) {
+                    // Filtreleme tamamlandığında kararlı sonucu göster
                     heightDisplay.textContent = `${height.toFixed(2)} m`;
                     angleDisplay.textContent = `${angle.toFixed(1)}°`;
                     stabilityDisplay.textContent = `${stability.toFixed(0)}%`;
                     stabilityBar.style.width = `${stability.toFixed(0)}%`;
                 } else {
+                    // Kararlılık için veri toplanırken animasyonlu bekleme göster
                     let calibratingText = ".".repeat(Math.floor(angleHistory.length / (historySize / 4)) + 1);
                     heightDisplay.textContent = calibratingText;
                     angleDisplay.textContent = '...°';
@@ -725,16 +583,12 @@
             
             function resetAppState() {
                 stopListening();
-                measurementCompleted = false;
                 angleHistory = []; 
-                finalMeasuredHeight = 0;
 
                 setupScreen.classList.remove('hidden');
                 measurementScreen.classList.add('hidden');
-                liveDisplayArea.classList.remove('hidden');
-                resultSummary.classList.add('hidden');
                 permissionStatus.textContent = ""; 
-                document.getElementById('liveMeasurementHeader').textContent = "Cismin tepesine nişan alın";
+                document.getElementById('liveMeasurementHeader').textContent = "Hedefe nişan alın ve sonucu anlık olarak izleyin.";
 
                 stopCalculation("Ölçüm durduruldu."); 
             }
