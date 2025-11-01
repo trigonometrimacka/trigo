@@ -3,386 +3,193 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>Açı + Kamera: Canlı Yükseklik Ölçer</title>
+<title>Açı + Kamera: Gelişmiş Yükseklik Ölçer</title>
 <style>
   :root{
     --bg1:#012E40; --bg2:#026773; --accent:#3CA6A6; --text:#F2E3D5;
   }
-  *{box-sizing:border-box}
+  *{box-sizing:border-box;margin:0;padding:0}
   body{
-    margin:0; font-family:Inter, Poppins, system-ui, sans-serif;
-    background: linear-gradient(135deg,var(--bg1),var(--bg2));
-    color:var(--text); -webkit-font-smoothing:antialiased;
+    font-family:Poppins,Inter,sans-serif;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
   }
-  .app {
-    max-width:980px; margin:18px auto; padding:18px;
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:1rem;background:rgba(0,0,0,0.2);
   }
-  header {display:flex; gap:12px; align-items:center; justify-content:space-between}
-  h1{margin:0;font-size:1.25rem;color:var(--accent)}
-  .controls{
-    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-    margin-top:12px;
+  h1{font-size:1.2rem;color:var(--accent)}
+  #menuBtn{
+    font-size:1.5rem;background:none;border:none;color:var(--text);
+    cursor:pointer;
   }
-  .card{
-    background: rgba(242,227,213,0.06);
-    border:1px solid rgba(60,166,166,0.12);
-    padding:10px;border-radius:12px;
+  /* === yan menü === */
+  #sideMenu{
+    position:fixed;top:0;left:-260px;width:260px;height:100%;
+    background-color:rgba(0,0,0,0.95);
+    backdrop-filter:blur(6px);
+    padding:1rem;transition:0.3s;
+    z-index:10;
   }
-  input[type="number"], select, button {
-    padding:8px 10px; border-radius:8px; border:none; font-size:0.95rem;
+  #sideMenu.open{left:0;}
+  #sideMenu h2{font-size:1rem;color:var(--accent);margin-bottom:0.5rem;}
+  #sideMenu label{display:block;margin-top:0.8rem;}
+  #sideMenu select, #sideMenu input{
+    width:100%;padding:0.4rem;margin-top:0.3rem;
+    border:none;border-radius:6px;text-align:center;
   }
-  button { background:var(--accent); color:var(--bg1); cursor:pointer }
-  button.secondary { background:transparent; border:1px solid rgba(242,227,213,0.12); color:var(--text) }
-  .stage {
-    margin-top:14px; display:grid; grid-template-columns: 1fr 360px; gap:14px;
+  #sideMenu button{
+    width:100%;margin-top:0.8rem;padding:0.5rem;border:none;
+    border-radius:6px;background:var(--accent);color:var(--bg1);
+    cursor:pointer;
   }
-  .preview {
-    position:relative; border-radius:12px; overflow:hidden; min-height:360px;
-    border:1px solid rgba(242,227,213,0.06);
+  .preview{position:relative;width:100%;max-width:480px;margin:1rem auto;border-radius:12px;overflow:hidden;}
+  video,canvas{width:100%;height:auto;display:block;}
+  .readout{
+    max-width:480px;margin:0 auto;
+    text-align:center;padding:0.8rem;background:rgba(0,0,0,0.3);
+    border-radius:12px;
   }
-  video, canvas { width:100%; height:100%; display:block; object-fit:cover }
-  .panel { padding:12px; height:100%; overflow:auto; border-radius:12px; }
-  .guides { font-size:0.92rem; line-height:1.4; }
-  .big {
-    font-size:1.1rem; color:var(--accent); font-weight:600;
-  }
-  .readout { margin-top:10px; display:flex; gap:8px; flex-direction:column; }
-  .readout .row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(242,227,213,0.04) }
-  .log { margin-top:10px; font-size:0.9rem; max-height:180px; overflow:auto; border-radius:8px; padding:8px; background:rgba(0,0,0,0.08) }
-  .hint { font-size:0.85rem; color:rgba(242,227,213,0.8) }
-
-  .btn-row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
-  .footer { margin-top:12px; font-size:0.8rem; color:rgba(242,227,213,0.66) }
-  @media (max-width:900px){
-    .stage { grid-template-columns: 1fr; }
-    .panel { order:2 }
-  }
+  .readout div{margin:0.3rem 0;font-size:1rem;}
 </style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <h1>Açı + Kamera: Canlı Yükseklik Ölçer</h1>
-      <div class="card hint">Proje: Trigonometrinin Günlük Kullanımı — Canlı demo</div>
-    </header>
+  <header>
+    <h1>📐 Açı + Kamera Ölçer</h1>
+    <button id="menuBtn">☰</button>
+  </header>
 
-    <div class="controls">
-      <div class="card">
-        <label>Mesafe (hedefe olan yatay uzaklık): </label>
-        <input id="distance" type="number" step="0.01" value="2" style="width:90px">
-        <select id="unit">
-          <option value="m">m</option>
-          <option value="cm">cm</option>
-          <option value="mm">mm</option>
-        </select>
-        <div style="margin-top:8px" class="hint">Telefon yüksekliğinizi (z) girin veya kalibre edin (ör. 1.6 m) — hesap lamada kullanılır.</div>
-        <div style="margin-top:6px">
-          <input id="deviceHeight" type="number" step="0.01" value="1.6" style="width:90px"> <span class="hint">m (telefonun yerden yüksekliği)</span>
-        </div>
-      </div>
+  <!-- Yan Menü -->
+  <aside id="sideMenu">
+    <h2>⚙️ Ayarlar</h2>
+    <label>Mesafe (m):</label>
+    <input id="distance" type="number" step="0.1" value="2">
+    <label>Telefon Yüksekliği (m):</label>
+    <input id="deviceHeight" type="number" step="0.1" value="1.6">
+    <label>Kamera Oranı:</label>
+    <select id="ratioSelect">
+      <option value="16:9">16 : 9</option>
+      <option value="9:16">9 : 16</option>
+      <option value="4:3">4 : 3</option>
+    </select>
+    <label>Mod:</label>
+    <select id="modeSelect">
+      <option value="camera">Kamera + Açı</option>
+      <option value="sensor">Sadece Açı</option>
+    </select>
+    <button id="startBtn">Başlat</button>
+    <button id="stopBtn">Durdur</button>
+  </aside>
 
-      <div class="card">
-        <div class="big">Mod</div>
-        <div class="btn-row">
-          <button id="camModeBtn">Kamera Modu</button>
-          <button id="sensorModeBtn" class="secondary">Sadece Açı</button>
-          <button id="calibrateBtn" class="secondary">Kalibrasyon</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="big">İşlem</div>
-        <div class="btn-row">
-          <button id="startBtn">Başlat (izin iste)</button>
-          <button id="stopBtn" class="secondary">Durdur</button>
-          <button id="saveBtn" class="secondary">Kaydet (log)</button>
-        </div>
-        <div class="hint" style="margin-top:6px">Not: iPhone/Safari için HTTPS gerekir. Tarayıcı izin isteyecektir.</div>
-      </div>
+  <main>
+    <div class="preview" id="previewWrap">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="overlay"></canvas>
     </div>
-
-    <div class="stage">
-      <div class="preview card" id="previewWrap">
-        <video id="video" autoplay playsinline muted></video>
-        <canvas id="overlay"></canvas>
-      </div>
-
-      <div class="panel card">
-        <div class="guides">
-          <strong>Yönergeler (kısaca)</strong>
-          <ol>
-            <li>Mesafeyi (d) gir. Telefon yüksekliğini (z) gir veya kalibre et.</li>
-            <li>"Başlat" ile kamera + sensör izinlerini ver.</li>
-            <li>Kamerada cismin tepesine dokun (veya ortayı kullan). Seçilen noktaya kırmızı işaret gelecek.</li>
-            <li>Telefonu yere paralel tutup yavaşça tepeye doğrult. Ekranda çizgi ve anlık yükseklik gözükecek.</li>
-            <li>Sonucu kaydetmek için "Kaydet"e bas.</li>
-          </ol>
-          <div class="hint">Bilimsel not: hesaplama trigonometrik olarak <code>h = z + tan(β) * d</code> formülüyle yapılır (z = telefon yüksekliği).</div>
-        </div>
-
-        <div class="readout">
-          <div class="row"><div>Açı (β)</div><div id="angleVal">— °</div></div>
-          <div class="row"><div>Hesaplanan yükseklik</div><div id="heightVal">—</div></div>
-          <div class="row"><div>Seçilen nokta (px)</div><div id="targetVal">—</div></div>
-        </div>
-
-        <div style="margin-top:10px">
-          <strong>Kayıtlar</strong>
-          <div class="log" id="log"></div>
-        </div>
-
-        <div class="footer">Not: Sonuçlar, mesafe/kalibrasyon doğruluğuna bağlıdır. Demo için tolerans bekle.</div>
-      </div>
+    <div class="readout">
+      <div>Açı (β): <span id="angleVal">— °</span></div>
+      <div>Hesaplanan Yükseklik: <span id="heightVal">—</span></div>
     </div>
-  </div>
+  </main>
 
 <script>
-/*
-  Canlı Kamera + DeviceOrientation ile çalışan ölçüm.
-  Mantık:
-   - Kullanıcı yatay mesafeyi (d) ve telefonun yerden yüksekliğini (z) girer.
-   - Telefonun eğimi (beta) ölçülür: cismin tepe noktasına bakarken tan(beta)*d yüksekliği elde edilir.
-   - Toplam yükseklik = z + tan(beta) * d
-   - Kullanıcı kamerada tepenin koordinatına dokunur/aynar; canvas'ta çizgi ve marker gösterilir.
-   - Birim seçimi (m, cm, mm) desteklenir.
-*/
+const menuBtn = document.getElementById('menuBtn');
+const sideMenu = document.getElementById('sideMenu');
+menuBtn.onclick=()=>sideMenu.classList.toggle('open');
 
-const video = document.getElementById('video');
-const canvas = document.getElementById('overlay');
-const ctx = canvas.getContext('2d');
+const video=document.getElementById('video');
+const canvas=document.getElementById('overlay');
+const ctx=canvas.getContext('2d');
 
-const startBtn = document.getElementById('startBtn');
-const stopBtn = document.getElementById('stopBtn');
-const saveBtn = document.getElementById('saveBtn');
-const camModeBtn = document.getElementById('camModeBtn');
-const sensorModeBtn = document.getElementById('sensorModeBtn');
-const calibrateBtn = document.getElementById('calibrateBtn');
+const ratioSelect=document.getElementById('ratioSelect');
+const modeSelect=document.getElementById('modeSelect');
+const distanceInput=document.getElementById('distance');
+const deviceHeightInput=document.getElementById('deviceHeight');
+const angleVal=document.getElementById('angleVal');
+const heightVal=document.getElementById('heightVal');
+const startBtn=document.getElementById('startBtn');
+const stopBtn=document.getElementById('stopBtn');
 
-const distanceInput = document.getElementById('distance');
-const unitSelect = document.getElementById('unit');
-const deviceHeightInput = document.getElementById('deviceHeight');
+let running=false, stream=null, beta=0;
 
-const angleVal = document.getElementById('angleVal');
-const heightVal = document.getElementById('heightVal');
-const targetVal = document.getElementById('targetVal');
-const logEl = document.getElementById('log');
+function toRad(deg){return deg*Math.PI/180;}
 
-let stream = null;
-let running = false;
-let useCamera = true;
-let currentBeta = 0;
-let target = null; // {x,y} in canvas coords
-let records = [];
-
-function fitCanvas() {
-  canvas.width = video.clientWidth;
-  canvas.height = video.clientHeight;
-}
-window.addEventListener('resize', fitCanvas);
-
-async function startAll() {
-  if (running) return;
-  try {
-    // kamera başlat
-    if (useCamera) {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio:false });
-      video.srcObject = stream;
+async function startAll(){
+  if(running) return;
+  let ratio = ratioSelect.value.split(':');
+  let w=16, h=9;
+  if(ratio.length===2){ w=parseInt(ratio[0]); h=parseInt(ratio[1]); }
+  const aspect = w/h;
+  const constraints={
+    video:{facingMode:"environment",aspectRatio:aspect}
+  };
+  if(modeSelect.value==="camera"){
+    try{
+      stream=await navigator.mediaDevices.getUserMedia(constraints);
+      video.srcObject=stream;
       await video.play();
       fitCanvas();
-    }
-  } catch (err) {
-    alert('Kamera açılamadı: ' + err.message);
+    }catch(err){alert("Kamera açılamadı: "+err);}
   }
-
-  // sensör izni (iOS)
-  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-    try {
-      const r = await DeviceOrientationEvent.requestPermission();
-      if (r !== 'granted') {
-        alert('Sensör izni reddedildi. Bazı veriler gelmeyebilir.');
-      }
-    } catch (e) {
-      console.warn('DeviceOrientation izin hatası', e);
-    }
+  if(typeof DeviceOrientationEvent.requestPermission==="function"){
+    try{
+      const r=await DeviceOrientationEvent.requestPermission();
+      if(r!=="granted")alert("Sensör izni reddedildi!");
+    }catch{}
   }
-
-  window.addEventListener('deviceorientation', handleOrientation, true);
-  running = true;
-  startRenderLoop();
-}
-
-function stopAll() {
-  running = false;
-  if (stream) {
-    stream.getTracks().forEach(t => t.stop());
-    stream = null;
-  }
-  window.removeEventListener('deviceorientation', handleOrientation);
-  cancelAnimationFrame(renderId);
-  clearCanvas();
-  video.srcObject = null;
-}
-
-let renderId = null;
-function startRenderLoop() {
-  function loop(){
-    drawOverlay();
-    renderId = requestAnimationFrame(loop);
-  }
+  window.addEventListener('deviceorientation',handleOrientation);
+  running=true;
   loop();
+  sideMenu.classList.remove('open');
 }
 
-function handleOrientation(e) {
-  // e.beta: -180..180 (öne/arkaya). Kullanım: pozitif yukarı bakma/negatif aşağı?
-  // Cihazların referansı farklı olabilir, bu yüzden calibrate ile offset ekleyebilirsin.
-  currentBeta = e.beta || 0;
-  angleVal.innerText = currentBeta.toFixed(1) + ' °';
+function stopAll(){
+  running=false;
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  window.removeEventListener('deviceorientation',handleOrientation);
+  cancelAnimationFrame(animId);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  video.srcObject=null;
 }
 
-function clearCanvas(){
-  ctx.clearRect(0,0,canvas.width, canvas.height);
+function fitCanvas(){
+  canvas.width=video.videoWidth;
+  canvas.height=video.videoHeight;
+}
+
+function handleOrientation(e){
+  beta=e.beta||0;
+  angleVal.textContent=beta.toFixed(1)+" °";
+}
+
+let animId;
+function loop(){
+  if(!running)return;
+  drawOverlay();
+  animId=requestAnimationFrame(loop);
 }
 
 function drawOverlay(){
-  clearCanvas();
-  // biraz karartma göster
-  ctx.fillStyle = 'rgba(0,0,0,0.12)';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle="rgba(255,80,80,0.9)";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.moveTo(canvas.width/2,canvas.height);
+  let y=canvas.height - Math.tan(toRad(beta))*200; // sadece görsel amaçlı çizgi
+  ctx.lineTo(canvas.width/2,y);
+  ctx.stroke();
 
-  // çizgi: alt merkezden hedefe
-  const sx = canvas.width/2;
-  const sy = canvas.height;
-  ctx.lineWidth = 3;
-  if (target) {
-    ctx.strokeStyle = 'rgba(255,80,80,0.95)';
-    ctx.beginPath();
-    ctx.moveTo(sx, sy);
-    ctx.lineTo(target.x, target.y);
-    ctx.stroke();
-
-    // hedef işareti
-    ctx.fillStyle = 'rgba(255,80,80,0.95)';
-    ctx.beginPath();
-    ctx.arc(target.x, target.y, 8, 0, Math.PI*2);
-    ctx.fill();
-
-    // hesap: beta açısından hesaplama göster
-    computeHeightAndShow();
-  } else {
-    // çapraz kılavuz: merkez hedef
-    ctx.strokeStyle = 'rgba(60,166,166,0.6)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(sx-20, sy);
-    ctx.lineTo(sx+20, sy-120);
-    ctx.moveTo(sx+20, sy);
-    ctx.lineTo(sx-20, sy-120);
-    ctx.stroke();
-
-    // Açıklama: dokun
-    ctx.fillStyle = 'rgba(242,227,213,0.9)';
-    ctx.font = '14px Poppins, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Tepeye dokun veya ortayı hedefle', sx, 30);
-  }
+  let d=parseFloat(distanceInput.value)||1;
+  let z=parseFloat(deviceHeightInput.value)||0;
+  let h=z+Math.tan(toRad(beta))*d;
+  heightVal.textContent=h.toFixed(2)+" m";
 }
 
-function computeHeightAndShow(){
-  // Gerçek fiziksel mapping: canvas piksellerinden gerçek mesafeye dönüşüm
-  // Biz kolaylık için: kullanıcı yatay mesafeyi (d) metre girer; beta açısını alırız.
-  // Formül: h_total = z + tan(beta) * d
-  const d_raw = parseFloat(distanceInput.value) || 1;
-  const unit = unitSelect.value;
-  const z = parseFloat(deviceHeightInput.value) || 0; // metre
-
-  // beta: e.beta is degrees. Ancak dikkat: e.beta ölçümü cihaz referansına göre değişir.
-  // Burada kullanıcı telefonu paralel tutup tepeye doğrultmalı — pilot kullanım için en iyisi.
-  const betaDeg = currentBeta;
-  const betaRad = betaDeg * Math.PI / 180;
-
-  // Önemli: e.beta'nin 0 olduğu durum cihaz dik ise farklı davranır. Kullanıcıya kalibrasyon tavsiye edilir.
-  const delta = Math.tan(betaRad) * d_raw; // metre
-  let h_total_m = z + delta;
-
-  // Birim dönüşümü
-  let display = '';
-  if (unit === 'm') display = h_total_m.toFixed(3) + ' m';
-  else if (unit === 'cm') display = (h_total_m*100).toFixed(1) + ' cm';
-  else display = (h_total_m*1000).toFixed(0) + ' mm';
-
-  heightVal.innerText = display;
-
-  // ayrıca canvas'ta küçük tooltip göster
-  ctx.fillStyle = 'rgba(0,0,0,0.6)';
-  ctx.fillRect(8,8,220,56);
-  ctx.fillStyle = 'white';
-  ctx.font = '12px Poppins, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('Açı β: ' + betaDeg.toFixed(1) + '°', 16, 26);
-  ctx.fillText('Yükseklik: ' + display, 16, 46);
-
-  // target px info
-  targetVal.innerText = target ? Math.round(target.x) + ' , ' + Math.round(target.y) : '—';
-}
-
-canvas.addEventListener('click', (ev)=>{
-  // canvas üzerine tıklayınca hedef (touch friendly)
-  const rect = canvas.getBoundingClientRect();
-  const x = (ev.clientX - rect.left) * (canvas.width / rect.width);
-  const y = (ev.clientY - rect.top) * (canvas.height / rect.height);
-  target = { x, y };
-});
-
-video.addEventListener('loadedmetadata', fitCanvas);
-
-// Basit kayıt fonksiyonu
-saveBtn.addEventListener('click', ()=>{
-  if (!target) { alert('Önce hedef seç (kamera modunda)'); return; }
-  const entry = {
-    time: new Date().toLocaleString(),
-    angle: currentBeta,
-    distance: parseFloat(distanceInput.value)||0,
-    deviceHeight: parseFloat(deviceHeightInput.value)||0,
-    unit: unitSelect.value,
-    heightDisplay: heightVal.innerText
-  };
-  records.push(entry);
-  renderLog();
-});
-
-function renderLog(){
-  logEl.innerHTML = '';
-  records.slice().reverse().forEach(r=>{
-    const div = document.createElement('div');
-    div.style.padding='6px'; div.style.borderBottom='1px solid rgba(255,255,255,0.03)';
-    div.innerHTML = `<strong>${r.time}</strong><div style="font-size:0.9rem">${r.heightDisplay} — açı: ${r.angle.toFixed(1)}° — d:${r.distance}${r.unit}</div>`;
-    logEl.appendChild(div);
-  });
-}
-
-// Mod butonları
-camModeBtn.addEventListener('click', ()=>{ useCamera=true; camModeBtn.disabled=true; sensorModeBtn.disabled=false; });
-sensorModeBtn.addEventListener('click', ()=>{ useCamera=false; camModeBtn.disabled=false; sensorModeBtn.disabled=true; stopAll(); /* will not use camera */ alert('Sadece açı modunda kamera kapalıdır. "Başlat" ile sensör başlat.'); });
-
-// Başlat / Durdur
-startBtn.addEventListener('click', async ()=>{
-  await startAll();
-});
-stopBtn.addEventListener('click', ()=>{
-  stopAll();
-});
-
-// Kalibrasyon - basit: kullanıcı telefonu yerde yatay tutup "Sıfırla" diyebilir.
-// Burada daha gelişmiş kalibrasyon ekleyebilirsin (offset store).
-calibrateBtn.addEventListener('click', ()=>{
-  const z = parseFloat(deviceHeightInput.value) || 0;
-  alert('Kalibrasyon: Telefon yüksekliğini doğru gir. Ör: 1.6 m (okul sırası seviyesine göre). Bu değer ölçüm formülünde z olarak kullanılır.');
-});
-
-// başlangıç buton durumları
-camModeBtn.disabled = true;
-sensorModeBtn.disabled = false;
-
+startBtn.onclick=startAll;
+stopBtn.onclick=stopAll;
+video.onloadedmetadata=fitCanvas;
 </script>
 </body>
 </html>
