@@ -3,28 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrigAI - Akıllı Yükseklik Ölçer</title>
+    <title>TRIGO AI - Akıllı Yükseklik Ölçer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     
     <style>
         /* Projeye özel stiller */
         body { 
             font-family: 'Inter', sans-serif; 
-            /* Dokunma gecikmesini engelle (mobil için) */
             touch-action: manipulation;
-            /* Scroll-bounce efektini engelle */
             overscroll-behavior: none;
+            /* Ana metin rengi 'beyaz' (hafif kırık) */
+            color: #E5E7EB; /* gray-200 */
+        }
+
+        /* YENİ: Logo için özel font sınıfı (Audiowide) */
+        .font-logo {
+            font-family: 'Audiowide', sans-serif;
+            letter-spacing: 1.5px;
         }
         
-        /* Nişangah (Crosshair) Stili */
+        /* Nişangah (Crosshair) Stili - YENİ ALTIN RENGİ */
         .crosshair {
             position: relative;
             width: 150px;
             height: 150px;
-            /* Hedef çerçevesi */
             border: 2px dashed rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             margin: 20px auto;
@@ -36,23 +41,22 @@
             left: calc(50% - 1px);
             height: 50px;
             width: 2px;
-            background: rgba(0, 255, 255, 0.7);
-            box-shadow: 0 0 8px rgba(0, 255, 255, 1);
+            /* YENİ RENK: rgb(229, 174, 50) */
+            background: rgba(229, 174, 50, 0.7);
+            box-shadow: 0 0 8px rgba(229, 174, 50, 1);
             transform: translateY(-50%);
         }
         /* Yatay çizgi (DİNAMİK) */
         .crosshair-line-h {
             position: absolute;
             left: 50%;
-            /* Başlangıç pozisyonu (JS ile değişecek) */
             top: 50%; 
             width: 50px;
             height: 2px;
-            background: rgba(0, 255, 255, 0.7);
-            box-shadow: 0 0 8px rgba(0, 255, 255, 1);
-            /* Başlangıç transformu (JS ile değişecek) */
+            /* YENİ RENK: rgb(229, 174, 50) */
+            background: rgba(229, 174, 50, 0.7);
+            box-shadow: 0 0 8px rgba(229, 174, 50, 1);
             transform: translateX(-50%) translateY(-1px); 
-            /* Açı değişimini yumuşak hale getir */
             transition: transform 0.1s linear; 
         }
 
@@ -66,31 +70,35 @@
             margin: 0;
         }
         
-        /* Aktif sekme stili */
+        /* Aktif sekme stili - YENİ ALTIN RENGİ */
         .tab-btn.active {
-            background-color: #0891b2; /* ciyan-600 */
-            color: white;
+            /* YENİ RENK: rgb(229, 174, 50) */
+            background-color: rgb(229, 174, 50);
+            color: black; /* Altın rengin üstünde siyah daha okunaklı */
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-900 flex items-center justify-center min-h-screen p-4">
 
     <div id="app-container" class="w-full max-w-md mx-auto">
 
         <div id="setup-screen" class="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-2xl transition-all duration-300 ring-1 ring-gray-700">
             <div class="text-center mb-6">
-                <h1 class="text-4xl font-bold text-cyan-400 mb-1">🚀 TrigAI</h1>
+                <h1 class="font-logo text-5xl font-bold text-[rgb(229,174,50)] mb-1">TRIGO AI</h1>
                 <p class="text-lg text-gray-300">Akıllı Yükseklik Asistanı</p>
             </div>
             
-            <div class="flex mb-4 rounded-lg bg-gray-700 p-1">
-                <button class="tab-btn flex-1 p-2 rounded-md text-sm font-semibold transition-all active" data-tab="tab-input">
+            <div class="flex mb-4 rounded-lg bg-gray-700 p-1 text-sm">
+                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all active" data-tab="tab-input">
                     Giriş
                 </button>
-                <button class="tab-btn flex-1 p-2 rounded-md text-sm font-semibold transition-all text-gray-400" data-tab="tab-purpose">
+                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all text-gray-400" data-tab="tab-simple">
+                    Basit Anlatım
+                </button>
+                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all text-gray-400" data-tab="tab-purpose">
                     Proje Amacı
                 </button>
-                <button class="tab-btn flex-1 p-2 rounded-md text-sm font-semibold transition-all text-gray-400" data-tab="tab-how">
+                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all text-gray-400" data-tab="tab-how">
                     Nasıl Çalışır?
                 </button>
             </div>
@@ -101,26 +109,44 @@
                     
                     <div class="mb-4">
                         <label for="distance" class="block text-sm font-medium text-gray-300 mb-1">1. Cisme Yatay Uzaklık (metre)</label>
-                        <input type="number" id="distance" value="10" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white text-lg focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="Örn: 10">
+                        <input type="number" id="distance" value="10" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white text-lg focus:ring-2 focus:ring-[rgb(229,174,50)] focus:outline-none" placeholder="Örn: 10">
                     </div>
 
                     <div class="mb-6">
                         <label for="userHeight" class="block text-sm font-medium text-gray-300 mb-1">2. Cihaz Yüksekliği (metre)</label>
-                        <input type="number" id="userHeight" value="1.7" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white text-lg focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="Örn: 1.7">
+                        <input type="number" id="userHeight" value="1.7" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white text-lg focus:ring-2 focus:ring-[rgb(229,174,50)] focus:outline-none" placeholder="Örn: 1.7">
                         <p class="text-xs text-gray-500 mt-1">Telefonu tuttuğunuz yükseklik (göz hizanız).</p>
                     </div>
 
-                    <button id="startButton" class="w-full bg-cyan-600 text-white p-4 rounded-lg font-bold text-lg hover:bg-cyan-700 transition-all duration-200 shadow-lg active:scale-95">
+                    <button id="startButton" class="w-full bg-[rgb(229,174,50)] text-black p-4 rounded-lg font-bold text-lg hover:bg-[rgb(209,154,30)] transition-all duration-200 shadow-lg active:scale-95">
                         Ölçümü Başlat
                     </button>
-                    <p id="permission-status" class="text-center text-yellow-400 text-sm mt-4 h-5"></p>
+                    <p id="permission-status" class="text-center text-[rgb(229,174,50)] text-sm mt-4 h-5"></p>
+                </div>
+
+                <div id="tab-simple" class="tab-panel hidden text-gray-300 text-sm space-y-3">
+                    <h3 class="font-semibold text-lg text-white mb-2">Bu Alet Ne İşe Yarıyor?</h3>
+                    <p>Diyelim karşıdaki binanın boyunu merak ettin. Bu alet, telefonunu **süper akıllı bir metreye** dönüştürür.</p>
+                    <p>Olay basit:</p>
+                    <ul class="list-disc list-outside space-y-2 pl-5">
+                        <li>
+                            <strong class="text-white">1. Uzaklığı Söyle:</strong> Sen programa "Ben binadan 15 metre uzaktayım" diyorsun.
+                        </li>
+                        <li>
+                            <strong class="text-white">2. Nişan Al:</strong> Telefonunu binanın <strong class="text-[rgb(229,174,50)]">tepesine</strong> doğrultuyorsun.
+                        </li>
+                        <li>
+                            <strong class="text-white">3. Bitti:</strong> Program, telefonu ne kadar <strong class="text-[rgb(229,174,50)]">yukarı</strong> kaldırdığını anlıyor, basit bir matematik yapıyor ve "O BİNA 25 METREYMİŞ" diyor.
+                        </li>
+                    </ul>
+                    <p class="font-medium text-gray-400 mt-3">"AI" (Yapay Zekâ) ise senin <strong class="text-white">el titremeni</strong> yok sayıp ölçümü tertemiz yapıyor. O kadar.</p>
                 </div>
 
                 <div id="tab-purpose" class="tab-panel hidden text-gray-300 text-sm space-y-3">
                     <h3 class="font-semibold text-lg text-white mb-2">Trigonometri Göz Hizanızda</h3>
-                    <p>TrigAI, bir binanın, bir ağacın veya herhangi bir yüksek nesnenin boyunu ölçmek için telefonunuzun sensörlerini ve temel trigonometriyi kullanır.</p>
+                    <p>TRIGO AI, bir binanın, bir ağacın veya herhangi bir yüksek nesnenin boyunu ölçmek için telefonunuzun sensörlerini ve temel trigonometriyi kullanır.</p>
                     <p>Amacımız, matematiği kağıt üzerindeki bir formül olmaktan çıkarıp, onu herkesin kullanabileceği, AI (Yapay Zekâ) destekli pratik bir ölçüm aracına dönüştürmektir.</p>
-                    <p class="font-medium text-cyan-400">Ekstra bir lazermetre veya donanıma gerek yok; sadece telefonunuz yeterli.</p>
+                    <p class="font-medium text-[rgb(229,174,50)]">Ekstra bir lazermetre veya donanıma gerek yok; sadece telefonunuz yeterli.</p>
                 </div>
                 
                 <div id="tab-how" class="tab-panel hidden text-gray-300 text-sm space-y-3">
@@ -129,7 +155,7 @@
                     <p>Siz hedefin tepesine nişan aldığınızda, telefonunuzun eğim sensörü (jiroskop) $\beta$ (beta) açısını ölçer.</p>
                     <p>Uygulama, bu iki bilgiyi kullanarak anında o meşhur formülü uygular:</p>
                     <div class="text-center bg-gray-800 p-3 rounded-lg my-2">
-                        <code class="text-base text-cyan-300">Yükseklik = tan(β) × Uzaklık (d)</code>
+                        <code class="text-base text-[rgb(229,174,50)]">Yükseklik = tan(β) × Uzaklık (d)</code>
                     </div>
                     <p>AI'nın rolü ise, el titremesi gibi sensör hatalarını filtreleyerek $\beta$ açısını stabilize etmek ve size en doğru sonucu sunmaktır.</p>
                 </div>
@@ -138,7 +164,7 @@
 
         <div id="measurement-screen" class="hidden bg-gradient-to-br from-gray-900 to-gray-800 p-6 md:p-8 rounded-2xl shadow-2xl text-center transition-all duration-300 ring-1 ring-gray-700">
             
-            <p class="text-sm text-gray-400 mb-2">Cismin tepesine nişan alın</D>
+            <p class="text-sm text-gray-400 mb-2">Cismin tepesine nişan alın</p>
             <div class="crosshair">
                 <div id="crosshair-h" class="crosshair-line-h"></div>
                 <div class="crosshair-line-v"></div>
@@ -149,21 +175,21 @@
             
             <div class="flex justify-around bg-gray-950 rounded-lg p-4 my-4 ring-1 ring-gray-700">
                 <div>
-                    <div class="text-xs text-cyan-300 uppercase">Eğim Açısı (β)</div>
+                    <div class="text-xs text-[rgb(229,174,50)] uppercase">Eğim Açısı (β)</div>
                     <div id="angleDisplay" class="text-2xl font-bold text-white">0.0°</div>
                 </div>
                 <div>
-                    <div class="text-xs text-cyan-300 uppercase">Kararlılık</div>
+                    <div class="text-xs text-[rgb(229,174,50)] uppercase">Kararlılık</div>
                     <div id="stabilityDisplay" class="text-2xl font-bold text-white">--%</div>
                 </div>
             </div>
 
             <div class="w-full bg-gray-700 rounded-full h-2.5 mb-4 overflow-hidden">
-                <div id="stabilityBar" class="bg-cyan-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                <div id="stabilityBar" class="bg-[rgb(229,174,50)] h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
             </div>
             
             <div class="bg-gray-700 p-3 rounded-lg min-h-[50px] flex items-center justify-center ring-1 ring-gray-600">
-                <p id="aiFeedback" class="text-sm text-yellow-300">AI Asistan: Başlatılıyor...</p>
+                <p id="aiFeedback" class="text-sm text-[rgb(229,174,50)]">AI Asistan: Başlatılıyor...</p>
             </div>
 
             <button id="resetButton" class="w-full bg-red-600 text-white p-3 rounded-lg font-bold text-md hover:bg-red-700 transition-all duration-200 shadow-lg mt-6 active:scale-95">
@@ -190,7 +216,6 @@
             const aiFeedback = document.getElementById('aiFeedback');
             const resetButton = document.getElementById('resetButton');
             
-            // Dinamik Nişangah elementi
             const crosshairH = document.getElementById('crosshair-h');
 
             // Sekme elementleri
@@ -198,32 +223,28 @@
             const tabPanels = document.querySelectorAll('.tab-panel');
 
             // --- Uygulama Değişkenleri ---
-            let distance = 0;       // Kullanıcının girdiği 'd' değeri
-            let userHeight = 0;     // Kullanıcının girdiği cihaz yüksekliği
-            let angleHistory = [];  // AI Filtresi için açı geçmişi
-            const historySize = 20; // AI Filtresi için son 20 veriyi sakla
-            const NEGATIVE_ANGLE_THRESHOLD = -3; // Ters yön tespiti için eşik (derece)
+            let distance = 0;       
+            let userHeight = 0;     
+            let angleHistory = [];  
+            const historySize = 20; 
+            const NEGATIVE_ANGLE_THRESHOLD = -3; 
 
             // --- Sekme Yönetimi ---
             tabButtons.forEach(button => {
                 button.addEventListener('click', () => {
-                    // Tüm butonlardan 'active' sınıfını kaldır
-                    tabButtons.forEach(btn => btn.classList.remove('active', 'text-white'));
-                    // Tıklanan butona 'active' ekle
-                    button.classList.add('active', 'text-white');
+                    tabButtons.forEach(btn => btn.classList.remove('active', 'text-black'));
+                    
+                    button.classList.add('active', 'text-black');
                     button.classList.remove('text-gray-400');
                     
-                    // Diğer butonlara 'inactive' stili
                     tabButtons.forEach(btn => {
                         if (!btn.classList.contains('active')) {
                             btn.classList.add('text-gray-400');
                         }
                     });
 
-                    // Tüm panelleri gizle
                     tabPanels.forEach(panel => panel.classList.add('hidden'));
                     
-                    // İlgili paneli göster
                     const tabId = button.getAttribute('data-tab');
                     document.getElementById(tabId).classList.remove('hidden');
                 });
@@ -238,11 +259,6 @@
             }
 
             // --- AI PROTOTİP FONKSİYONLARI ---
-
-            /**
-             * AI Filtresi (Veri Dengeleme): 
-             * Gelen ham açı verisini yumuşatır ve kararlılığı hesaplar.
-             */
             function stabilizeData(newAngle) {
                 angleHistory.push(newAngle);
                 if (angleHistory.length > historySize) {
@@ -266,10 +282,6 @@
                 return { stableAngle, stabilityPercent };
             }
 
-            /**
-             * AI Durum Tahmini: 
-             * Kullanıcıya mevcut duruma göre yönlendirici geri bildirim verir.
-             */
             function getAIFeedback(angle, stability) {
                 if (angleHistory.length < historySize) {
                     return "Kalibrasyon yapılıyor... Lütfen sabit tutun.";
@@ -290,10 +302,7 @@
             }
 
             // --- ANA UYGULAMA MANTIĞI ---
-
-            // Cihazın yönü değiştiğinde tetiklenir
             function handleOrientation(event) {
-                // 'beta' (pitch), cihazın öne/arkaya eğimidir. 
                 let rawAngle = event.beta; 
                 
                 if (rawAngle === null || rawAngle === undefined) {
@@ -301,65 +310,42 @@
                     return;
                 }
 
-                // --- YENİ: Ters Yön Tespiti ---
-                // Cihaz -3 dereceden daha fazla aşağı eğilirse
                 if (rawAngle < NEGATIVE_ANGLE_THRESHOLD) {
                     stopCalculation("Cihaz aşağı bakıyor! Lütfen yukarı nişan alın.");
                     return;
                 }
 
-                // Sadece pozitif eğimi (0-90 derece) dikkate alıyoruz
                 let positiveAngle = Math.max(0, rawAngle); 
-                positiveAngle = Math.min(90, positiveAngle); // 90 derece ile sınırla
+                positiveAngle = Math.min(90, positiveAngle); 
                 
-                // 1. AI Filtresini ve Stabilizasyonu uygula
                 const { stableAngle, stabilityPercent } = stabilizeData(positiveAngle);
-
-                // 2. Yüksekliği hesapla: h = tan(β) × d
                 const objectHeightAboveDevice = tan(stableAngle) * distance;
-                
-                // 3. Toplam yüksekliği hesapla: h_toplam = h + h_kullanıcı
                 const totalHeight = objectHeightAboveDevice + userHeight;
-
-                // 4. AI Geri bildirimini al
                 const feedback = getAIFeedback(stableAngle, stabilityPercent);
 
-                // 5. Arayüzü Güncelle
                 updateUI(stableAngle, totalHeight, stabilityPercent, feedback);
             }
             
-            /**
-             * YENİ: Hatalı durumlarda ölçümü durduran fonksiyon
-             */
             function stopCalculation(aiMessage) {
                 heightDisplay.textContent = "--- m";
                 angleDisplay.textContent = "---°";
                 stabilityDisplay.textContent = "0%";
                 stabilityBar.style.width = "0%";
                 aiFeedback.textContent = `AI: ${aiMessage}`;
-                angleHistory = []; // Filtre geçmişini temizle
-                
-                // Nişangahı sıfırla (ortaya al)
+                angleHistory = []; 
                 crosshairH.style.transform = `translateX(-50%) translateY(-1px)`;
             }
             
-            // Arayüzü güncelleyen ana fonksiyon
             function updateUI(angle, height, stability, feedback) {
-                // --- YENİ: Dinamik Nişangah Güncellemesi ---
-                // Açı 0-90 arası. Biz bunu -40px (yukarı) ile 0px (orta) arasına map edelim.
-                // 0 derece = ortada (0px shift)
-                // 90 derece = en tepede (-40px shift)
-                const yShift = -(angle / 90) * 40; // Max 40px yukarı kaydır
+                const yShift = -(angle / 90) * 40; 
                 crosshairH.style.transform = `translateX(-50%) translateY(calc(-1px + ${yShift}px))`;
 
-                // Sadece AI filtresi tamamen dolduğunda (kalibrasyon bittiğinde)
                 if (angleHistory.length === historySize) {
                     heightDisplay.textContent = `${height.toFixed(2)} m`;
                     angleDisplay.textContent = `${angle.toFixed(1)}°`;
                     stabilityDisplay.textContent = `${stability.toFixed(0)}%`;
                     stabilityBar.style.width = `${stability.toFixed(0)}%`;
                 } else {
-                    // Kalibrasyon sırasında bekleme durumu
                     let calibratingText = ".".repeat(Math.floor(angleHistory.length / (historySize / 4)) + 1);
                     heightDisplay.textContent = calibratingText;
                     angleDisplay.textContent = '...°';
@@ -375,12 +361,10 @@
 
             function stopListening() {
                 window.removeEventListener('deviceorientation', handleOrientation);
-                angleHistory = []; // Filtre geçmişini temizle
+                angleHistory = []; 
             }
 
             // --- OLAY DİNLEYİCİLERİ ---
-
-            // "Ölçümü Başlat" Butonu
             startButton.addEventListener('click', () => {
                 distance = parseFloat(distanceInput.value);
                 userHeight = parseFloat(userHeightInput.value);
@@ -389,16 +373,14 @@
                     permissionStatus.textContent = "Lütfen geçerli bir uzaklık girin.";
                     return;
                 }
-                if (isNaN(userHeight) || userHeight < 0) { // 0 olabilir (yerden ölçüm)
+                if (isNaN(userHeight) || userHeight < 0) { 
                     permissionStatus.textContent = "Lütfen geçerli bir cihaz yüksekliği girin.";
                     return;
                 }
 
                 permissionStatus.textContent = "Sensör izni isteniyor...";
 
-                // Cihaz Yönlendirme İzni (iOS 13+ için GEREKLİ)
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    
                     DeviceOrientationEvent.requestPermission()
                         .then(permissionState => {
                             if (permissionState === 'granted') {
@@ -415,7 +397,6 @@
                             permissionStatus.textContent = "Sensör izni alınırken bir hata oluştu.";
                         });
                 } else {
-                    // Android ve izin gerektirmeyen diğer cihazlar
                     permissionStatus.textContent = "Başlatılıyor...";
                     startListening();
                     setupScreen.classList.add('hidden');
@@ -423,14 +404,12 @@
                 }
             });
 
-            // "Sıfırla" Butonu
             resetButton.addEventListener('click', () => {
-                stopListening(); // Sensörleri durdur
-                stopCalculation("Ölçüm durduruldu."); // Arayüzü sıfırla
-                // Ekranları eski haline getir
+                stopListening(); 
+                stopCalculation("Ölçüm durduruldu."); 
                 setupScreen.classList.remove('hidden');
                 measurementScreen.classList.add('hidden');
-                permissionStatus.textContent = ""; // Durum mesajını temizle
+                permissionStatus.textContent = ""; 
             });
         });
     </script>
