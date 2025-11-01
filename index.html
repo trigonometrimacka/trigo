@@ -19,13 +19,18 @@
             color: #E5E7EB; /* gray-200 */
         }
 
-        /* YENİ: Logo için özel font sınıfı (Audiowide) */
+        /* Logo için özel font sınıfı (Audiowide) */
         .font-logo {
             font-family: 'Audiowide', sans-serif;
             letter-spacing: 1.5px;
         }
         
-        /* Nişangah (Crosshair) Stili - YENİ ALTIN RENGİ */
+        /* Dinamik Altın Rengi */
+        .color-gold {
+            color: rgb(229, 174, 50);
+        }
+        
+        /* Nişangah (Crosshair) Stili - Altın Rengi */
         .crosshair {
             position: relative;
             width: 150px;
@@ -41,7 +46,6 @@
             left: calc(50% - 1px);
             height: 50px;
             width: 2px;
-            /* YENİ RENK: rgb(229, 174, 50) */
             background: rgba(229, 174, 50, 0.7);
             box-shadow: 0 0 8px rgba(229, 174, 50, 1);
             transform: translateY(-50%);
@@ -53,7 +57,6 @@
             top: 50%; 
             width: 50px;
             height: 2px;
-            /* YENİ RENK: rgb(229, 174, 50) */
             background: rgba(229, 174, 50, 0.7);
             box-shadow: 0 0 8px rgba(229, 174, 50, 1);
             transform: translateX(-50%) translateY(-1px); 
@@ -70,11 +73,22 @@
             margin: 0;
         }
         
-        /* Aktif sekme stili - YENİ ALTIN RENGİ */
+        /* Aktif sekme stili - Altın Rengi */
         .tab-btn.active {
-            /* YENİ RENK: rgb(229, 174, 50) */
             background-color: rgb(229, 174, 50);
-            color: black; /* Altın rengin üstünde siyah daha okunaklı */
+            color: black;
+        }
+        
+        /* Yeni: Select element stili */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%20fill-rule%3D%22evenodd%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
         }
     </style>
 </head>
@@ -84,7 +98,7 @@
 
         <div id="setup-screen" class="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-2xl transition-all duration-300 ring-1 ring-gray-700">
             <div class="text-center mb-6">
-                <h1 class="font-logo text-5xl font-bold text-[rgb(229,174,50)] mb-1">TRIGO AI</h1>
+                <h1 class="font-logo text-5xl font-bold color-gold mb-1">TRIGO AI</h1>
                 <p class="text-lg text-gray-300">Akıllı Yükseklik Asistanı</p>
             </div>
             
@@ -108,8 +122,16 @@
                     <p class="text-sm text-gray-400 mb-4">Lütfen ölçüm yapmak için aşağıdaki bilgileri girin:</p>
                     
                     <div class="mb-4">
-                        <label for="distance" class="block text-sm font-medium text-gray-300 mb-1">1. Cisme Yatay Uzaklık (metre)</label>
-                        <input type="number" id="distance" value="10" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white text-lg focus:ring-2 focus:ring-[rgb(229,174,50)] focus:outline-none" placeholder="Örn: 10">
+                        <label for="distance" class="block text-sm font-medium text-gray-300 mb-1">1. Cisme Yatay Uzaklık</label>
+                        
+                        <div class="flex space-x-2">
+                            <input type="number" id="distance" value="10" class="w-2/3 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white text-lg focus:ring-2 focus:ring-[rgb(229,174,50)] focus:outline-none" placeholder="Örn: 10">
+                            <select id="distanceUnit" class="w-1/3 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white text-lg focus:ring-2 focus:ring-[rgb(229,174,50)] focus:outline-none">
+                                <option value="m">metre (m)</option>
+                                <option value="mm">milimetre (mm)</option>
+                            </select>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Girdiğiniz birim, hesaplama öncesinde metreye çevrilecektir.</p>
                     </div>
 
                     <div class="mb-6">
@@ -121,11 +143,11 @@
                     <button id="startButton" class="w-full bg-[rgb(229,174,50)] text-black p-4 rounded-lg font-bold text-lg hover:bg-[rgb(209,154,30)] transition-all duration-200 shadow-lg active:scale-95">
                         Ölçümü Başlat
                     </button>
-                    <p id="permission-status" class="text-center text-[rgb(229,174,50)] text-sm mt-4 h-5"></p>
+                    <p id="permission-status" class="text-center color-gold text-sm mt-4 h-5"></p>
                 </div>
 
                 <div id="tab-simple" class="tab-panel hidden text-gray-300 text-sm space-y-3">
-                    <h3 class="font-semibold text-lg text-white mb-2">Bu Alet Ne İşe Yarıyor?</h3>
+                    <h3 class="font-semibold text-lg text-white mb-2">Bu Alet Ne İşe Yarıyor? (Mala Anlatır Gibi)</h3>
                     <p>Diyelim karşıdaki binanın boyunu merak ettin. Bu alet, telefonunu **süper akıllı bir metreye** dönüştürür.</p>
                     <p>Olay basit:</p>
                     <ul class="list-disc list-outside space-y-2 pl-5">
@@ -133,10 +155,10 @@
                             <strong class="text-white">1. Uzaklığı Söyle:</strong> Sen programa "Ben binadan 15 metre uzaktayım" diyorsun.
                         </li>
                         <li>
-                            <strong class="text-white">2. Nişan Al:</strong> Telefonunu binanın <strong class="text-[rgb(229,174,50)]">tepesine</strong> doğrultuyorsun.
+                            <strong class="text-white">2. Nişan Al:</strong> Telefonunu binanın <strong class="color-gold">tepesine</strong> doğrultuyorsun.
                         </li>
                         <li>
-                            <strong class="text-white">3. Bitti:</strong> Program, telefonu ne kadar <strong class="text-[rgb(229,174,50)]">yukarı</strong> kaldırdığını anlıyor, basit bir matematik yapıyor ve "O BİNA 25 METREYMİŞ" diyor.
+                            <strong class="text-white">3. Bitti:</strong> Program, telefonu ne kadar <strong class="color-gold">yukarı</strong> kaldırdığını anlıyor, basit bir matematik yapıyor ve "O BİNA 25 METREYMİŞ" diyor.
                         </li>
                     </ul>
                     <p class="font-medium text-gray-400 mt-3">"AI" (Yapay Zekâ) ise senin <strong class="text-white">el titremeni</strong> yok sayıp ölçümü tertemiz yapıyor. O kadar.</p>
@@ -146,7 +168,7 @@
                     <h3 class="font-semibold text-lg text-white mb-2">Trigonometri Göz Hizanızda</h3>
                     <p>TRIGO AI, bir binanın, bir ağacın veya herhangi bir yüksek nesnenin boyunu ölçmek için telefonunuzun sensörlerini ve temel trigonometriyi kullanır.</p>
                     <p>Amacımız, matematiği kağıt üzerindeki bir formül olmaktan çıkarıp, onu herkesin kullanabileceği, AI (Yapay Zekâ) destekli pratik bir ölçüm aracına dönüştürmektir.</p>
-                    <p class="font-medium text-[rgb(229,174,50)]">Ekstra bir lazermetre veya donanıma gerek yok; sadece telefonunuz yeterli.</p>
+                    <p class="font-medium color-gold">Ekstra bir lazermetre veya donanıma gerek yok; sadece telefonunuz yeterli.</p>
                 </div>
                 
                 <div id="tab-how" class="tab-panel hidden text-gray-300 text-sm space-y-3">
@@ -155,7 +177,7 @@
                     <p>Siz hedefin tepesine nişan aldığınızda, telefonunuzun eğim sensörü (jiroskop) $\beta$ (beta) açısını ölçer.</p>
                     <p>Uygulama, bu iki bilgiyi kullanarak anında o meşhur formülü uygular:</p>
                     <div class="text-center bg-gray-800 p-3 rounded-lg my-2">
-                        <code class="text-base text-[rgb(229,174,50)]">Yükseklik = tan(β) × Uzaklık (d)</code>
+                        <code class="text-base color-gold">Yükseklik = tan(β) × Uzaklık (d)</code>
                     </div>
                     <p>AI'nın rolü ise, el titremesi gibi sensör hatalarını filtreleyerek $\beta$ açısını stabilize etmek ve size en doğru sonucu sunmaktır.</p>
                 </div>
@@ -164,32 +186,48 @@
 
         <div id="measurement-screen" class="hidden bg-gradient-to-br from-gray-900 to-gray-800 p-6 md:p-8 rounded-2xl shadow-2xl text-center transition-all duration-300 ring-1 ring-gray-700">
             
-            <p class="text-sm text-gray-400 mb-2">Cismin tepesine nişan alın</p>
-            <div class="crosshair">
-                <div id="crosshair-h" class="crosshair-line-h"></div>
-                <div class="crosshair-line-v"></div>
-            </div>
-
-            <h2 class="text-gray-400 text-lg font-semibold uppercase tracking-wider">Tahmini Yükseklik</h2>
-            <div id="heightDisplay" class="text-6xl font-extrabold text-white my-2">0.00 m</div>
+            <p id="liveMeasurementHeader" class="text-sm text-gray-400 mb-2">Cismin tepesine nişan alın</p>
             
-            <div class="flex justify-around bg-gray-950 rounded-lg p-4 my-4 ring-1 ring-gray-700">
-                <div>
-                    <div class="text-xs text-[rgb(229,174,50)] uppercase">Eğim Açısı (β)</div>
-                    <div id="angleDisplay" class="text-2xl font-bold text-white">0.0°</div>
+            <div id="liveDisplayArea">
+                <div class="crosshair">
+                    <div id="crosshair-h" class="crosshair-line-h"></div>
+                    <div class="crosshair-line-v"></div>
                 </div>
-                <div>
-                    <div class="text-xs text-[rgb(229,174,50)] uppercase">Kararlılık</div>
-                    <div id="stabilityDisplay" class="text-2xl font-bold text-white">--%</div>
-                </div>
-            </div>
 
-            <div class="w-full bg-gray-700 rounded-full h-2.5 mb-4 overflow-hidden">
-                <div id="stabilityBar" class="bg-[rgb(229,174,50)] h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                <h2 class="text-gray-400 text-lg font-semibold uppercase tracking-wider">Tahmini Yükseklik</h2>
+                <div id="heightDisplay" class="text-6xl font-extrabold text-white my-2">0.00 m</div>
+                
+                <div class="flex justify-around bg-gray-950 rounded-lg p-4 my-4 ring-1 ring-gray-700">
+                    <div>
+                        <div class="text-xs color-gold uppercase">Eğim Açısı (β)</div>
+                        <div id="angleDisplay" class="text-2xl font-bold text-white">0.0°</div>
+                    </div>
+                    <div>
+                        <div class="text-xs color-gold uppercase">Kararlılık</div>
+                        <div id="stabilityDisplay" class="text-2xl font-bold text-white">--%</div>
+                    </div>
+                </div>
+
+                <div class="w-full bg-gray-700 rounded-full h-2.5 mb-4 overflow-hidden">
+                    <div id="stabilityBar" class="bg-[rgb(229,174,50)] h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                
+                <div class="bg-gray-700 p-3 rounded-lg min-h-[50px] flex items-center justify-center ring-1 ring-gray-600">
+                    <p id="aiFeedback" class="text-sm color-gold">AI Asistan: Başlatılıyor...</p>
+                </div>
             </div>
             
-            <div class="bg-gray-700 p-3 rounded-lg min-h-[50px] flex items-center justify-center ring-1 ring-gray-600">
-                <p id="aiFeedback" class="text-sm text-[rgb(229,174,50)]">AI Asistan: Başlatılıyor...</p>
+            <div id="resultSummary" class="hidden my-6 p-4 rounded-lg bg-gray-800 ring-1 ring-gray-700">
+                <h3 class="text-xl font-bold color-gold mb-2">✅ Ölçüm Tamamlandı!</h3>
+                <p class="text-sm text-gray-400">Kesinleşmiş Yükseklik:</p>
+                <p id="finalHeightText" class="text-4xl font-extrabold text-white mb-4">0.00 m</p>
+                
+                <button id="geminiInsightButton" class="w-full bg-green-600 text-white p-3 rounded-lg font-bold text-md hover:bg-green-700 transition-all duration-200 shadow-lg active:scale-95 flex items-center justify-center">
+                    <span class="mr-2">✨</span> Yükseklik Analizi Al
+                </button>
+                
+                <div id="aiInsightOutput" class="mt-4 text-left text-sm text-gray-300 space-y-2">
+                    </div>
             </div>
 
             <button id="resetButton" class="w-full bg-red-600 text-white p-3 rounded-lg font-bold text-md hover:bg-red-700 transition-all duration-200 shadow-lg mt-6 active:scale-95">
@@ -199,12 +237,117 @@
     </div>
 
     <script>
+        // --- GEMINI API SABİTLERİ VE YARDIMCI FONKSİYONLAR ---
+        const apiKey = ""; // API key is left empty; Canvas will provide it at runtime.
+        const modelName = "gemini-2.5-flash-preview-09-2025";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+        async function fetchWithBackoff(url, options, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.status !== 429) { 
+                        if (!response.ok) {
+                             throw new Error(`API call failed with status ${response.status}`);
+                        }
+                        return response;
+                    }
+                    console.warn(`Rate limit (429) encountered. Retrying in ${2 ** i}s...`);
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error;
+                    console.error(`Fetch error: ${error.message}. Retrying...`);
+                }
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+            }
+            throw new Error("Maximum retry attempts reached.");
+        }
+
+        async function fetchGeminiInsight(height) {
+            const insightOutput = document.getElementById('aiInsightOutput');
+            const button = document.getElementById('geminiInsightButton');
+            
+            button.disabled = true;
+            button.innerHTML = '<span class="mr-2">🔄</span> Analiz Yükleniyor...';
+            insightOutput.innerHTML = '<p class="text-center text-gray-500">Analiz oluşturuluyor, lütfen bekleyin...</p>';
+
+            const userQuery = `${height.toFixed(2)} metre yüksekliğindeki bir nesnenin (bina, ağaç vb.) yüksekliğini karşılaştırın. Bu yüksekliğin kaç katlı bir binaya denk geldiğini ve dünyadaki bilinen popüler yapılarla (örneğin, Eyfel Kulesi) karşılaştırmasını yapın. Ayrıca bu yüksekliği ölçmek için kullanılan trigonometri (yükseklik açısı) hakkında kısa bir bilgi verin. Yanıtınızı Türkçe olarak verin.`;
+            
+            const systemPrompt = "Sen, ölçüm sonuçlarını analize eden, bilgili ve eğlenceli bir AI Asistanısın. Ölçülen yüksekliği (örneğin 45m) kullanarak, 3-4 cümlelik, karşılaştırmalı ve ilgi çekici bir analiz sun. Bu analizi Google Search sonuçlarını temel alarak oluştur.";
+            
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            try {
+                const response = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const text = candidate.content.parts[0].text;
+                    let sources = [];
+                    const groundingMetadata = candidate.groundingMetadata;
+                    
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        sources = groundingMetadata.groundingAttributions
+                            .map(attribution => ({
+                                uri: attribution.web?.uri,
+                                title: attribution.web?.title,
+                            }))
+                            .filter(source => source.uri && source.title);
+                    }
+
+                    // Analiz sonucunu göster
+                    let outputHTML = `<p class="font-medium color-gold mb-2">Gemini Analizi:</p>`;
+                    outputHTML += `<p>${text.replace(/\n/g, '<br>')}</p>`;
+
+                    if (sources.length > 0) {
+                        outputHTML += `<p class="mt-3 text-xs text-gray-500">Kaynaklar:`;
+                        sources.slice(0, 3).forEach((source, index) => {
+                            outputHTML += `<br><a href="${source.uri}" target="_blank" class="hover:underline">${index + 1}. ${source.title}</a>`;
+                        });
+                        outputHTML += `</p>`;
+                    }
+
+                    insightOutput.innerHTML = outputHTML;
+                    button.classList.add('bg-gray-500', 'hover:bg-gray-500');
+                    button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    button.innerHTML = '<span class="mr-2">✅</span> Analiz Tamamlandı';
+
+                } else {
+                    insightOutput.innerHTML = '<p class="text-red-400">Analiz alınamadı. Lütfen daha sonra tekrar deneyin.</p>';
+                }
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                insightOutput.innerHTML = '<p class="text-red-400">API bağlantı hatası oluştu. Konsolu kontrol edin.</p>';
+            } finally {
+                button.disabled = false;
+                if (!button.classList.contains('bg-gray-500')) {
+                    button.classList.add('bg-green-600', 'hover:bg-green-700');
+                    button.innerHTML = '<span class="mr-2">✨</span> Yükseklik Analizi Al';
+                }
+            }
+        }
+
+        // --- UYGULAMA MANTIĞI VE SENSÖR İŞLEMLERİ ---
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM Elementlerini Seçme ---
             const setupScreen = document.getElementById('setup-screen');
             const measurementScreen = document.getElementById('measurement-screen');
+            const liveDisplayArea = document.getElementById('liveDisplayArea');
+            const resultSummary = document.getElementById('resultSummary');
             
             const distanceInput = document.getElementById('distance');
+            const distanceUnit = document.getElementById('distanceUnit'); // YENİ
             const userHeightInput = document.getElementById('userHeight');
             const startButton = document.getElementById('startButton');
             const permissionStatus = document.getElementById('permission-status');
@@ -215,8 +358,11 @@
             const stabilityBar = document.getElementById('stabilityBar');
             const aiFeedback = document.getElementById('aiFeedback');
             const resetButton = document.getElementById('resetButton');
-            
             const crosshairH = document.getElementById('crosshair-h');
+            
+            const finalHeightText = document.getElementById('finalHeightText');
+            const geminiInsightButton = document.getElementById('geminiInsightButton');
+            const aiInsightOutput = document.getElementById('aiInsightOutput');
 
             // Sekme elementleri
             const tabButtons = document.querySelectorAll('.tab-btn');
@@ -226,27 +372,40 @@
             let distance = 0;       
             let userHeight = 0;     
             let angleHistory = [];  
+            let finalMeasuredHeight = 0;
             const historySize = 20; 
             const NEGATIVE_ANGLE_THRESHOLD = -3; 
+            const STABILITY_THRESHOLD = 95; 
+            let measurementCompleted = false;
+
+            // --- Birim Dönüşüm Fonksiyonu ---
+            /**
+             * Girilen uzaklık değerini ve birimini alıp, her zaman metre cinsinden döndürür.
+             */
+            function convertDistanceToMeters(value, unit) {
+                value = parseFloat(value);
+                if (isNaN(value) || value <= 0) return 0;
+                
+                if (unit === 'mm') {
+                    return value / 1000; // mm -> m
+                }
+                // Varsayılan: metre
+                return value; 
+            }
 
             // --- Sekme Yönetimi ---
             tabButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     tabButtons.forEach(btn => btn.classList.remove('active', 'text-black'));
-                    
                     button.classList.add('active', 'text-black');
                     button.classList.remove('text-gray-400');
-                    
                     tabButtons.forEach(btn => {
                         if (!btn.classList.contains('active')) {
                             btn.classList.add('text-gray-400');
                         }
                     });
-
                     tabPanels.forEach(panel => panel.classList.add('hidden'));
-                    
-                    const tabId = button.getAttribute('data-tab');
-                    document.getElementById(tabId).classList.remove('hidden');
+                    document.getElementById(button.getAttribute('data-tab')).classList.remove('hidden');
                 });
             });
 
@@ -264,54 +423,36 @@
                 if (angleHistory.length > historySize) {
                     angleHistory.shift(); 
                 }
-                
                 const sum = angleHistory.reduce((a, b) => a + b, 0);
                 const stableAngle = sum / angleHistory.length;
-
                 if (angleHistory.length < 2) {
                     return { stableAngle, stabilityPercent: 0 };
                 }
-                
                 const mean = stableAngle;
                 const variance = angleHistory.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / angleHistory.length;
                 const stdDev = Math.sqrt(variance);
-
                 let stabilityPercent = 100 * (1 - Math.min(stdDev / 3, 1)); 
                 stabilityPercent = Math.max(0, Math.min(100, stabilityPercent)); 
-
                 return { stableAngle, stabilityPercent };
             }
 
             function getAIFeedback(angle, stability) {
-                if (angleHistory.length < historySize) {
-                    return "Kalibrasyon yapılıyor... Lütfen sabit tutun.";
-                }
-                if (stability < 75) {
-                    return "Eliniz titriyor. Cihazı sabit tutmaya çalışın.";
-                }
-                if (angle < 5) {
-                    return "Daha yukarı nişan alın.";
-                }
-                if (angle > 85) {
-                    return "Cihaz çok dik, hedefi kontrol edin.";
-                }
-                if (stability > 95) {
-                    return "Ölçüm stabil. Harika!";
-                }
+                if (angleHistory.length < historySize) return "Kalibrasyon yapılıyor... Lütfen sabit tutun.";
+                if (stability < 75) return "Eliniz titriyor. Cihazı sabit tutmaya çalışın.";
+                if (angle < 5) return "Daha yukarı nişan alın.";
+                if (angle > 85) return "Cihaz çok dik, hedefi kontrol edin.";
+                if (stability > 95) return "Ölçüm stabil. Sonuç hazır!";
                 return "Hedefin tepesine nişan alınıyor...";
             }
 
             // --- ANA UYGULAMA MANTIĞI ---
             function handleOrientation(event) {
+                if(measurementCompleted) return;
+
                 let rawAngle = event.beta; 
                 
-                if (rawAngle === null || rawAngle === undefined) {
-                    stopCalculation("Hata: Sensör verisi alınamıyor.");
-                    return;
-                }
-
-                if (rawAngle < NEGATIVE_ANGLE_THRESHOLD) {
-                    stopCalculation("Cihaz aşağı bakıyor! Lütfen yukarı nişan alın.");
+                if (rawAngle === null || rawAngle === undefined || rawAngle < NEGATIVE_ANGLE_THRESHOLD) {
+                    stopCalculation("Cihaz aşağı bakıyor veya sensör hatası var!");
                     return;
                 }
 
@@ -319,24 +460,54 @@
                 positiveAngle = Math.min(90, positiveAngle); 
                 
                 const { stableAngle, stabilityPercent } = stabilizeData(positiveAngle);
+                
                 const objectHeightAboveDevice = tan(stableAngle) * distance;
                 const totalHeight = objectHeightAboveDevice + userHeight;
                 const feedback = getAIFeedback(stableAngle, stabilityPercent);
 
-                updateUI(stableAngle, totalHeight, stabilityPercent, feedback);
+                updateLiveUI(stableAngle, totalHeight, stabilityPercent, feedback);
+
+                // Ölçüm Kararlılığa Ulaştıysa
+                if (stabilityPercent >= STABILITY_THRESHOLD && angleHistory.length === historySize) {
+                    finalMeasuredHeight = totalHeight;
+                    completeMeasurement(finalMeasuredHeight);
+                }
+            }
+
+            function completeMeasurement(finalHeight) {
+                measurementCompleted = true;
+                stopListening(); 
+
+                // Arayüz geçişi
+                liveDisplayArea.classList.add('hidden');
+                resultSummary.classList.remove('hidden');
+                finalHeightText.textContent = `${finalHeight.toFixed(2)} m`;
+                
+                // Gemini Analizi Butonu Hazırlığı
+                geminiInsightButton.onclick = () => fetchGeminiInsight(finalHeight);
+                geminiInsightButton.classList.remove('bg-gray-500', 'hover:bg-gray-500');
+                geminiInsightButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                geminiInsightButton.innerHTML = '<span class="mr-2">✨</span> Yükseklik Analizi Al';
+                aiInsightOutput.innerHTML = '<p class="text-sm text-gray-500">Analiz almak için yukarıdaki butona tıklayın.</p>';
+
+                document.getElementById('liveMeasurementHeader').textContent = "Ölçüm Başarıyla Tamamlandı.";
             }
             
             function stopCalculation(aiMessage) {
-                heightDisplay.textContent = "--- m";
-                angleDisplay.textContent = "---°";
-                stabilityDisplay.textContent = "0%";
-                stabilityBar.style.width = "0%";
-                aiFeedback.textContent = `AI: ${aiMessage}`;
-                angleHistory = []; 
-                crosshairH.style.transform = `translateX(-50%) translateY(-1px)`;
+                if(!measurementCompleted) {
+                    heightDisplay.textContent = "--- m";
+                    angleDisplay.textContent = "---°";
+                    stabilityDisplay.textContent = "0%";
+                    stabilityBar.style.width = "0%";
+                    aiFeedback.textContent = `AI: ${aiMessage}`;
+                    angleHistory = []; 
+                    crosshairH.style.transform = `translateX(-50%) translateY(-1px)`;
+                }
             }
             
-            function updateUI(angle, height, stability, feedback) {
+            function updateLiveUI(angle, height, stability, feedback) {
+                if(measurementCompleted) return;
+
                 const yShift = -(angle / 90) * 40; 
                 crosshairH.style.transform = `translateX(-50%) translateY(calc(-1px + ${yShift}px))`;
 
@@ -361,15 +532,36 @@
 
             function stopListening() {
                 window.removeEventListener('deviceorientation', handleOrientation);
+            }
+            
+            function resetAppState() {
+                stopListening();
+                measurementCompleted = false;
                 angleHistory = []; 
+                finalMeasuredHeight = 0;
+
+                // Arayüzü Başlangıç Durumuna Getir
+                setupScreen.classList.remove('hidden');
+                measurementScreen.classList.add('hidden');
+                liveDisplayArea.classList.remove('hidden');
+                resultSummary.classList.add('hidden');
+                permissionStatus.textContent = ""; 
+                document.getElementById('liveMeasurementHeader').textContent = "Cismin tepesine nişan alın";
+
+                // Canlı Göstergeleri Temizle
+                stopCalculation("Ölçüm durduruldu."); 
             }
 
             // --- OLAY DİNLEYİCİLERİ ---
             startButton.addEventListener('click', () => {
-                distance = parseFloat(distanceInput.value);
+                // YENİ: Birim dönüşümü burada yapılıyor
+                const rawDistance = distanceInput.value;
+                const unit = distanceUnit.value;
+                distance = convertDistanceToMeters(rawDistance, unit); 
+                
                 userHeight = parseFloat(userHeightInput.value);
 
-                if (isNaN(distance) || distance <= 0) {
+                if (distance <= 0) {
                     permissionStatus.textContent = "Lütfen geçerli bir uzaklık girin.";
                     return;
                 }
@@ -404,13 +596,7 @@
                 }
             });
 
-            resetButton.addEventListener('click', () => {
-                stopListening(); 
-                stopCalculation("Ölçüm durduruldu."); 
-                setupScreen.classList.remove('hidden');
-                measurementScreen.classList.add('hidden');
-                permissionStatus.textContent = ""; 
-            });
+            resetButton.addEventListener('click', resetAppState);
         });
     </script>
 </body>
