@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TRIGO AI - Akıllı Yükseklik Ölçer</title>
+    <!-- Tailwind CSS CDN'i -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter (genel metin) ve Audiowide (logo için) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
@@ -55,6 +57,9 @@
         }
         .app-text-secondary {
             color: var(--text-secondary);
+        }
+        .app-text-primary {
+            color: var(--text-primary);
         }
         .app-input {
             background-color: var(--input-bg);
@@ -180,21 +185,27 @@
 </head>
 <body class="app-bg flex items-center justify-center min-h-screen p-4">
 
+    <!-- Ana Uygulama Konteyneri -->
     <div id="app-container" class="w-full max-w-md mx-auto">
 
+        <!-- EKRAN 1: KURULUM (Gelişmiş Sekmeli Arayüz) -->
         <div id="setup-screen" class="app-card p-6 rounded-2xl shadow-2xl transition-all duration-300">
             
+            <!-- Başlık ve Tema Değiştirme -->
             <div class="flex justify-between items-center mb-6">
+                <!-- LOGO (Audiowide Fontu ile) -->
                 <div>
                     <h1 class="font-logo text-4xl font-bold color-gold mb-0">TRIGO AI</h1>
                     <p class="text-sm app-text-secondary">Akıllı Yükseklik Asistanı</p>
                 </div>
+                <!-- YENİ: Tema Anahtarı -->
                 <div class="flex items-center space-x-2">
                     <span class="app-text-secondary text-sm font-medium hidden sm:inline">Koyu Tema</span>
                     <div id="themeToggle" class="theme-switch"></div>
                 </div>
             </div>
             
+            <!-- Sekme Butonları -->
             <div class="flex mb-4 rounded-lg p-1 text-sm" style="background-color: var(--bg-tertiary);">
                 <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all active" data-tab="tab-input">
                     Giriş
@@ -210,7 +221,9 @@
                 </button>
             </div>
 
+            <!-- Sekme İçerikleri -->
             <div id="tab-content">
+                <!-- 1. GİRİŞ SEKMESİ (Varsayılan) -->
                 <div id="tab-input" class="tab-panel">
                     <p class="text-sm app-text-secondary mb-4">Lütfen ölçüm yapmak için aşağıdaki bilgileri girin:</p>
                     
@@ -218,6 +231,7 @@
                         <label for="distance" class="block text-sm font-medium app-text-secondary mb-1">1. Cisme Yatay Uzaklık</label>
                         <input type="number" id="distance" value="10" class="app-input w-full p-3 border rounded-lg text-lg focus:ring-2 focus:ring-[rgb(229,174,50)] focus:outline-none" placeholder="Örn: 10">
                         
+                        <!-- Uzaklık Birimi Seçim Butonları -->
                         <div class="unit-selector-group flex space-x-2 mt-2" data-target="distance">
                             <button data-unit="m" class="unit-btn flex-1 p-1 rounded-lg text-sm active-unit">metre (m)</button>
                             <button data-unit="cm" class="unit-btn flex-1 p-1 rounded-lg text-sm">santimetre (cm)</button>
@@ -229,23 +243,27 @@
                         <label for="userHeight" class="block text-sm font-medium app-text-secondary mb-1">2. Cihaz Yüksekliği</label>
                         <input type="number" id="userHeight" value="1.7" class="app-input w-full p-3 border rounded-lg text-lg focus:ring-2 focus:ring-[rgb(229,174,50)] focus:outline-none" placeholder="Örn: 1.7">
                         
+                        <!-- Cihaz Yüksekliği Birimi Seçim Butonları -->
                         <div class="unit-selector-group flex space-x-2 mt-2" data-target="userHeight">
                             <button data-unit="m" class="unit-btn flex-1 p-1 rounded-lg text-sm active-unit">metre (m)</button>
-                            <button data-unit="cm" class="unit-1 flex-1 p-1 rounded-lg text-sm">santimetre (cm)</button>
+                            <button data-unit="cm" class="unit-btn flex-1 p-1 rounded-lg text-sm">santimetre (cm)</button>
                             <button data-unit="mm" class="unit-btn flex-1 p-1 rounded-lg text-sm">milimetre (mm)</button>
                         </div>
 
                         <p class="text-xs app-text-secondary mt-1 opacity-70">Telefonu tuttuğunuz yükseklik (göz hizanız).</p>
                     </div>
 
+                    <!-- Başlatma Butonu - Altın Rengi -->
                     <button id="startButton" class="w-full bg-[rgb(229,174,50)] text-black p-4 rounded-lg font-bold text-lg hover:bg-[rgb(209,154,30)] transition-all duration-200 shadow-lg active:scale-95">
                         Ölçümü Başlat
                     </button>
+                    <!-- İzin durumu için mesaj alanı - Altın Rengi -->
                     <p id="permission-status" class="text-center color-gold text-sm mt-4 h-5"></p>
                 </div>
 
+                <!-- 2. BASİT ANLATIM SEKMESİ -->
                 <div id="tab-simple" class="tab-panel hidden app-text-secondary text-sm space-y-3">
-                    <h3 class="font-semibold text-lg text-gray-900 dark:text-white mb-2">Bu Alet Ne İşe Yarıyor? (Mala Anlatır Gibi)</h3>
+                    <h3 class="font-semibold text-lg app-text-primary mb-2">Bu Alet Ne İşe Yarıyor? (Mala Anlatır Gibi)</h3>
                     <p>Diyelim karşıdaki binanın boyunu merak ettin. Bu alet, telefonunu **süper akıllı bir metreye** dönüştürür.</p>
                     <p>Olay basit:</p>
                     <ul class="list-disc list-outside space-y-2 pl-5">
@@ -262,6 +280,7 @@
                     <p class="font-medium app-text-secondary mt-3 opacity-80">"AI" (Yapay Zekâ) ise senin <strong class="app-text-primary">el titremeni</strong> yok sayıp ölçümü tertemiz yapıyor. O kadar.</p>
                 </div>
 
+                <!-- 3. PROJE AMACI SEKMESİ -->
                 <div id="tab-purpose" class="tab-panel hidden app-text-secondary text-sm space-y-3">
                     <h3 class="font-semibold text-lg app-text-primary mb-2">Trigonometri Göz Hizanızda</h3>
                     <p>TRIGO AI, bir binanın, bir ağacın veya herhangi bir yüksek nesnenin boyunu ölçmek için telefonunuzun sensörlerini ve temel trigonometriyi kullanır.</p>
@@ -269,6 +288,7 @@
                     <p class="font-medium color-gold">Artık mm, cm ve m birimlerinde hassas girişler yapabilir, ister koyu ister açık temada çalışabilirsiniz.</p>
                 </div>
                 
+                <!-- 4. NASIL ÇALIŞIR? SEKMESİ -->
                 <div id="tab-how" class="tab-panel hidden app-text-secondary text-sm space-y-3">
                     <h3 class="font-semibold text-lg app-text-primary mb-2">Hayatı Kolaylaştıran Formül</h3>
                     <p>Sizden tek istediğimiz, ölçtüğünüz nesneye olan yatay uzaklığınızı ($d$) bilmeniz. Girilen tüm birimler, hesaplama öncesinde metreye çevrilir.</p>
@@ -282,10 +302,26 @@
             </div>
         </div>
 
+        <!-- EKRAN 2: ÖLÇÜM (Varsayılan olarak gizli) -->
         <div id="measurement-screen" class="hidden app-card p-6 md:p-8 rounded-2xl shadow-2xl text-center transition-all duration-300">
+            
+            <!-- YENİ: BAŞLANGIÇ VERİLERİ PANELI (Context) -->
+            <div id="inputContext" class="p-3 rounded-xl mb-4 text-left shadow-inner ring-1" style="background-color: var(--bg-primary); border-color: var(--ring-color);">
+                <div class="flex justify-between text-xs font-semibold uppercase tracking-wider">
+                    <div class="flex-1 border-r pr-3" style="border-color: var(--ring-color);">
+                        <span class="color-gold">UZAKLIK (D):</span>
+                        <div id="contextDistance" class="text-xl font-bold app-text-primary">---</div>
+                    </div>
+                    <div class="flex-1 pl-3">
+                        <span class="color-gold">CİHAZ HİZASI (H):</span>
+                        <div id="contextUserHeight" class="text-xl font-bold app-text-primary">---</div>
+                    </div>
+                </div>
+            </div>
             
             <p id="liveMeasurementHeader" class="text-sm app-text-secondary mb-2">Cismin tepesine nişan alın</p>
             
+            <!-- Nişangah ve Canlı Yükseklik Alanı -->
             <div id="liveDisplayArea">
                 <div class="crosshair">
                     <div id="crosshair-h" class="crosshair-line-h"></div>
@@ -295,6 +331,7 @@
                 <h2 class="app-text-secondary text-lg font-semibold uppercase tracking-wider">Tahmini Yükseklik</h2>
                 <div id="heightDisplay" class="text-6xl font-extrabold app-text-primary my-2">0.00 m</div>
                 
+                <!-- Canlı Veri Paneli -->
                 <div class="flex justify-around rounded-lg p-4 my-4 ring-1" style="background-color: var(--bg-primary); border-color: var(--ring-color);">
                     <div>
                         <div class="text-xs color-gold uppercase">Eğim Açısı (β)</div>
@@ -306,34 +343,42 @@
                     </div>
                 </div>
 
+                <!-- Kararlılık Çubuğu -->
                 <div class="w-full rounded-full h-2.5 mb-4 overflow-hidden" style="background-color: var(--bg-tertiary);">
                     <div id="stabilityBar" class="bg-[rgb(229,174,50)] h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
                 </div>
                 
+                <!-- AI Filtre Geri Bildirim Paneli -->
                 <div class="p-3 rounded-lg min-h-[50px] flex items-center justify-center ring-1" style="background-color: var(--bg-tertiary); border-color: var(--ring-color);">
                     <p id="aiFeedback" class="text-sm color-gold">AI Asistan: Başlatılıyor...</p>
                 </div>
             </div>
             
+            <!-- YENİ ALAN: SONUÇ ve GEMINI ANALİZİ -->
             <div id="resultSummary" class="hidden my-6 p-4 rounded-lg ring-1" style="background-color: var(--bg-tertiary); border-color: var(--ring-color);">
                 <h3 class="text-xl font-bold color-gold mb-2">✅ Ölçüm Tamamlandı!</h3>
                 <p class="text-sm app-text-secondary">Kesinleşmiş Yükseklik:</p>
                 <p id="finalHeightText" class="text-4xl font-extrabold app-text-primary mb-4">0.00 m</p>
                 
+                <!-- GEMINI BUTONU -->
                 <button id="geminiInsightButton" class="w-full bg-green-600 text-white p-3 rounded-lg font-bold text-md hover:bg-green-700 transition-all duration-200 shadow-lg active:scale-95 flex items-center justify-center">
                     <span class="mr-2">✨</span> Yükseklik Analizi Al
                 </button>
                 
+                <!-- LLM Geri Bildirim Alanı -->
                 <div id="aiInsightOutput" class="mt-4 text-left text-sm app-text-secondary space-y-2">
-                    </div>
+                    <!-- Analiz buraya yüklenecek -->
+                </div>
             </div>
 
+            <!-- Sıfırlama Butonu -->
             <button id="resetButton" class="w-full bg-red-600 text-white p-3 rounded-lg font-bold text-md hover:bg-red-700 transition-all duration-200 shadow-lg mt-6 active:scale-95">
                 Sıfırla ve Geri Dön
             </button>
         </div>
     </div>
 
+    <!-- JavaScript Kodu (Açı Hesaplamaları, Birimler ve Tema Yönetimi) -->
     <script>
         // --- GEMINI API SABİTLERİ VE YARDIMCI FONKSİYONLAR ---
         const apiKey = ""; 
@@ -461,7 +506,9 @@
             const geminiInsightButton = document.getElementById('geminiInsightButton');
             const aiInsightOutput = document.getElementById('aiInsightOutput');
 
-            const themeToggle = document.getElementById('themeToggle'); // Tema butonu
+            const themeToggle = document.getElementById('themeToggle'); 
+            const contextDistance = document.getElementById('contextDistance');
+            const contextUserHeight = document.getElementById('contextUserHeight');
 
             // Sekme elementleri ve birim butonları
             const tabButtons = document.querySelectorAll('.tab-btn');
@@ -469,8 +516,16 @@
             const unitSelectorGroups = document.querySelectorAll('.unit-selector-group');
 
             // --- Uygulama Değişkenleri ---
-            let distance = 0;       
-            let userHeight = 0;     
+            // Hesaplama için metre cinsinden değerler
+            let distanceMeters = 0;       
+            let userHeightMeters = 0;     
+            
+            // Görüntüleme için kullanıcı girdileri
+            let inputDistanceValue = 0;
+            let inputDistanceUnit = 'm';
+            let inputUserHeightValue = 0;
+            let inputUserHeightUnit = 'm';
+
             let angleHistory = [];  
             let finalMeasuredHeight = 0;
             const historySize = 20; 
@@ -511,6 +566,13 @@
                     return value / 100; 
                 }
                 return value; 
+            }
+            
+            function formatValue(value, unit) {
+                if (unit === 'mm' || unit === 'cm') {
+                    return value.toFixed(0);
+                }
+                return value.toFixed(2);
             }
 
             // --- Sekme Yönetimi ---
@@ -590,8 +652,9 @@
                 
                 const { stableAngle, stabilityPercent } = stabilizeData(positiveAngle);
                 
-                const objectHeightAboveDevice = tan(stableAngle) * distance;
-                const totalHeight = objectHeightAboveDevice + userHeight;
+                // Hesaplama: Metre cinsinden değerler kullanılıyor
+                const objectHeightAboveDevice = tan(stableAngle) * distanceMeters;
+                const totalHeight = objectHeightAboveDevice + userHeightMeters;
                 const feedback = getAIFeedback(stableAngle, stabilityPercent);
 
                 updateLiveUI(stableAngle, totalHeight, stabilityPercent, feedback);
@@ -678,23 +741,35 @@
 
             // --- OLAY DİNLEYİCİLERİ ---
             startButton.addEventListener('click', () => {
-                const distanceUnit = document.querySelector('.unit-selector-group[data-target="distance"] .active-unit').getAttribute('data-unit');
-                const userHeightUnit = document.querySelector('.unit-selector-group[data-target="userHeight"] .active-unit').getAttribute('data-unit');
+                // Girdi ve Birimleri Oku
+                inputDistanceUnit = document.querySelector('.unit-selector-group[data-target="distance"] .active-unit').getAttribute('data-unit');
+                inputUserHeightUnit = document.querySelector('.unit-selector-group[data-target="userHeight"] .active-unit').getAttribute('data-unit');
                 
-                distance = convertValueToMeters(distanceInput.value, distanceUnit); 
-                userHeight = convertValueToMeters(userHeightInput.value, userHeightUnit);
+                // Görüntüleme değerlerini sakla (kullanıcının girdiği formatta)
+                inputDistanceValue = parseFloat(distanceInput.value);
+                inputUserHeightValue = parseFloat(userHeightInput.value);
 
-                if (distance <= 0) {
+                // Hesaplama için metreye çevir
+                distanceMeters = convertValueToMeters(inputDistanceValue, inputDistanceUnit); 
+                userHeightMeters = convertValueToMeters(inputUserHeightValue, inputUserHeightUnit);
+
+                if (distanceMeters <= 0) {
                     permissionStatus.textContent = "Lütfen geçerli bir uzaklık değeri girin.";
                     return;
                 }
-                if (userHeight < 0) { 
+                if (userHeightMeters < 0) { 
                     permissionStatus.textContent = "Lütfen geçerli bir cihaz yüksekliği değeri girin.";
                     return;
                 }
 
+                // Girdi Context Panelini Güncelle
+                contextDistance.textContent = `${formatValue(inputDistanceValue, inputDistanceUnit)} ${inputDistanceUnit}`;
+                contextUserHeight.textContent = `${formatValue(inputUserHeightValue, inputUserHeightUnit)} ${inputUserHeightUnit}`;
+
+
                 permissionStatus.textContent = "Sensör izni isteniyor...";
 
+                // Cihaz İzin İstemesi
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                     DeviceOrientationEvent.requestPermission()
                         .then(permissionState => {
