@@ -26,7 +26,7 @@
     font-size: 1rem;
     margin: 0.5rem;
   }
-  #startBtn {
+  button {
     background-color: #3CA6A6;
     color: #012E40;
     border: none;
@@ -36,7 +36,7 @@
     margin-top: 1rem;
     cursor: pointer;
   }
-  #startBtn:hover {
+  button:hover {
     background-color: #F2E3D5;
     color: #012E40;
   }
@@ -55,63 +55,62 @@
   }
 </style>
 </head>
-
 <body>
   <h2>Açıyla Yükseklik Ölçer 📐</h2>
   <p>Telefonu yere paralel tutup cismin tepesine nişan al.  
-  Mesafeyi gir, ardından “Başlat” butonuna bas.</p>
+  Mesafeyi gir, ardından “İzin Ver ve Başlat” butonuna bas.</p>
 
   <label>Mesafe (m):</label>
   <input id="d" value="2" type="number" step="0.1"><br>
-
-  <button id="startBtn">Başlat</button>
+  <button id="startBtn">İzin Ver ve Başlat</button>
 
   <div class="data-box">
     <p>Telefon Açısı: <span id="pitch" class="value">—</span>°</p>
     <p>Hesaplanan Yükseklik: <span id="h" class="value">—</span> m</p>
   </div>
 
-  <script>
-    const pitchEl = document.getElementById("pitch");
-    const heightEl = document.getElementById("h");
-    const startBtn = document.getElementById("startBtn");
+<script>
+const pitchEl = document.getElementById("pitch");
+const heightEl = document.getElementById("h");
+const startBtn = document.getElementById("startBtn");
 
-    function toRad(deg) {
-      return deg * Math.PI / 180;
-    }
+function toRad(deg) { return deg * Math.PI / 180; }
 
-    function handleOrientation(e) {
-      let pitch = e.beta || 0; // öne/arkaya eğim
-      let distance = parseFloat(document.getElementById("d").value) || 1;
+function handleOrientation(e) {
+  let pitch = e.beta || 0;
+  let distance = parseFloat(document.getElementById("d").value) || 1;
+  pitchEl.innerText = pitch.toFixed(1);
+  let height = Math.tan(toRad(pitch)) * distance;
+  heightEl.innerText = height.toFixed(2);
+}
 
-      pitchEl.innerText = pitch.toFixed(1);
-      let height = Math.tan(toRad(pitch)) * distance;
-      heightEl.innerText = height.toFixed(2);
-    }
+async function startMeasurement() {
+  if (location.protocol !== "https:" && location.hostname !== "localhost") {
+    alert("Uyarı: Sensör verileri HTTPS bağlantısında daha güvenilir çalışır.");
+  }
 
-    function startMeasurement() {
-      if (typeof DeviceOrientationEvent.requestPermission === "function") {
-        // iOS 13+ için izin
-        DeviceOrientationEvent.requestPermission()
-          .then(response => {
-            if (response === "granted") {
-              window.addEventListener("deviceorientation", handleOrientation);
-              startBtn.innerText = "Ölçüm Aktif ✅";
-              startBtn.disabled = true;
-            } else {
-              alert("Lütfen sensör erişimine izin ver.");
-            }
-          })
-          .catch(() => alert("Cihaz sensörüne erişilemedi."));
-      } else {
-        // Android veya izin gerektirmeyen tarayıcılar
+  if (typeof DeviceOrientationEvent.requestPermission === "function") {
+    try {
+      const response = await DeviceOrientationEvent.requestPermission();
+      if (response === "granted") {
         window.addEventListener("deviceorientation", handleOrientation);
         startBtn.innerText = "Ölçüm Aktif ✅";
         startBtn.disabled = true;
+      } else {
+        alert("Sensör izni reddedildi!");
       }
+    } catch (err) {
+      alert("Sensör erişimi başarısız: " + err);
     }
+  } else {
+    // Android Chrome gibi cihazlarda direkt çalışır
+    window.addEventListener("deviceorientation", handleOrientation);
+    startBtn.innerText = "Ölçüm Aktif ✅";
+    startBtn.disabled = true;
+  }
+}
 
-    startBtn.addEventListener("click", startMeasurement);
-  </script>
+startBtn.addEventListener("click", startMeasurement);
+</script>
 </body>
 </html>
