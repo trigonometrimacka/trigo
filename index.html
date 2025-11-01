@@ -1,185 +1,206 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>OpenCV.js — Kamera + Otomatik Tepe Algılama</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kamera + Açı ile Yükseklik Ölçer</title>
 <style>
-  body{font-family:Inter,Poppins,sans-serif;background:#012E40;color:#F2E3D5;padding:12px}
-  .wrap{max-width:900px;margin:0 auto}
-  header{display:flex;justify-content:space-between;align-items:center}
-  h1{color:#3CA6A6}
-  video,canvas{width:100%;border-radius:10px}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-  input,select,button{padding:8px;border-radius:8px;border:none}
-  .log{margin-top:8px;background:rgba(255,255,255,0.03);padding:8px;border-radius:8px}
+  body {
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #012E40, #026773);
+    color: #F2E3D5;
+    text-align: center;
+    padding: 1rem;
+  }
+  h2 {
+    color: #3CA6A6;
+  }
+  video, canvas {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 12px;
+    margin-top: 1rem;
+  }
+  .panel {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    display: inline-block;
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+  button {
+    background: #3CA6A6;
+    color: #012E40;
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+  }
+  button:hover {
+    background: #F2E3D5;
+    color: #012E40;
+  }
+  select, input {
+    padding: 0.3rem;
+    border-radius: 6px;
+    border: none;
+    text-align: center;
+  }
+  #log {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #F2E3D5;
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header><h1>OpenCV.js — Otomatik Tepe Algılama</h1><div>Demo</div></header>
+<h2>📱 Kamera + Açı ile Yükseklik Ölçer</h2>
+<p>Telefonu yere paralel tut, cismin tepesine nişan al ve başlat.</p>
 
-  <p>Mod: <select id="mode"><option value="color">Renk Eşikleme (önerilen)</option><option value="edge">Kenar - Canny</option></select></p>
-
-  <div style="position:relative">
-    <video id="video" autoplay playsinline muted></video>
-    <canvas id="overlay" style="position:absolute;left:0;top:0;"></canvas>
-  </div>
-
-  <div class="controls">
-    <label>Mesafe (m): <input id="d" type="number" step="0.01" value="2" style="width:100px"></label>
-    <label>Telefon yüksekliği z (m): <input id="z" type="number" step="0.01" value="1.6" style="width:100px"></label>
-    <label>Birim: <select id="unit"><option>m</option><option>cm</option><option>mm</option></select></label>
-    <button id="start">Başlat</button>
-    <button id="stop">Durdur</button>
-  </div>
-
-  <div style="margin-top:8px">
-    <label>Kırmızı eşik (sadece renk modu):</label>
-    <input id="th_low_h" type="number" value="0" min="0" max="180" style="width:60px"> H_low
-    <input id="th_high_h" type="number" value="10" min="0" max="180" style="width:60px"> H_high
-  </div>
-
-  <div class="log" id="log">Durum: bekleniyor</div>
-  <div style="margin-top:8px"><small>Not: iOS/Safari HTTPS ve izin gerektirir. Renk modu için tepenin belli bir renk tonuna sahip olması en sağlam sonuçu verir.</small></div>
+<div class="panel">
+  Mesafe (m): <input type="number" id="distance" value="2" step="0.1"><br>
+  Telefon Yüksekliği (m): <input type="number" id="deviceHeight" value="1.6" step="0.1"><br>
+  Ölçüm Birimi:
+  <select id="unit">
+    <option value="m">Metre</option>
+    <option value="cm">Santimetre</option>
+    <option value="mm">Milimetre</option>
+  </select><br>
+  Algılama Modu:
+  <select id="mode">
+    <option value="color">Renk (ör. kırmızı sticker)</option>
+    <option value="edge">Kenar</option>
+  </select><br>
+  <button id="startBtn">📷 Başlat</button>
+  <button id="stopBtn">🛑 Durdur</button>
+  <p id="log">Hazır bekliyor...</p>
 </div>
 
-<!-- OpenCV.js CDN -->
-<script async src="https://docs.opencv.org/4.x/opencv.js" onload="cvLoaded()"></script>
-<script>
-let video=document.getElementById('video'), overlay=document.getElementById('overlay'), ctx=overlay.getContext('2d');
-let startBtn=document.getElementById('start'), stopBtn=document.getElementById('stop'), logEl=document.getElementById('log');
-let stream=null, running=false, src=null, dst=null, cap=null;
-let modeSelect=document.getElementById('mode');
+<video id="video" autoplay playsinline muted></video>
+<canvas id="canvas"></canvas>
 
-function cvLoaded(){ logEl.innerText='OpenCV.js yüklendi.'; }
+<script async src="https://docs.opencv.org/4.x/opencv.js" onload="onCvReady()"></script>
+<script>
+let video = document.getElementById("video");
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
+let logEl = document.getElementById("log");
+let running = false, cap, src, dst, stream;
+
+// son açı
+window.latestBeta = 0;
+window.addEventListener("deviceorientation", e => {
+  if (e.beta !== null) window.latestBeta = e.beta;
+});
+
+function onCvReady() {
+  logEl.innerText = "✅ OpenCV yüklendi, hazır.";
+}
 
 async function start() {
   if (running) return;
   try {
-    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}, audio:false});
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
     video.srcObject = stream;
     await video.play();
-    overlay.width = video.videoWidth;
-    overlay.height = video.videoHeight;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
     src = new cv.Mat(video.videoHeight, video.videoWidth, cv.CV_8UC4);
     dst = new cv.Mat(video.videoHeight, video.videoWidth, cv.CV_8UC1);
     cap = new cv.VideoCapture(video);
     running = true;
     processFrame();
-    logEl.innerText='Çalışıyor: görüntü alınıyor.';
-  } catch (e) {
-    logEl.innerText = 'Kamera başlatılamadı: ' + e;
+    logEl.innerText = "🎥 Kamera aktif.";
+  } catch (err) {
+    logEl.innerText = "Kamera açılamadı: " + err;
   }
 }
 
 function stop() {
   running = false;
-  if (stream) {
-    stream.getTracks().forEach(t=>t.stop());
-    stream=null;
-  }
-  if (src) { src.delete(); dst.delete(); src=null; dst=null; }
-  ctx.clearRect(0,0,overlay.width,overlay.height);
-  logEl.innerText='Durduruldu.';
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  if (src) src.delete();
+  if (dst) dst.delete();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  logEl.innerText = "🛑 Durduruldu.";
 }
 
-function processFrame(){
-  if(!running) return;
-  try {
-    cap.read(src);
-    // convert to hsv for color or to gray for edge
-    if (modeSelect.value === 'color') {
-      let hsv = new cv.Mat();
-      cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);
-      cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
-      // thresholds from UI (hue)
-      let hlow = parseInt(document.getElementById('th_low_h').value);
-      let hhigh = parseInt(document.getElementById('th_high_h').value);
-      let low = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [hlow, 80, 50, 0]);
-      let high = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [hhigh, 255, 255, 255]);
-      cv.inRange(hsv, low, high, dst);
-      // morphology
-      let M = cv.Mat.ones(5,5,cv.CV_8U);
-      cv.morphologyEx(dst, dst, cv.MORPH_OPEN, M);
-      cv.morphologyEx(dst, dst, cv.MORPH_CLOSE, M);
-      M.delete(); low.delete(); high.delete(); hsv.delete();
-    } else {
-      let gray = new cv.Mat();
-      cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-      cv.Canny(gray, dst, 80, 160);
-      gray.delete();
-    }
+function toRad(deg){ return deg * Math.PI / 180; }
 
-    // find contours
-    let contours = new cv.MatVector();
-    let hierarchy = new cv.Mat();
-    cv.findContours(dst, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-    let maxArea = 0, maxCnt = null;
-    for (let i=0; i<contours.size(); ++i) {
-      let cnt = contours.get(i);
-      let area = cv.contourArea(cnt);
-      if (area > maxArea) { maxArea = area; maxCnt = cnt; }
-    }
+function processFrame() {
+  if (!running) return;
+  cap.read(src);
+  let mode = document.getElementById("mode").value;
 
-    // draw
-    ctx.clearRect(0,0,overlay.width,overlay.height);
-    ctx.drawImage(video,0,0,overlay.width,overlay.height);
-    if (maxCnt && maxArea>200) {
-      // get bounding rect and topmost point
-      let rect = cv.boundingRect(maxCnt);
-      // compute topmost point from contour
-      let topY = Infinity, topX=0;
-      for (let i=0;i<maxCnt.data32S.length;i+=2){
-        let x = maxCnt.data32S[i], y = maxCnt.data32S[i+1];
-        if (y < topY) { topY = y; topX = x; }
-      }
-      // overlay marker
-      ctx.strokeStyle='red'; ctx.lineWidth=3;
-      ctx.beginPath(); ctx.arc(topX, topY, 8, 0, Math.PI*2); ctx.stroke();
-      ctx.fillStyle='rgba(255,0,0,0.2)'; ctx.fillRect(rect.x,rect.y,rect.width,rect.height);
-
-      // compute measurement: we need beta (device angle). For browser, use DeviceOrientation if available.
-      // If not available, user should enter angle manually (prompt).
-      // We'll try to read DeviceOrientation (beta)
-      let beta = window.latestBeta !== undefined ? window.latestBeta : null;
-      if (beta === null) {
-        ctx.fillStyle='yellow'; ctx.font='16px Arial'; ctx.fillText('Açı (β) yok — izin/cihaz gerek', 10, 30);
-        logEl.innerText = 'Tepe algılandı. Açı yoksa DeviceOrientation izin ver veya açı gir.';
-      } else {
-        // perform trigonometrik hesap: h = z + tan(beta) * d
-        let d = parseFloat(document.getElementById('d').value) || 1;
-        let z = parseFloat(document.getElementById('z').value) || 0;
-        let betaRad = beta * Math.PI / 180;
-        let h_total = z + Math.tan(betaRad) * d;
-        // unit conversion
-        let unit = document.getElementById('unit').value;
-        let disp = (unit==='m') ? h_total.toFixed(3) + ' m' : (unit==='cm') ? (h_total*100).toFixed(1)+' cm' : Math.round(h_total*1000)+' mm';
-        ctx.fillStyle='white'; ctx.font='18px Arial'; ctx.fillText('Yükseklik: ' + disp, 10, 25);
-        logEl.innerText = `Top algılandı (area=${Math.round(maxArea)}). β=${beta.toFixed(1)}°, yükseklik=${disp}`;
-      }
-    } else {
-      ctx.fillStyle='white'; ctx.font='16px Arial'; ctx.fillText('Hedef yok veya küçük (area='+Math.round(maxArea)+')', 10, 25);
-      logEl.innerText = 'Hedef algılanamadı. Renk/threshold ayarlarını veya ışığı kontrol et.';
-    }
-
-    contours.delete(); hierarchy.delete();
-  } catch (err) {
-    console.error(err);
+  if (mode === "color") {
+    let hsv = new cv.Mat();
+    cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);
+    cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
+    let low = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [0, 80, 50, 0]); // kırmızı alt
+    let high = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [10, 255, 255, 255]); // kırmızı üst
+    cv.inRange(hsv, low, high, dst);
+    low.delete(); high.delete(); hsv.delete();
+  } else {
+    let gray = new cv.Mat();
+    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+    cv.Canny(gray, dst, 80, 150);
+    gray.delete();
   }
+
+  // kontur bul
+  let contours = new cv.MatVector();
+  let hierarchy = new cv.Mat();
+  cv.findContours(dst, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+  let maxArea = 0, maxCnt = null;
+  for (let i = 0; i < contours.size(); i++) {
+    let cnt = contours.get(i);
+    let area = cv.contourArea(cnt);
+    if (area > maxArea) { maxArea = area; maxCnt = cnt; }
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  if (maxCnt && maxArea > 200) {
+    let topY = Infinity, topX = 0;
+    for (let i = 0; i < maxCnt.data32S.length; i += 2) {
+      let x = maxCnt.data32S[i], y = maxCnt.data32S[i + 1];
+      if (y < topY) { topY = y; topX = x; }
+    }
+
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(topX, topY, 8, 0, Math.PI * 2);
+    ctx.stroke();
+
+    let beta = window.latestBeta || 0;
+    let d = parseFloat(document.getElementById("distance").value) || 1;
+    let z = parseFloat(document.getElementById("deviceHeight").value) || 0;
+    let h = z + Math.tan(toRad(beta)) * d;
+    let unit = document.getElementById("unit").value;
+    if (unit === "cm") h *= 100;
+    if (unit === "mm") h *= 1000;
+
+    ctx.fillStyle = "rgba(0,0,0,0.4)";
+    ctx.fillRect(10, 10, 300, 60);
+    ctx.fillStyle = "#F2E3D5";
+    ctx.font = "16px Poppins";
+    ctx.fillText(`Açı (β): ${beta.toFixed(1)}°`, 20, 35);
+    ctx.fillText(`Yükseklik: ${h.toFixed(2)} ${unit}`, 20, 55);
+
+    logEl.innerText = `🎯 Tepe bulundu. Açı=${beta.toFixed(1)}°, H=${h.toFixed(2)} ${unit}`;
+  } else {
+    logEl.innerText = "Hedef bulunamadı, ışığı veya renk kontrastını kontrol et.";
+  }
+
+  contours.delete(); hierarchy.delete();
   requestAnimationFrame(processFrame);
 }
 
-// DeviceOrientation read (best-effort)
-window.latestBeta = null;
-window.addEventListener('deviceorientation', e => {
-  if (e.beta !== null) window.latestBeta = e.beta;
-});
-
-// events
-startBtn.onclick = start;
-stopBtn.onclick = stop;
-
+document.getElementById("startBtn").onclick = start;
+document.getElementById("stopBtn").onclick = stop;
 </script>
 </body>
 </html>
