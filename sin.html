@@ -2,97 +2,633 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hayatın Açısı: Trigonometri</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TRIGO AI - Yükseklik Ölçer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Audiowide&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        /* index-3.html'deki fontları kullanıyoruz */
+        /* Projeye özel stiller */
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #111827; /* Koyu tema */
-            color: #f9fafb;
+            touch-action: manipulation;
+            overscroll-behavior: none;
+            transition: background-color 0.3s, color 0.3s;
         }
-        .font-logo { 
-            font-family: 'Audiowide', sans-serif; 
+
+        /* Dinamik Renkler için CSS Değişkenleri */
+        :root {
+            /* Light Theme (Varsayılan) */
+            --bg-primary: #ffffff;      
+            --bg-secondary: #f3f4f6;    
+            --bg-tertiary: #e5e7eb;     
+            --text-primary: #111827;    
+            --text-secondary: #4b5563;  
+            --ring-color: #d1d5db;      
+            --input-bg: #ffffff;
+            --input-border: #d1d5db;
         }
-        /* Kartlar için parlama efekti */
-        .demo-card {
-            background-color: #1f2937;
-            border: 1px solid #374151;
-            transition: all 0.3s ease;
+
+        /* Dark Theme Sınıfı */
+        .dark-theme {
+            --bg-primary: #111827;      
+            --bg-secondary: #1f2937;    
+            --bg-tertiary: #374151;     
+            --text-primary: #f9fafb;    
+            --text-secondary: #9ca3af;  
+            --ring-color: #374151;      
+            --input-bg: #1f2937;        
+            --input-border: #374151;    
         }
-        .demo-card:hover {
-            border-color: #e5ae32; /* TRIGO AI Altın Rengi */
-            box-shadow: 0 0 20px rgba(229, 174, 50, 0.3);
-            transform: translateY(-5px);
+        
+        /* Tema Uygulaması */
+        .app-bg {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .app-card {
+            background: linear-gradient(to bottom right, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid var(--ring-color);
+            color: var(--text-primary);
+        }
+        .app-text-secondary {
+            color: var(--text-secondary);
+        }
+        .app-text-primary {
+            color: var(--text-primary);
+        }
+        .app-input {
+            background-color: var(--input-bg);
+            border-color: var(--input-border);
+            color: var(--text-primary);
+        }
+
+        /* Logo için özel font sınıfı (Audiowide) */
+        .font-logo {
+            font-family: 'Audiowide', sans-serif;
+            letter-spacing: 1.5px;
+        }
+        
+        /* Dinamik Altın Rengi */
+        .color-gold {
+            color: rgb(229, 174, 50);
+        }
+        
+        /* Nişangah (Crosshair) Stili - Altın Rengi */
+        .crosshair {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border: 2px dashed var(--ring-color);
+            border-radius: 50%;
+            margin: 20px auto;
+        }
+        /* Dikey çizgi (Sabit) */
+        .crosshair-line-v {
+            position: absolute;
+            top: 50%;
+            left: calc(50% - 1px);
+            height: 50px;
+            width: 2px;
+            background: rgba(229, 174, 50, 0.7);
+            box-shadow: 0 0 8px rgba(229, 174, 50, 1);
+            transform: translateY(-50%);
+        }
+        /* Yatay çizgi (DİNAMİK) */
+        .crosshair-line-h {
+            position: absolute;
+            left: 50%;
+            top: 50%; 
+            width: 50px;
+            height: 2px;
+            background: rgba(229, 174, 50, 0.7);
+            box-shadow: 0 0 8px rgba(229, 174, 50, 1);
+            transform: translateX(-50%) translateY(-1px); 
+            transition: transform 0.1s linear; 
+        }
+
+        /* Number input'lardaki okları gizle */
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        /* Aktif sekme stili - Altın Rengi */
+        .tab-btn {
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            background-color: var(--bg-tertiary);
+        }
+        .tab-btn.active {
+            background-color: rgb(229, 174, 50);
+            color: black;
+        }
+
+        /* Birim Butonları Stili */
+        .unit-btn {
+            background-color: var(--bg-tertiary); 
+            color: var(--text-secondary); 
+            border: 1px solid var(--ring-color); 
+            transition: all 0.1s;
+            font-weight: 500;
+        }
+        .unit-btn:hover:not(.active-unit) {
+            background-color: var(--input-border); 
+        }
+        .active-unit {
+            background-color: rgb(229, 174, 50); /* color-gold */
+            color: black;
+            border-color: rgb(229, 174, 50);
+            box-shadow: 0 0 5px rgba(229, 174, 50, 0.5);
+        }
+        
+        /* Tema Değiştirme Butonu (Switch) */
+        .theme-switch {
+            width: 56px;
+            height: 30px;
+            background: var(--bg-tertiary);
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .theme-switch::after {
+            content: '☀️';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            background: #fef3c7; /* Amber-100 */
+            border-radius: 50%;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .dark-theme .theme-switch::after {
+            transform: translateX(26px);
+            content: '🌙';
+            background: #1f2937; /* Gray-800 */
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center p-4 pt-8 md:pt-16">
+<body class="app-bg flex items-center justify-center min-h-screen p-4">
 
-    <div class="w-full max-w-4xl mx-auto">
-        
-        <header class="text-center mb-12">
-            <h1 class="font-logo text-5xl md:text-7xl font-bold text-[#e5ae32]">HAYATIN AÇISI</h1>
-            <p class="text-2xl md:text-3xl text-gray-200 mt-2">Trigonometrinin Günlük Kullanımı</p>
-            <p class="text-lg text-gray-400 mt-4 max-w-2xl mx-auto">
-                Bu proje, trigonometrinin sadece ders kitaplarında kalmadığını,
-                çevremizdeki dünyayı nasıl şekillendirdiğini gösteren interaktif bir çalışmadır.
-            </p>
-        </header>
+    <div id="app-container" class="w-full max-w-md mx-auto">
 
-        <main>
-            <h2 class="text-3xl font-bold text-center text-gray-100 mb-8">İnteraktif Örnekler</h2>
+        <div id="setup-screen" class="app-card p-6 rounded-2xl shadow-2xl transition-all duration-300">
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="font-logo text-4xl font-bold color-gold mb-0">TRIGO AI</h1>
+                    <p class="text-sm app-text-secondary">Akıllı Yükseklik Asistanı</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="app-text-secondary text-sm font-medium hidden sm:inline">Koyu Tema</span>
+                    <div id="themeToggle" class="theme-switch"></div>
+                </div>
+            </div>
+            
+            <div class="flex mb-4 rounded-lg p-1 text-sm" style="background-color: var(--bg-tertiary);">
+                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all active" data-tab="tab-input">
+                    Giriş
+                </button>
+                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all" data-tab="tab-simple">
+                    Basit Anlatım
+                </button>
+                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all" data-tab="tab-purpose">
+                    Proje Amacı
+                </button>
+                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all" data-tab="tab-how">
+                    Nasıl Çalışır?
+                </button>
+            </div>
+
+            <div id="tab-content">
+                <div id="tab-input" class="tab-panel">
+                    <p class="text-sm app-text-secondary mb-4">Lütfen ölçüm yapmak için aşağıdaki bilgileri girin:</p>
+                    
+                    <div class="mb-4">
+                        <label for="distance" class="block text-sm font-medium app-text-secondary mb-1">1. Cisme Yatay Uzaklık</label>
+                        <input type="number" id="distance" value="10" class="app-input w-full p-3 border rounded-lg text-lg focus:ring-2 focus:ring-[rgb(229,174,50)] focus:outline-none" placeholder="Örn: 10">
+                        
+                        <div class="unit-selector-group flex space-x-2 mt-2" data-target="distance">
+                            <button data-unit="m" class="unit-btn flex-1 p-1 rounded-lg text-sm active-unit">metre (m)</button>
+                            <button data-unit="cm" class="unit-btn flex-1 p-1 rounded-lg text-sm">santimetre (cm)</button>
+                            <button data-unit="mm" class="unit-btn flex-1 p-1 rounded-lg text-sm">milimetre (mm)</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="userHeight" class="block text-sm font-medium app-text-secondary mb-1">2. Cihaz Yüksekliği</label>
+                        <input type="number" id="userHeight" value="1.7" class="app-input w-full p-3 border rounded-lg text-lg focus:ring-2 focus:ring-[rgb(229,174,50)] focus:outline-none" placeholder="Örn: 1.7">
+                        
+                        <div class="unit-selector-group flex space-x-2 mt-2" data-target="userHeight">
+                            <button data-unit="m" class="unit-btn flex-1 p-1 rounded-lg text-sm active-unit">metre (m)</button>
+                            <button data-unit="cm" class="unit-btn flex-1 p-1 rounded-lg text-sm">santimetre (cm)</button>
+                            <button data-unit="mm" class="unit-btn flex-1 p-1 rounded-lg text-sm">milimetre (mm)</button>
+                        </div>
+
+                        <p class="text-xs app-text-secondary mt-1 opacity-70">Telefonu tuttuğunuz yükseklik (göz hizanız).</p>
+                    </div>
+
+                    <button id="startButton" class="w-full bg-[rgb(229,174,50)] text-black p-4 rounded-lg font-bold text-lg hover:bg-[rgb(209,154,30)] transition-all duration-200 shadow-lg active:scale-95">
+                        Ölçümü Başlat
+                    </button>
+                    <p id="permission-status" class="text-center color-gold text-sm mt-4 h-5"></p>
+
+                    <a href="index.html" class="block w-full text-center bg-gray-600 text-white p-3 rounded-lg font-bold text-md hover:bg-gray-700 transition-all duration-200 shadow-lg mt-4 active:scale-95">
+                        &larr; Ana Sayfaya Geri Dön
+                    </a>
+                    </div>
+
+                <div id="tab-simple" class="tab-panel hidden app-text-secondary text-sm space-y-3">
+                    <h3 class="font-semibold text-lg app-text-primary mb-2">Bu Sistem Ne İşe Yarıyor? </h3>
+                    <p>Diyelim karşıdaki binanın boyunu merak ettiniz. Bu sistem, telefonununuzu <b>akıllı bir metreye </b> dönüştürür.</p>
+                    <p>Olay basit:</p>
+                    <ul class="list-disc list-outside space-y-2 pl-5">
+                        <li>
+                            <strong class="app-text-primary">1. Adım Uzaklığı Söyleme :</strong> Siz programa "Ben binadan 15 metre uzaktayım" diyorsunsunuz (mm, cm, m olarak girebilirsiniz).
+                        </li>
+                        <li>
+                            <strong class="app-text-primary">2. Hedef Açısı Alma :</strong> Telefonunuzu binanın <strong class="color-gold">tepesine</strong> doğrultuyorsunuz.
+                        </li>
+                        <li>
+                            <strong class="app-text-primary">3. Ölçüm Sonucu :</strong> Program, telefonu ne kadar <strong class="color-gold">yukarı</strong> kaldırdığınızı anlıyor, basit bir matematik yapıyor ve "O BİNA 25 METREYMİŞ" diyor.
+                        </li>
+                    </ul>
+                    <p class="font-medium app-text-secondary mt-3 opacity-80"> AI (Yapay Zekâ) ise senin <strong class="app-text-primary">el titremeninizi</strong> yok sayıp ölçümü tertemiz yapıyor.</p>
+                </div>
+
+                <div id="tab-purpose" class="tab-panel hidden app-text-secondary text-sm space-y-3">
+                    <h3 class="font-semibold text-lg app-text-primary mb-2">Trigonometri Göz Hizanızda</h3>
+                    <p>TRIGO AI, bir binanın, bir ağacın veya herhangi bir yüksek nesnenin boyunu ölçmek için telefonunuzun sensörlerini ve temel trigonometriyi kullanır.</p>
+                    <p>Amacımız, matematiği kağıt üzerindeki bir formül olmaktan çıkarıp, onu herkesin kullanabileceği, AI (Yapay Zekâ) destekli pratik bir ölçüm aracına dönüştürmektir.</p>
+                    <p class="font-medium color-gold"> Mm, cm ve m birimlerinde hassas girişler yapabilir, ister koyu ister açık temada çalışabilirsiniz.</p>
+                </div>
                 
-                <a href="height.html" class="demo-card rounded-2xl p-8 shadow-xl flex flex-col">
-                    <div class="mb-4">
-                        <span class="text-sm font-bold uppercase text-gray-400">Alan: Mühendislik & Mimari</span>
-                        <h3 class="font-logo text-3xl font-bold text-[#e5ae32] mt-1">TRIGO AI</h3>
+                <div id="tab-how" class="tab-panel hidden app-text-secondary text-sm space-y-3">
+                    <h3 class="font-semibold text-lg app-text-primary mb-2">Hayatı Kolaylaştıran Formül!</h3>
+                    <p>Sizden tek istediğimiz, ölçtüğünüz nesneye olan yatay uzaklığınızı (yani "d" yi ) bilmeniz. Girilen tüm birimler, hesaplama öncesinde metreye çevrilir.</p>
+                    <p>Siz hedefin tepesine nişan aldığınızda, telefonunuzun eğim sensörü (jiroskop) β (beta) açısını ölçer.</p>
+                    <p>Uygulama, bu iki bilgiyi kullanarak anında o meşhur formülü uygular:</p>
+                    <div class="text-center p-3 rounded-lg my-2" style="background-color: var(--bg-tertiary);">
+                        <code class="text-base color-gold">Yükseklik = tan(β) × Uzaklık (d) + Cihaz Yüksekliği</code>
                     </div>
-                    <p class="text-gray-300 mb-6 flex-grow">
-                        Telefonunuzun sensörlerini ve <strong>tanjant (tan)</strong> fonksiyonunu kullanarak bir binanın veya ağacın yüksekliğini gerçeğe yakın bir şekilde tahmin edin.
-                    </p>
-                    <div class="text-lg font-bold text-white bg-[#e5ae32] bg-opacity-20 text-center py-3 rounded-lg border border-[#e5ae32]">
-                        Demoyu Başlat &rarr;
-                    </div>
-                </a>
-
-                <a href="sound.html" class="demo-card rounded-2xl p-8 shadow-xl flex flex-col">
-                    <div class="mb-4">
-                        <span class="text-sm font-bold uppercase text-gray-400">Alan: Teknoloji & Doğa</span>
-                        <h3 class="font-logo text-3xl font-bold text-[#32CD32] mt-1">PRO OSİLOSKOP</h3>
-                    </div>
-                    <p class="text-gray-300 mb-6 flex-grow">
-                        Sesinizin bir <strong>sinüs dalgası</strong> olarak nasıl göründüğünü, sesin <strong>genlik (amplitude)</strong> ve <strong>periyot (period)</strong> özelliklerini canlı olarak analiz edin.
-                    </p>
-                    <div class="text-lg font-bold text-white bg-[#32CD32] bg-opacity-20 text-center py-3 rounded-lg border border-[#32CD32]">
-                        Demoyu Başlat &rarr;
-                    </div>
-                </a>
-
+                    <p>AI'nın rolü ise, el titremesi gibi sensör hatalarını filtreleyerek β açısını stabilize etmek ve size en doğru sonucu sunmaktır.</p>
+                </div>
             </div>
-        </main>
+        </div>
 
-        <footer class="mt-16 text-center">
-            <h3 class="text-2xl font-bold text-gray-100 mb-6">Ödevde Kullanılan Temel Kavramlar</h3>
-            <div class="flex flex-wrap justify-center gap-3 text-sm md:text-base">
-                <span class="bg-gray-700 text-gray-200 px-4 py-2 rounded-full font-medium">sin(θ)</span>
-                <span class="bg-gray-700 text-gray-200 px-4 py-2 rounded-full font-medium">cos(θ)</span>
-                <span class="bg-gray-700 text-gray-200 px-4 py-2 rounded-full font-medium">tan(θ)</span>
-                <span class="bg-gray-700 text-gray-200 px-4 py-2 rounded-full font-medium">Açı (Angle)</span>
-                <span class="bg-gray-700 text-gray-200 px-4 py-2 rounded-full font-medium">Eğim (Slope)</span>
-                <span class="bg-gray-700 text-gray-200 px-4 py-2 rounded-full font-medium">Hipotenüs</span>
-                <span class="bg-gray-700 text-gray-200 px-4 py-2 rounded-full font-medium">Periyot (Period)</span>
-                <span class="bg-gray-700 text-gray-200 px-4 py-2 rounded-full font-medium">Genlik (Amplitude)</span>
+        <div id="measurement-screen" class="hidden app-card p-6 md:p-8 rounded-2xl shadow-2xl text-center transition-all duration-300">
+            
+            <div id="inputContext" class="p-3 rounded-xl mb-4 text-left shadow-inner ring-1" style="background-color: var(--bg-primary); border-color: var(--ring-color);">
+                <div class="flex justify-between text-xs font-semibold uppercase tracking-wider">
+                    <div class="flex-1 border-r pr-3" style="border-color: var(--ring-color);">
+                        <span class="color-gold">UZAKLIK (D):</span>
+                        <div id="contextDistance" class="text-xl font-bold app-text-primary">---</div>
+                    </div>
+                    <div class="flex-1 pl-3">
+                        <span class="color-gold">CİHAZ HİZASI (H):</span>
+                        <div id="contextUserHeight" class="text-xl font-bold app-text-primary">---</div>
+                    </div>
+                </div>
             </div>
-        </footer>
+            
+            <p id="liveMeasurementHeader" class="text-sm app-text-secondary mb-2">Hedefe nişan alın ve sonucu anlık olarak izleyin.</p>
+            
+            <div id="liveDisplayArea">
+                <div class="crosshair">
+                    <div id="crosshair-h" class="crosshair-line-h"></div>
+                    <div class="crosshair-line-v"></div>
+                </div>
 
+                <h2 class="app-text-secondary text-lg font-semibold uppercase tracking-wider">Tahmini Yükseklik</h2>
+                <div id="heightDisplay" class="text-6xl font-extrabold app-text-primary my-2">0.00 m</div>
+                
+                <div class="flex justify-around rounded-lg p-4 my-4 ring-1" style="background-color: var(--bg-primary); border-color: var(--ring-color);">
+                    <div>
+                        <div class="text-xs color-gold uppercase">Eğim Açısı (β)</div>
+                        <div id="angleDisplay" class="text-2xl font-bold app-text-primary">0.0°</div>
+                    </div>
+                    <div>
+                        <div class="text-xs color-gold uppercase">Kararlılık</div>
+                        <div id="stabilityDisplay" class="text-2xl font-bold app-text-primary">--%</div>
+                    </div>
+                </div>
+
+                <div class="w-full rounded-full h-2.5 mb-4 overflow-hidden" style="background-color: var(--bg-tertiary);">
+                    <div id="stabilityBar" class="bg-[rgb(229,174,50)] h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                
+                <div class="p-3 rounded-lg min-h-[50px] flex items-center justify-center ring-1" style="background-color: var(--bg-tertiary); border-color: var(--ring-color);">
+                    <p id="aiFeedback" class="text-sm color-gold">AI Asistan: Başlatılıyor...</p>
+                </div>
+            </div>
+            
+            <button id="resetButton" class="w-full bg-red-600 text-white p-3 rounded-lg font-bold text-md hover:bg-red-700 transition-all duration-200 shadow-lg mt-6 active:scale-95">
+                Ölçümü Durdur ve Geri Dön
+            </button>
+        </div>
     </div>
 
+    <script>
+        // --- UYGULAMA MANTIĞI VE SENSÖR İŞLEMLERİ ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elementlerini Seçme ---
+            const setupScreen = document.getElementById('setup-screen');
+            const measurementScreen = document.getElementById('measurement-screen');
+            
+            const distanceInput = document.getElementById('distance');
+            const userHeightInput = document.getElementById('userHeight');
+            const startButton = document.getElementById('startButton');
+            const permissionStatus = document.getElementById('permission-status');
+            
+            const heightDisplay = document.getElementById('heightDisplay');
+            const angleDisplay = document.getElementById('angleDisplay');
+            const stabilityDisplay = document.getElementById('stabilityDisplay');
+            const stabilityBar = document.getElementById('stabilityBar');
+            const aiFeedback = document.getElementById('aiFeedback');
+            const resetButton = document.getElementById('resetButton');
+            const crosshairH = document.getElementById('crosshair-h');
+            
+            const themeToggle = document.getElementById('themeToggle'); 
+            const contextDistance = document.getElementById('contextDistance');
+            const contextUserHeight = document.getElementById('contextUserHeight');
+
+            // Sekme elementleri ve birim butonları
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+            const unitSelectorGroups = document.querySelectorAll('.unit-selector-group');
+
+            // --- Uygulama Değişkenleri ---
+            // Hesaplama için metre cinsinden değerler
+            let distanceMeters = 0;       
+            let userHeightMeters = 0;     
+            
+            // Görüntüleme için kullanıcı girdileri
+            let inputDistanceValue = 0;
+            let inputDistanceUnit = 'm';
+            let inputUserHeightValue = 0;
+            let inputUserHeightUnit = 'm';
+
+            let angleHistory = [];  
+            const historySize = 20; // Filtre için gereken veri noktası sayısı
+            const NEGATIVE_ANGLE_THRESHOLD = -3; 
+            
+            // --- TEMA YÖNETİMİ ---
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-theme');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                    localStorage.setItem('theme', 'light');
+                }
+            }
+
+            // Sayfa yüklendiğinde temayı uygula
+            applyTheme(currentTheme);
+
+            themeToggle.addEventListener('click', () => {
+                const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+                applyTheme(newTheme);
+            });
+
+            // --- Birim Dönüşüm Fonksiyonu ---
+            function convertValueToMeters(value, unit) {
+                value = parseFloat(value);
+                if (isNaN(value) || value <= 0) return 0;
+                
+                if (unit === 'mm') {
+                    return value / 1000; 
+                }
+                if (unit === 'cm') {
+                    return value / 100; 
+                }
+                return value; 
+            }
+            
+            function formatValue(value, unit) {
+                if (unit === 'mm' || unit === 'cm') {
+                    // Sayının virgülden sonraki kısmını temizle ama ondalık nokta varsa tut
+                    return (value % 1 === 0) ? value.toFixed(0) : value.toString();
+                }
+                return value.toFixed(2);
+            }
+
+            // --- Sekme Yönetimi ---
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    tabPanels.forEach(panel => panel.classList.add('hidden'));
+                    document.getElementById(button.getAttribute('data-tab')).classList.remove('hidden');
+                });
+            });
+
+            // --- Birim Butonu Yönetimi ---
+            unitSelectorGroups.forEach(group => {
+                group.addEventListener('click', (e) => {
+                    const clickedButton = e.target.closest('.unit-btn');
+                    if (!clickedButton) return;
+
+                    group.querySelectorAll('.unit-btn').forEach(btn => {
+                        btn.classList.remove('active-unit');
+                    });
+
+                    clickedButton.classList.add('active-unit');
+                });
+            });
+
+
+            // --- Trigonometri ve Yardımcı Fonksiyonlar ---
+            function toRadians(degrees) {
+                return degrees * (Math.PI / 180);
+            }
+            function tan(degrees) {
+                return Math.tan(toRadians(degrees));
+            }
+
+            // --- AI PROTOTİP FONKSİYONLARI ---
+            function stabilizeData(newAngle) {
+                angleHistory.push(newAngle);
+                if (angleHistory.length > historySize) {
+                    angleHistory.shift(); 
+                }
+                
+                if (angleHistory.length < 2) {
+                    return { stableAngle: newAngle, stabilityPercent: 0 };
+                }
+                
+                // Ortalama (Stabil Açı) hesapla
+                const sum = angleHistory.reduce((a, b) => a + b, 0);
+                const stableAngle = sum / angleHistory.length;
+                
+                // Kararlılık hesapla (Standart sapma ile ters orantılı)
+                const mean = stableAngle;
+                const variance = angleHistory.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / angleHistory.length;
+                const stdDev = Math.sqrt(variance);
+                
+                // stdDev 3'ten büyükse kararlılık 0'a yakın (titreme), 0'a yakınsa kararlılık 100'e yakın
+                let stabilityPercent = 100 * (1 - Math.min(stdDev / 3, 1)); 
+                stabilityPercent = Math.max(0, Math.min(100, stabilityPercent)); 
+                
+                return { stableAngle, stabilityPercent };
+            }
+
+            function getAIFeedback(angle, stability) {
+                if (angleHistory.length < historySize) return "Kalibrasyon yapılıyor... Lütfen sabit tutun.";
+                if (stability < 75) return "Eliniz titriyor. Cihazı sabit tutmaya çalışın.";
+                if (angle < 5) return "Daha yukarı nişan alın (Açı çok düşük).";
+                if (angle > 85) return "Cihaz çok dik, hedefi kontrol edin (Açı çok yüksek).";
+                if (stability > 90) return "Ölçüm stabil, sonuç güvenilir.";
+                return "Hedefin tepesine nişan alınıyor...";
+            }
+
+            // --- ANA UYGULAMA MANTIĞI ---
+            function handleOrientation(event) {
+                let rawAngle = event.beta; 
+                
+                if (rawAngle === null || rawAngle === undefined || rawAngle < NEGATIVE_ANGLE_THRESHOLD) {
+                    // Hata durumunda canlı verileri sıfırla/durdur
+                    stopCalculation("Cihaz aşağı bakıyor veya sensör hatası var!");
+                    return;
+                }
+
+                let positiveAngle = Math.max(0, rawAngle); 
+                positiveAngle = Math.min(90, positiveAngle); 
+                
+                const { stableAngle, stabilityPercent } = stabilizeData(positiveAngle);
+                
+                // Hesaplama: Metre cinsinden değerler kullanılıyor
+                const objectHeightAboveDevice = tan(stableAngle) * distanceMeters;
+                const totalHeight = objectHeightAboveDevice + userHeightMeters;
+                const feedback = getAIFeedback(stableAngle, stabilityPercent);
+
+                // Sürekli olarak arayüzü güncelle
+                updateLiveUI(stableAngle, totalHeight, stabilityPercent, feedback);
+            }
+            
+            function stopCalculation(aiMessage) {
+                heightDisplay.textContent = "--- m";
+                angleDisplay.textContent = "---°";
+                stabilityDisplay.textContent = "0%";
+                stabilityBar.style.width = "0%";
+                aiFeedback.textContent = `AI: ${aiMessage}`;
+                angleHistory = []; 
+                crosshairH.style.transform = `translateX(-50%) translateY(-1px)`;
+            }
+            
+            function updateLiveUI(angle, height, stability, feedback) {
+                const yShift = -(angle / 90) * 40; 
+                crosshairH.style.transform = `translateX(-50%) translateY(calc(-1px + ${yShift}px))`;
+
+                if (angleHistory.length === historySize) {
+                    // Filtreleme tamamlandığında kararlı sonucu göster
+                    heightDisplay.textContent = `${height.toFixed(2)} m`;
+                    angleDisplay.textContent = `${angle.toFixed(1)}°`;
+                    stabilityDisplay.textContent = `${stability.toFixed(0)}%`;
+                    stabilityBar.style.width = `${stability.toFixed(0)}%`;
+                } else {
+                    // Kararlılık için veri toplanırken animasyonlu bekleme göster
+                    let calibratingText = ".".repeat(Math.floor(angleHistory.length / (historySize / 4)) + 1);
+                    heightDisplay.textContent = calibratingText;
+                    angleDisplay.textContent = '...°';
+                    stabilityDisplay.textContent = '...%';
+                    stabilityBar.style.width = '0%';
+                }
+                aiFeedback.textContent = `AI: ${feedback}`;
+            }
+            
+            function startListening() {
+                window.addEventListener('deviceorientation', handleOrientation);
+            }
+
+            function stopListening() {
+                window.removeEventListener('deviceorientation', handleOrientation);
+            }
+            
+            function resetAppState() {
+                stopListening();
+                angleHistory = []; 
+
+                setupScreen.classList.remove('hidden');
+                measurementScreen.classList.add('hidden');
+                permissionStatus.textContent = ""; 
+                document.getElementById('liveMeasurementHeader').textContent = "Hedefe nişan alın ve sonucu anlık olarak izleyin.";
+
+                stopCalculation("Ölçüm durduruldu."); 
+            }
+
+            // --- OLAY DİNLEYİCİLERİ ---
+            startButton.addEventListener('click', () => {
+                // Girdi ve Birimleri Oku
+                inputDistanceUnit = document.querySelector('.unit-selector-group[data-target="distance"] .active-unit').getAttribute('data-unit');
+                inputUserHeightUnit = document.querySelector('.unit-selector-group[data-target="userHeight"] .active-unit').getAttribute('data-unit');
+                
+                // Görüntüleme değerlerini sakla (kullanıcının girdiği formatta)
+                inputDistanceValue = parseFloat(distanceInput.value);
+                inputUserHeightValue = parseFloat(userHeightInput.value);
+
+                // Hesaplama için metreye çevir
+                distanceMeters = convertValueToMeters(inputDistanceValue, inputDistanceUnit); 
+                userHeightMeters = convertValueToMeters(inputUserHeightValue, inputUserHeightUnit);
+
+                if (distanceMeters <= 0) {
+                    permissionStatus.textContent = "Lütfen geçerli bir uzaklık değeri girin.";
+                    return;
+                }
+                if (userHeightMeters < 0) { 
+                    permissionStatus.textContent = "Lütfen geçerli bir cihaz yüksekliği değeri girin.";
+                    return;
+                }
+
+                // Girdi Context Panelini Güncelle
+                contextDistance.textContent = `${formatValue(inputDistanceValue, inputDistanceUnit)} ${inputDistanceUnit}`;
+                contextUserHeight.textContent = `${formatValue(inputUserHeightValue, inputUserHeightUnit)} ${inputUserHeightUnit}`;
+
+
+                permissionStatus.textContent = "Sensör izni isteniyor...";
+
+                // Cihaz İzin İstemesi
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(permissionState => {
+                            if (permissionState === 'granted') {
+                                permissionStatus.textContent = "İzin verildi. Başlatılıyor...";
+                                startListening();
+                                setupScreen.classList.add('hidden');
+                                measurementScreen.classList.remove('hidden');
+                            } else {
+                                permissionStatus.textContent = "Sensör izni reddedildi. Bu uygulama izin olmadan çalışamaz.";
+                            }
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                            permissionStatus.textContent = "Sensör izni alınırken bir hata oluştu.";
+                        });
+                } else {
+                    permissionStatus.textContent = "Başlatılıyor...";
+                    startListening();
+                    setupScreen.classList.add('hidden');
+                    measurementScreen.classList.remove('hidden');
+                }
+            });
+
+            resetButton.addEventListener('click', resetAppState);
+        });
+    </script>
 </body>
 </html>
