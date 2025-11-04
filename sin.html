@@ -20,11 +20,19 @@
             background-color: var(--arka-plan);
             color: var(--metin-rengi);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px 0; /* Dikey boşluk, yatay yok */
+        }
+
+        /* YENİ: Tüm içeriği tutan ana konteyner */
+        .main-container {
             display: flex;
             flex-direction: column;
-            align: center;
-            margin: 0;
-            padding: 20px;
+            gap: 25px; /* Bölümler arası tutarlı boşluk */
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 0 20px; /* Kenarlardan iç boşluk */
+            box-sizing: border-box;
         }
 
         h1, h2, h3 {
@@ -32,6 +40,11 @@
             border-bottom: 2px solid var(--ana-renk);
             padding-bottom: 5px;
             font-weight: 600;
+            text-shadow: 0 0 8px var(--koyu-yesil); /* GÜNCELLEME: Hafif parlama */
+        }
+        
+        h1 {
+            text-align: center; /* GÜNCELLEME: Başlığı ortala */
         }
 
         .layout-container {
@@ -39,11 +52,9 @@
             flex-wrap: wrap;
             justify-content: center;
             width: 100%;
-            max-width: 1250px;
+            /* max-width kaldırıldı, main-container hallediyor */
             gap: 20px;
-            margin-top: 20px;
-            margin-left: auto;
-            margin-right: auto;
+            /* margin-top kaldırıldı, main-container hallediyor */
         }
 
         .panel {
@@ -53,24 +64,27 @@
             padding: 20px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 600px;
+            /* max-width kaldırıldı, layout'a göre ayarlanacak */
             box-sizing: border-box;
+        }
+        
+        /* GÜNCELLEME: Kanvasları tutan panellerin genişliğini ayarla */
+        .layout-container .panel {
+            max-width: 600px;
         }
 
         .kontrol-paneli {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
+            justify-content: flex-start; /* GÜNCELLEME: Ortalamak yerine sola yasla */
             align-items: center;
-            margin-bottom: 20px;
-            padding: 15px;
+            padding: 15px 20px;
             background-color: #2a2a2a;
             border-radius: 10px;
             width: 100%;
-            max-width: 600px;
+            /* max-width kaldırıldı, main-container hallediyor */
             box-sizing: border-box;
-            margin-left: auto;
-            margin-right: auto;
+            /* margin-left/right/bottom kaldırıldı */
         }
 
         .kontrol-paneli button {
@@ -82,18 +96,27 @@
             font-weight: bold;
             cursor: pointer;
             border-radius: 5px;
-            transition: background-color 0.2s;
             margin: 5px;
+            /* GÜNCELLEME: Butonlara cila */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: background-color 0.2s, transform 0.1s;
         }
 
         .kontrol-paneli button:hover {
             background-color: #2aa32a;
+            transform: translateY(-1px); /* GÜNCELLEME: Hafif kaldırma */
+        }
+        
+        .kontrol-paneli button:active {
+            transform: translateY(1px); /* GÜNCELLEME: Basma efekti */
         }
         
         .kontrol-paneli button:disabled {
             background-color: #555;
             color: #999;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         canvas {
@@ -115,7 +138,7 @@
             background-color: #1a1a1a;
             border: 1px dashed var(--ana-renk);
             color: #d0d0d0;
-            margin-top: 15px;
+            margin-top: 0; /* GÜNCELLEME: main-container hallediyor */
         }
         
         #trigPanel pre {
@@ -147,13 +170,15 @@
         .accordion::before {
             content: '+';
             font-weight: bold;
-            color: white;
+            color: var(--ana-renk); /* GÜNCELLEME: İkon rengi */
             float: right;
             margin-left: 5px;
+            font-size: 1.2em;
         }
 
         .active::before {
             content: "−";
+            color: var(--ana-renk); /* GÜNCELLEME: İkon rengi */
         }
 
         .accordion-panel {
@@ -242,92 +267,94 @@
 </head>
 <body>
 
-    <h1>🔊 Pro Osiloskop ve Trigonometrik Analiz 🚀</h1>
+    <div class="main-container">
 
-    <div class="panel" style="max-width: 1250px; margin-left: auto; margin-right: auto;">
-        
-        <button class="accordion">Bu Site Ne İşe Yarar? (Özet)</button>
-        <div class="accordion-panel">
-            <p>Bu araç, sesinizi profesyonel bir osiloskop gibi analiz etmenizi sağlar. Sesi sadece canlı göstermekle kalmaz, 'Yakala' butonuna bastığınızda sesin büyük bir parçasını (yaklaşık 186 milisaniye) hafızaya alır. Bu yakalanan ses üzerinde **ileri-geri sarma** yaparak gezinebilir ve tıkladığınız noktanın eğimini (yani `tan(θ)` değerini) anında hesaplayabilirsiniz.</p>
-        </div>
-
-        <button class="accordion">Nasıl Kullanılır? (Adım Adım)</button>
-        <div class="accordion-panel">
-            <ol>
-                <li><strong>Başlat:</strong> '🎙️ Mikrofonu Başlat' butonuna basın ve izin verin.</li>
-                <li><strong>İzle:</strong> 'Canlı Akış' ekranında sesi izleyin. 'Dalga Detayı (FFT)' kaydıracı ile canlı akışın hızını/detayını ayarlayın.</li>
-                <li><strong>Yakala:</strong> '📸 Anlık Ses Yakala' butonuna basın. O anki ses, "Analiz Ekranı"na aktarılacaktır.</li>
-                <li><strong>Geri/İleri Sar:</strong> 'Analiz Ekranı' altındaki 'Yakalanan Sesi Kaydır (İleri/Geri Sar)' kaydıracı ile hafızaya alınan sesin içinde gezinin.</li>
-                <li><strong>Analiz Et:</strong> Sarı dalga üzerinde bir noktaya tıklayın.</li>
-                <li><strong>Hesapla:</strong> En alttaki panelde o noktanın eğim (Akış Hızı), açı ve trigonometrik ($\sin$, $\cos$, $\tan$) değerlerini görün.</li>
-                <li><strong>Referans Ekle:</strong> 'Analiz Ekranı'ndaki 'Referans Sinüs Dalgası' kontrolleri ile kendi dalganızı oluşturup yakaladığınız sesle karşılaştırın.</li>
-            </ol>
-        </div>
-
-        <button class="accordion">Trigonometri Bu İşin Neresinde?</button>
-        <div class="accordion-panel">
-            <p>Eğim, hız demektir. Sesin eğimi, sesin o anda ne kadar hızlı değiştiğini gösterir. Trigonometride ise eğim, **Tanjant (tan)** demektir.</p>
-            <p style="font-family: 'Consolas', monospace; font-size: 1.2em; text-align: center; color: var(--ana-renk);">
-                Eğim (m) = tan(θ)
-            </p>
-            <p>Ayrıca, eklediğiniz 'Referans Sinüs Dalgası'nın frekansını ($f$) siz belirlersiniz. Biz de o dalganın **Periyodunu ($T$)** hesaplarız. Çünkü aralarında doğrudan trigonometrik bir ilişki vardır: $T = 1/f$.</p>
-        </div>
-    </div>
-
-
-    <div class="kontrol-paneli">
-        <button id="startStopButton">🎙️ Mikrofonu Başlat</button>
-        <button id="captureButton" disabled>📸 Anlık Ses Yakala (Analiz Et)</button>
-    </div>
-
-    <div class="layout-container">
-        <div class="panel">
-            <h2>Canlı Akış</h2>
-            <div class="osiloskop-bilgi" id="liveInfo">Detay: 2048</div>
-            <canvas id="liveCanvas"></canvas>
-            <div class="slider-grup">
-                <label for="fftSlider">Canlı Dalga Detayı (FFT Boyutu)</label>
-                <input type="range" id="fftSlider" min="0" max="5" value="2">
-                <div class="slider-etiket-konteyner">
-                    <span>Hızlı / Az Detay</span>
-                    <span>Yavaş / Çok Detay</span>
-                </div>
-            </div>
-        </div>
+        <h1>🔊 Pro Osiloskop ve Trigonometrik Analiz 🚀</h1>
 
         <div class="panel">
-            <h2>Analiz Ekranı</h2>
-            <div class="osiloskop-bilgi" id="analysisInfo">Toplam Yakalanan Süre: --- ms</div>
-            <canvas id="analysisCanvas"></canvas>
             
-            <div class="slider-grup">
-                <label for="scrollSlider">Yakalanan Sesi Kaydır (İleri/Geri Sar)</label>
-                <input type="range" id="scrollSlider" min="0" max="1000" value="0">
+            <button class="accordion">Bu Site Ne İşe Yarar? (Özet)</button>
+            <div class="accordion-panel">
+                <p>Bu araç, sesinizi profesyonel bir osiloskop gibi analiz etmenizi sağlar. Sesi sadece canlı göstermekle kalmaz, 'Yakala' butonuna bastığınızda sesin büyük bir parçasını (yaklaşık 186 milisaniye) hafızaya alır. Bu yakalanan ses üzerinde **ileri-geri sarma** yaparak gezinebilir ve tıkladığınız noktanın eğimini (yani `tan(θ)` değerini) anında hesaplayabilirsiniz.</p>
             </div>
 
-            <div class="slider-grup">
-                <label>
-                    <input type="checkbox" id="showRefWave"> Referans Sinüs Dalgasını Göster
-                </label>
-                <div style="display: flex; gap: 20px; margin-top: 10px;">
-                    <div style="flex-basis: 50%;">
-                        <label for="freqSlider">Frekans (Döngü Sayısı)</label>
-                        <input type="range" id="freqSlider" min="1" max="50" value="5">
+            <button class="accordion">Nasıl Kullanılır? (Adım Adım)</button>
+            <div class="accordion-panel">
+                <ol>
+                    <li><strong>Başlat:</strong> '🎙️ Mikrofonu Başlat' butonuna basın ve izin verin.</li>
+                    <li><strong>İzle:</strong> 'Canlı Akış' ekranında sesi izleyin. 'Dalga Detayı (FFT)' kaydıracı ile canlı akışın hızını/detayını ayarlayın.</li>
+                    <li><strong>Yakala:</strong> '📸 Anlık Ses Yakala' butonuna basın. O anki ses, "Analiz Ekranı"na aktarılacaktır.</li>
+                    <li><strong>Geri/İleri Sar:</strong> 'Analiz Ekranı' altındaki 'Yakalanan Sesi Kaydır (İleri/Geri Sar)' kaydıracı ile hafızaya alınan sesin içinde gezinin.</li>
+                    <li><strong>Analiz Et:</strong> Sarı dalga üzerinde bir noktaya tıklayın.</li>
+                    <li><strong>Hesapla:</strong> En alttaki panelde o noktanın eğim (Akış Hızı), açı ve trigonometrik ($\sin$, $\cos$, $\tan$) değerlerini görün.</li>
+                    <li><strong>Referans Ekle:</strong> 'Analiz Ekranı'ndaki 'Referans Sinüs Dalgası' kontrolleri ile kendi dalganızı oluşturup yakaladığınız sesle karşılaştırın.</li>
+                </ol>
+            </div>
+
+            <button class="accordion">Trigonometri Bu İşin Neresinde?</button>
+            <div class="accordion-panel">
+                <p>Eğim, hız demektir. Sesin eğimi, sesin o anda ne kadar hızlı değiştiğini gösterir. Trigonometride ise eğim, **Tanjant (tan)** demektir.</p>
+                <p style="font-family: 'Consolas', monospace; font-size: 1.2em; text-align: center; color: var(--ana-renk);">
+                    Eğim (m) = tan(θ)
+                </p>
+                <p>Ayrıca, eklediğiniz 'Referans Sinüs Dalgası'nın frekansını ($f$) siz belirlersiniz. Biz de o dalganın **Periyodunu ($T$)** hesaplarız. Çünkü aralarında doğrudan trigonometrik bir ilişki vardır: $T = 1/f$.</p>
+            </div>
+        </div>
+
+
+        <div class="kontrol-paneli">
+            <button id="startStopButton">🎙️ Mikrofonu Başlat</button>
+            <button id="captureButton" disabled>📸 Anlık Ses Yakala (Analiz Et)</button>
+        </div>
+
+        <div class="layout-container">
+            <div class="panel">
+                <h2>Canlı Akış</h2>
+                <div class="osiloskop-bilgi" id="liveInfo">Detay: 2048</div>
+                <canvas id="liveCanvas"></canvas>
+                <div class="slider-grup">
+                    <label for="fftSlider">Canlı Dalga Detayı (FFT Boyutu)</label>
+                    <input type="range" id="fftSlider" min="0" max="5" value="2">
+                    <div class="slider-etiket-konteyner">
+                        <span>Hızlı / Az Detay</span>
+                        <span>Yavaş / Çok Detay</span>
                     </div>
-                    <div style="flex-basis: 50%;">
-                        <label for="ampSlider">Genlik (Yükseklik)</label>
-                        <input type="range" id="ampSlider" min="0" max="1" value="0.5" step="0.01">
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Analiz Ekranı</h2>
+                <div class="osiloskop-bilgi" id="analysisInfo">Toplam Yakalanan Süre: --- ms</div>
+                <canvas id="analysisCanvas"></canvas>
+                
+                <div class="slider-grup">
+                    <label for="scrollSlider">Yakalanan Sesi Kaydır (İleri/Geri Sar)</label>
+                    <input type="range" id="scrollSlider" min="0" max="1000" value="0">
+                </div>
+
+                <div class="slider-grup">
+                    <label>
+                        <input type="checkbox" id="showRefWave"> Referans Sinüs Dalgasını Göster
+                    </label>
+                    <div style="display: flex; gap: 20px; margin-top: 10px;">
+                        <div style="flex-basis: 50%;">
+                            <label for="freqSlider">Frekans (Döngü Sayısı)</label>
+                            <input type="range" id="freqSlider" min="1" max="50" value="5">
+                        </div>
+                        <div style="flex-basis: 50%;">
+                            <label for="ampSlider">Genlik (Yükseklik)</label>
+                            <input type="range" id="ampSlider" min="0" max="1" value="0.5" step="0.01">
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="panel" id="trigPanel" style="max-width: 1250px; margin-left: auto; margin-right: auto;">
-        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-            <div style="flex: 1; min-width: 300px;">
-                <h3>📉 Noktasal Akış Hızı (Eğim)</h3>
-                <pre id="analysisData">
+        <div class="panel" id="trigPanel">
+            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                <div style="flex: 1; min-width: 300px;">
+                    <h3>📉 Noktasal Akış Hızı (Eğim)</h3>
+                    <pre id="analysisData">
 Tıkladığın Nokta:
   Zaman (t): ---
   Genlik (y): ---
@@ -342,11 +369,11 @@ Trigonometrik Değerler:
   sin(θ) = ---
   cos(θ) = ---
   cot(θ) = ---
-                </pre>
-            </div>
-            <div style="flex: 1; min-width: 300px;">
-                <h3>🧮 Referans Dalga Bilgisi</h3>
-                <pre id="refWaveData">
+                    </pre>
+                </div>
+                <div style="flex: 1; min-width: 300px;">
+                    <h3>🧮 Referans Dalga Bilgisi</h3>
+                    <pre id="refWaveData">
 Ayarlar:
   Frekans (f): --- (Döngü/Ekran)
   Genlik (A): ---
@@ -355,17 +382,19 @@ Hesaplamalar:
   Periyot (T): --- (Ekran Genişliği / f)
   Dalga Denklemi:
     y(t) = A * sin(2 * π * f * t)
-                </pre>
+                    </pre>
+                </div>
             </div>
         </div>
-    </div>
 
+    </div>
     <script>
         "use strict";
 
         // === 1. DOM ELEMANLARI ve AYARLAR ===
         const ANA_RENK = "#32CD32"; 
-        const startStopButton = document.getElementById('startButton');
+        // GÜNCELLEME: startButton 'startStopButton' olmalı (ID ile eşleşmeli)
+        const startStopButton = document.getElementById('startStopButton'); 
         const captureButton = document.getElementById('captureButton');
         const liveCanvas = document.getElementById('liveCanvas');
         const analysisCanvas = document.getElementById('analysisCanvas');
@@ -632,7 +661,7 @@ Hesaplamalar:
             // Gerçek Ana Tampon (Buffer) Index'ini bul (Kaydırmayı hesaba kat)
             const bufferIndex = analysisOffset + viewIndex;
 
-            if (!capturedDataBuffer || capturedDataBuffer[0] === 0 || bufferIndex >= CAPTURE_BUFFER_SIZE || bufferIndex < 1) {
+            if (!capturedDataBuffer || capturedDataBuffer[0] === 0 || bufferIndex >= CAPTURE_BUFFER_SIZE || bufferIndex < 1 || !audioContext) {
                 alert("Lütfen önce 'Anlık Ses Yakala' butonuna basın.");
                 return; 
             }
