@@ -256,39 +256,6 @@
 </head>
 <body>
 
-    <h1>🔊 Pro Osiloskop ve Trigonometrik Analiz 🚀</h1>
-
-    <div class="panel" style="max-width: 1250px; margin-left: auto; margin-right: auto;">
-        
-        <button class="accordion">Bu Site Ne İşe Yarar? (Özet)</button>
-        <div class="accordion-panel">
-            <p>Bu araç, sesinizi profesyonel bir osiloskop gibi analiz etmenizi sağlar. Sesi sadece canlı göstermekle kalmaz, 'Yakala' butonuna bastığınızda sesin büyük bir parçasını (yaklaşık 186 milisaniye) hafızaya alır. Bu yakalanan ses üzerinde **ileri-geri sarma** yaparak gezinebilir, tıkladığınız noktanın eğimini (yani `tan(θ)` değerini) anında hesaplayabilir ve sesi **.wav dosyası olarak indirebilirsiniz**.</p>
-        </div>
-
-        <button class="accordion">Nasıl Kullanılır? (Adım Adım)</button>
-        <div class="accordion-panel">
-            <ol>
-                <li><strong>Başlat:</strong> '🎙️ Mikrofonu Başlat' butonuna basın ve izin verin.</li>
-                <li><strong>İzle:</strong> 'Canlı Akış' ekranında sesi izleyin. 'Dalga Detayı (FFT)' kaydıracı ile canlı akışın hızını/detayını ayarlayın.</li>
-                <li><strong>Yakala:</strong> '📸 Anlık Ses Yakala' butonuna basın. O anki ses, "Analiz Ekranı"na aktarılacaktır.</li>
-                <li><strong>Geri/İleri Sar:</strong> 'Analiz Ekranı' altındaki 'Yakalanan Sesi Kaydır (İleri/Geri Sar)' kaydıracı ile hafızaya alınan sesin içinde gezinin.</li>
-                <li><strong>Analiz Et:</strong> Sarı dalga üzerinde bir noktaya tıklayın.</li>
-                <li><strong>Hesapla:</strong> En alttaki panelde o noktanın eğim (Akış Hızı), açı ve trigonometrik ($\sin$, $\cos$, $\tan$) değerlerini görün.</li>
-                <li><strong>İndir (YENİ):</strong> '💾 Yakalanan Sesi İndir (.wav)' butonuna basarak analiz ettiğiniz o ses parçasını bilgisayarınıza kaydedin.</li>
-            </ol>
-        </div>
-
-        <button class="accordion">Trigonometri Bu İşin Neresinde?</button>
-        <div class="accordion-panel">
-            <p>Eğim, hız demektir. Sesin eğimi, sesin o anda ne kadar hızlı değiştiğini gösterir. Trigonometride ise eğim, **Tanjant (tan)** demektir.</p>
-            <p style="font-family: 'Consolas', monospace; font-size: 1.2em; text-align: center; color: var(--ana-renk);">
-                Eğim (m) = tan(θ)
-            </p>
-            <p>Ayrıca, eklediğiniz 'Referans Sinüs Dalgası'nın frekansını ($f$) siz belirlersiniz. Biz de o dalganın **Periyodunu ($T$)** hesaplarız. Çünkü aralarında doğrudan trigonometrik bir ilişki vardır: $T = 1/f$.</p>
-        </div>
-    </div>
-
-
     <div class="kontrol-paneli">
         <button id="startStopButton">🎙️ Mikrofonu Başlat</button>
         <button id="captureButton" disabled>📸 Anlık Ses Yakala (Analiz Et)</button>
