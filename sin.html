@@ -3,488 +3,386 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimalist Osiloskop ve Trigonometrik Analiz</title>
+    <title>Pro Osiloskop ve Trigonometrik Analiz (WAV İndirme Eklendi)</title>
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-
     <style>
         :root {
-            /* YENİ ESTETİK RENK PALETİ (Gerçek Minimalist - Light Mode) */
-            --bg-color: #f8f9fa;      /* Çok hafif kırık beyaz arka plan */
-            --panel-bg: #ffffff;      /* Panellerin arka planı (saf beyaz) */
-            --border-color: #dee2e6;  /* İnce kenarlık rengi */
-            
-            --text-primary: #212529;  /* Ana metin (koyu gri, siyah değil) */
-            --text-secondary: #6c757d;/* İkincil metin (etiketler) */
-            
-            --accent-primary: #007bff;   /* Ana Vurgu Rengi (Mavi) */
-            --accent-primary-hover: #0056b3;
-            --danger-red: #dc3545;       /* Durdurma düğmesi için */
-            
-            /* Dalga Renkleri (Temiz ve Zıt) */
-            --wave-live: #007bff;        /* Canlı Dalga (Mavi) */
-            --wave-captured: #343a40;   /* Yakalanan Dalga (Koyu Gri) */
-            --wave-reference: #e83e8c;  /* Referans Dalga (Pembe) */
+            --ana-renk: #32CD32; /* Orta Bahar Yeşili */
+            --arka-plan: #121212;
+            --kutu-arka-plan: #1e1e1e;
+            --kutu-kenar: #3e3e3e;
+            --metin-rengi: #f0f0f0;
+            --koyu-yesil: rgba(50, 205, 50, 0.3);
+            --orta-yesil: rgba(50, 205, 50, 0.7);
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-            line-height: 1.6;
-        }
-
-        /* Ana Konteyner (Daha dar ve odaklanmış) */
-        .main-container {
-            max-width: 900px; /* Minimalizm dar düzenleri sever */
-            margin: 0 auto;
+            background-color: var(--arka-plan);
+            color: var(--metin-rengi);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
-            gap: 20px; /* Bölümler arası net boşluk */
+            align: center;
+            margin: 0;
+            padding: 20px;
         }
 
         h1, h2, h3 {
-            color: var(--text-primary);
+            color: var(--ana-renk);
+            border-bottom: 2px solid var(--ana-renk);
+            padding-bottom: 5px;
             font-weight: 600;
-            margin-top: 0;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
         }
 
-        h1 {
-            text-align: center;
-            font-size: 2em;
-            border-bottom: none;
-            color: var(--accent-primary);
-            margin-bottom: 10px;
-        }
-
-        h2 {
-            font-size: 1.4em;
-        }
-        
-        h3 {
-             color: var(--accent-primary);
-             border-bottom: none;
-             font-size: 1.1em;
-             margin-bottom: 10px;
-        }
-
-        /* Ana Panel Stili (Temiz 'Card' yapısı) */
-        .panel {
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px; /* Hafif yuvarlama */
-            padding: 25px;
-            width: 100%;
-            box-sizing: border-box;
-            /* Gölge (box-shadow) YOK */
-        }
-        
-        .monospace {
-             font-family: 'Roboto Mono', 'Consolas', 'Courier New', monospace;
-        }
-
-        /* DÜZEN: Tüm ana bileşenleri dikeyde yığ */
         .layout-container {
             display: flex;
-            flex-direction: column;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 1250px;
             gap: 20px;
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        /* Kontrol Paneli (Dikeyde yığılmış düğmeler) */
+        .panel {
+            background-color: var(--kutu-arka-plan);
+            border: 1px solid var(--kutu-kenar);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+        }
+
         .kontrol-paneli {
             display: flex;
-            flex-wrap: wrap; /* Küçük ekranlar için */
-            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 1250px; /* Genişletildi */
+            box-sizing: border-box;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        /* Düğme Stilleri (Düz ve Net) */
-        button {
-            padding: 10px 20px;
-            font-size: 15px;
-            font-weight: 500;
-            border-radius: 6px;
+        .kontrol-paneli button {
+            background-color: var(--ana-renk);
+            color: var(--arka-plan);
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid transparent; /* Hizalama için */
-        }
-        
-        #startStopButton {
-            background-color: var(--accent-primary);
-            color: #ffffff;
-            border-color: var(--accent-primary);
-        }
-        #startStopButton:hover {
-            background-color: var(--accent-primary-hover);
-        }
-        
-        /* JS tarafından eklenecek stop modu */
-        #startStopButton.stop-mode {
-            background-color: var(--danger-red);
-            border-color: var(--danger-red);
+            border-radius: 5px;
+            transition: background-color 0.2s;
+            margin: 5px;
         }
 
-        /* "Hayalet" Düğme stili (minimal) */
-        #captureButton {
-            background-color: transparent;
-            color: var(--accent-primary);
-            border: 1px solid var(--accent-primary);
-        }
-        #captureButton:not(:disabled):hover {
-            background-color: #f4f9ff; /* Çok hafif mavi */
+        .kontrol-paneli button:hover {
+            background-color: #2aa32a;
         }
         
-        button:disabled {
-            background-color: #e9ecef; /* Açık gri */
-            color: var(--text-secondary);
-            border-color: var(--border-color);
+        .kontrol-paneli button:disabled {
+            background-color: #555;
+            color: #999;
             cursor: not-allowed;
         }
         
-        /* Osiloskop Bilgi Kutuları */
-        .osiloskop-bilgi {
-            background-color: var(--bg-color); /* Ana arka plan rengi */
-            color: var(--text-secondary);
-            padding: 5px 12px;
-            border-radius: 6px;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-            text-align: right;
-            border: 1px solid var(--border-color);
+        /* YENİ İNDİRME BUTONU İÇİN ÖZEL STİL */
+        #downloadButton {
+             background-color: #007BFF; /* Mavi */
+             color: white;
         }
+        #downloadButton:hover {
+             background-color: #0056b3;
+        }
+        #downloadButton:disabled {
+            background-color: #555;
+            color: #999;
+        }
+
 
         canvas {
             background-color: #000;
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--ana-renk);
             border-radius: 8px;
             width: 100%;
-            height: 250px;
             box-sizing: border-box;
+            margin-top: 10px;
         }
 
         #analysisCanvas {
             cursor: crosshair;
         }
 
-        /* MİNİMAL KAYDIRAÇ (SLIDER) STİLLERİ */
+        #trigPanel {
+            font-family: 'Consolas', 'Courier New', monospace;
+            padding: 15px;
+            background-color: #1a1a1a;
+            border: 1px dashed var(--ana-renk);
+            color: #d0d0d0;
+            margin-top: 15px;
+        }
+        
+        #trigPanel pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* AKORDİYON (Çalışma Mantığı) STİLİ */
+        .accordion {
+            background-color: #333;
+            color: var(--ana-renk);
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1.1em;
+            transition: 0.4s;
+            margin-top: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .active, .accordion:hover {
+            background-color: #444;
+        }
+
+        .accordion::before {
+            content: '+';
+            font-weight: bold;
+            color: white;
+            float: right;
+            margin-left: 5px;
+        }
+
+        .active::before {
+            content: "−";
+        }
+
+        .accordion-panel {
+            padding: 0 18px;
+            background-color: var(--kutu-arka-plan);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-left: 3px solid var(--ana-renk);
+            border-bottom: 1px solid var(--kutu-kenar);
+        }
+        .accordion-panel p, .accordion-panel ol {
+            line-height: 1.6;
+        }
+
+        /* ESTETİK KAYDIRMA ÇUBUĞU (SLIDER) STİLİ */
         .slider-grup {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid var(--kutu-kenar);
         }
         
         .slider-grup label {
             font-size: 0.9em;
-            font-weight: 500;
-            color: var(--text-primary);
-            display: block;
-            margin-bottom: 12px;
+            color: #ccc;
+        }
+        
+        .slider-grup input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: #444;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+            margin-top: 10px;
+        }
+
+        .slider-grup input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        .slider-grup input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--ana-renk);
+            border: 3px solid var(--arka-plan);
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+
+        .slider-grup input[type="range"]::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--ana-renk);
+            border: 3px solid var(--arka-plan);
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            cursor: pointer;
         }
         
         .slider-etiket-konteyner {
             display: flex;
             justify-content: space-between;
             font-size: 0.8em;
-            color: var(--text-secondary);
+            color: #aaa;
+        }
+        
+        .osiloskop-bilgi {
+            font-family: 'Consolas', monospace;
+            color: var(--ana-renk);
+            background: #000;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            text-align: right;
             margin-top: 5px;
-        }
-
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 6px; /* İnce */
-            border-radius: 3px;
-            background: #dee2e6; /* Açık gri yol */
-            outline: none;
-            transition: opacity .2s;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--accent-primary); /* Mavi tutamaç */
-            border: 2px solid white; /* Ortası beyaz */
-            box-shadow: 0 0 5px rgba(0,0,0,0.1); /* Çok hafif gölge */
-            cursor: pointer;
-        }
-        
-        input[type="range"]::-moz-range-thumb {
-             width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--accent-primary);
-            border: 2px solid white;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
-            cursor: pointer;
-        }
-        
-        /* Checkbox Stili */
-        .checkbox-grup {
-             display: flex;
-             align-items: center;
-             gap: 10px;
-             color: var(--text-primary);
-             font-weight: 500;
-             font-size: 0.9em;
-        }
-        .checkbox-grup input[type="checkbox"] {
-            width: 1.2em;
-            height: 1.2em;
-            accent-color: var(--accent-primary);
-        }
-        
-        /* Referans Dalga Kontrolleri için gruplama */
-        .referans-kontroller {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 15px;
-        }
-        
-        /* SONUÇ PANELLERİ (Açık ve Net) */
-        #trigPanel pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            color: var(--text-primary); /* Ana metin rengi */
-            font-size: 1em;
-            line-height: 1.8;
-            background-color: var(--bg-color); /* Hafif gri arka plan */
-            padding: 15px;
-            border-radius: 6px;
-        }
-        
-        /* Veri vurgulama için (JS'de güncellendi) */
-        #analysisData .label, #refWaveData .label {
-            color: var(--text-secondary); /* İkincil */
-        }
-        #analysisData .value {
-            color: var(--wave-captured); /* Koyu Gri */
-            font-weight: 500;
-        }
-        #analysisData .value-emphasis {
-            color: var(--accent-primary); /* Mavi */
-            font-weight: 600;
-        }
-        #refWaveData .value-emphasis {
-            color: var(--wave-reference); /* Pembe */
-            font-weight: 600;
-        }
-
-        /* AKORDİYON STİLLERİ (Minimal) */
-        .accordion {
-            background-color: transparent; /* Arka plan yok */
-            color: var(--accent-primary);  /* Mavi */
-            cursor: pointer;
-            padding: 15px 0; /* Sadece dikey padding */
-            width: 100%;
-            border: none;
-            border-bottom: 1px solid var(--border-color); /* Ayırıcı */
-            text-align: left;
-            outline: none;
-            font-size: 1.1em;
-            transition: background-color 0.4s;
-            font-weight: 600;
-        }
-
-        .active, .accordion:hover {
-            color: var(--accent-primary-hover);
-        }
-
-        .accordion::before {
-            content: '+';
-            font-weight: bold;
-            color: var(--text-secondary);
-            float: right;
-            margin-left: 15px;
-            font-size: 1.2em;
-            transition: transform 0.2s ease-out;
-        }
-
-        .active::before {
-            content: "−";
-            transform: rotate(180deg);
-        }
-
-        .accordion-panel {
-            padding: 0 10px; /* Hafif iç boşluk */
-            background-color: var(--panel-bg);
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.2s ease-out;
-        }
-        .accordion-panel p, .accordion-panel ol {
-            line-height: 1.7;
-            color: var(--text-primary);
-            padding-top: 10px;
-            font-size: 0.95em;
-        }
-         .accordion-panel li {
-            margin-bottom: 8px;
-         }
-         
-        /* DUYARLILIK (RESPONSIVE) */
-        @media (max-width: 768px) {
-             .referans-kontroller {
-                grid-template-columns: 1fr;
-             }
-             h1 {
-                font-size: 1.6em;
-             }
-             .panel {
-                padding: 15px;
-             }
         }
 
     </style>
 </head>
 <body>
 
-    <div class="main-container">
+    <h1>🔊 Pro Osiloskop ve Trigonometrik Analiz 🚀</h1>
 
-        <h1>Minimalist Osiloskop</h1>
+    <div class="panel" style="max-width: 1250px; margin-left: auto; margin-right: auto;">
+        
+        <button class="accordion">Bu Site Ne İşe Yarar? (Özet)</button>
+        <div class="accordion-panel">
+            <p>Bu araç, sesinizi profesyonel bir osiloskop gibi analiz etmenizi sağlar. Sesi sadece canlı göstermekle kalmaz, 'Yakala' butonuna bastığınızda sesin büyük bir parçasını (yaklaşık 186 milisaniye) hafızaya alır. Bu yakalanan ses üzerinde **ileri-geri sarma** yaparak gezinebilir, tıkladığınız noktanın eğimini (yani `tan(θ)` değerini) anında hesaplayabilir ve sesi **.wav dosyası olarak indirebilirsiniz**.</p>
+        </div>
+
+        <button class="accordion">Nasıl Kullanılır? (Adım Adım)</button>
+        <div class="accordion-panel">
+            <ol>
+                <li><strong>Başlat:</strong> '🎙️ Mikrofonu Başlat' butonuna basın ve izin verin.</li>
+                <li><strong>İzle:</strong> 'Canlı Akış' ekranında sesi izleyin. 'Dalga Detayı (FFT)' kaydıracı ile canlı akışın hızını/detayını ayarlayın.</li>
+                <li><strong>Yakala:</strong> '📸 Anlık Ses Yakala' butonuna basın. O anki ses, "Analiz Ekranı"na aktarılacaktır.</li>
+                <li><strong>Geri/İleri Sar:</strong> 'Analiz Ekranı' altındaki 'Yakalanan Sesi Kaydır (İleri/Geri Sar)' kaydıracı ile hafızaya alınan sesin içinde gezinin.</li>
+                <li><strong>Analiz Et:</strong> Sarı dalga üzerinde bir noktaya tıklayın.</li>
+                <li><strong>Hesapla:</strong> En alttaki panelde o noktanın eğim (Akış Hızı), açı ve trigonometrik ($\sin$, $\cos$, $\tan$) değerlerini görün.</li>
+                <li><strong>İndir (YENİ):</strong> '💾 Yakalanan Sesi İndir (.wav)' butonuna basarak analiz ettiğiniz o ses parçasını bilgisayarınıza kaydedin.</li>
+            </ol>
+        </div>
+
+        <button class="accordion">Trigonometri Bu İşin Neresinde?</button>
+        <div class="accordion-panel">
+            <p>Eğim, hız demektir. Sesin eğimi, sesin o anda ne kadar hızlı değiştiğini gösterir. Trigonometride ise eğim, **Tanjant (tan)** demektir.</p>
+            <p style="font-family: 'Consolas', monospace; font-size: 1.2em; text-align: center; color: var(--ana-renk);">
+                Eğim (m) = tan(θ)
+            </p>
+            <p>Ayrıca, eklediğiniz 'Referans Sinüs Dalgası'nın frekansını ($f$) siz belirlersiniz. Biz de o dalganın **Periyodunu ($T$)** hesaplarız. Çünkü aralarında doğrudan trigonometrik bir ilişki vardır: $T = 1/f$.</p>
+        </div>
+    </div>
+
+
+    <div class="kontrol-paneli">
+        <button id="startStopButton">🎙️ Mikrofonu Başlat</button>
+        <button id="captureButton" disabled>📸 Anlık Ses Yakala (Analiz Et)</button>
+        <button id="downloadButton" disabled>💾 Yakalanan Sesi İndir (.wav)</button>
+    </div>
+
+    <div class="layout-container">
+        <div class="panel">
+            <h2>Canlı Akış</h2>
+            <div class="osiloskop-bilgi" id="liveInfo">Detay: 2048</div>
+            <canvas id="liveCanvas"></canvas>
+            <div class="slider-grup">
+                <label for="fftSlider">Canlı Dalga Detayı (FFT Boyutu)</label>
+                <input type="range" id="fftSlider" min="0" max="5" value="2">
+                <div class="slider-etiket-konteyner">
+                    <span>Hızlı / Az Detay</span>
+                    <span>Yavaş / Çok Detay</span>
+                </div>
+            </div>
+        </div>
 
         <div class="panel">
-            <button class="accordion">Bu Site Ne İşe Yarar? (Özet)</button>
-            <div class="accordion-panel">
-                <p>Bu araç, sesinizi profesyonel bir osiloskop gibi analiz etmenizi sağlar. Sesi sadece canlı göstermekle kalmaz, 'Yakala' butonuna bastığınızda sesin büyük bir parçasını (yaklaşık 186 milisaniye) hafızaya alır. Bu yakalanan ses üzerinde **ileri-geri sarma** yaparak gezinebilir ve tıkladığınız noktanın eğimini (yani `tan(θ)` değerini) anında hesaplayabilirsiniz.</p>
-            </div>
-
-            <button class="accordion">Nasıl Kullanılır? (Adım Adım)</button>
-            <div class="accordion-panel">
-                <ol>
-                    <li><strong>Başlat:</strong> '🎙️ Mikrofonu Başlat' butonuna basın ve izin verin.</li>
-                    <li><strong>İzle:</strong> 'Canlı Akış' ekranında sesi izleyin. 'Dalga Detayı (FFT)' kaydıracı ile canlı akışın hızını/detayını ayarlayın.</li>
-                    <li><strong>Yakala:</strong> '📸 Anlık Ses Yakala' butonuna basın. O anki ses, "Analiz Ekranı"na aktarılacaktır.</li>
-                    <li><strong>Geri/İleri Sar:</strong> 'Analiz Ekranı' altındaki 'Yakalanan Sesi Kaydır (İleri/Geri Sar)' kaydıracı ile hafızaya alınan sesin içinde gezinin.</li>
-                    <li><strong>Analiz Et:</strong> Sarı dalga üzerinde bir noktaya tıklayın.</li>
-                    <li><strong>Hesapla:</strong> 'Noktasal Akış Hızı' panelinde o noktanın eğim (Akış Hızı), açı ve trigonometrik ($\sin$, $\cos$, $\tan$) değerlerini görün.</li>
-                    <li><strong>Referans Ekle:</strong> 'Analiz Ekranı'ndaki 'Referans Sinüs Dalgası' kontrolleri ile kendi dalganızı oluşturup yakaladığınız sesle karşılaştırın.</li>
-                </ol>
-            </div>
-
-            <button class="accordion">Trigonometri Bu İşin Neresinde?</button>
-            <div class="accordion-panel">
-                <p>Eğim, hız demektir. Sesin eğimi, sesin o anda ne kadar hızlı değiştiğini gösterir. Trigonometride ise eğim, **Tanjant (tan)** demektir.</p>
-                <p style="font-family: 'Consolas', monospace; font-size: 1.2em; text-align: center; color: var(--accent-primary);">
-                    Eğim (m) = tan(θ)
-                </p>
-                <p>Ayrıca, eklediğiniz 'Referans Sinüs Dalgası'nın frekansını ($f$) siz belirlersiniz. Biz de o dalganın **Periyodunu ($T$)** hesaplarız. Çünkü aralarında doğrudan trigonometrik bir ilişki vardır: $T = 1/f$.</p>
-            </div>
-        </div>
-
-        <div class="panel kontrol-paneli">
-            <button id="startStopButton">🎙️ Mikrofonu Başlat</button>
-            <button id="captureButton" disabled>📸 Anlık Ses Yakala (Analiz Et)</button>
-        </div>
-
-        <div class="layout-container">
+            <h2>Analiz Ekranı</h2>
+            <div class="osiloskop-bilgi" id="analysisInfo">Toplam Yakalanan Süre: --- ms</div>
+            <canvas id="analysisCanvas"></canvas>
             
-            <div class="panel">
-                <h2>Canlı Akış</h2>
-                <div class="osiloskop-bilgi monospace" id="liveInfo">Detay: 2048</div>
-                <canvas id="liveCanvas"></canvas>
-                
-                <div class="slider-grup">
-                    <label for="fftSlider">Canlı Dalga Detayı (FFT Boyutu)</label>
-                    <input type="range" id="fftSlider" min="0" max="5" value="2">
-                    <div class="slider-etiket-konteyner">
-                        <span>Hızlı / Az Detay</span>
-                        <span>Yavaş / Çok Detay</span>
-                    </div>
-                </div>
+            <div class="slider-grup">
+                <label for="scrollSlider">Yakalanan Sesi Kaydır (İleri/Geri Sar)</label>
+                <input type="range" id="scrollSlider" min="0" max="1000" value="0">
             </div>
 
-            <div class="panel">
-                <h2>Analiz Ekranı</h2>
-                <div class="osiloskop-bilgi monospace" id="analysisInfo">Toplam Yakalanan Süre: --- ms</div>
-                <canvas id="analysisCanvas"></canvas>
-                
-                <div class="slider-grup">
-                    <label for="scrollSlider">Yakalanan Sesi Kaydır (İleri/Geri Sar)</label>
-                    <input type="range" id="scrollSlider" min="0" max="1000" value="0">
-                </div>
-
-                <div class="slider-grup">
-                    <label class="checkbox-grup">
-                        <input type="checkbox" id="showRefWave"> Referans Sinüs Dalgasını Göster
-                    </label>
-                    
-                    <div class="referans-kontroller">
-                        <div>
-                            <label for="freqSlider" style="font-size: 0.9em; color: var(--text-secondary);">Frekans (Döngü Sayısı)</label>
-                            <input type="range" id="freqSlider" min="1" max="50" value="5">
-                        </div>
-                        <div>
-                            <label for="ampSlider" style="font-size: 0.9em; color: var(--text-secondary);">Genlik (Yükseklik)</label>
-                            <input type="range" id="ampSlider" min="0" max="1" value="0.5" step="0.01">
-                        </div>
+            <div class="slider-grup">
+                <label>
+                    <input type="checkbox" id="showRefWave"> Referans Sinüs Dalgasını Göster
+                </label>
+                <div style="display: flex; gap: 20px; margin-top: 10px;">
+                    <div style="flex-basis: 50%;">
+                        <label for="freqSlider">Frekans (Döngü Sayısı)</label>
+                        <input type="range" id="freqSlider" min="1" max="50" value="5">
+                    </div>
+                    <div style="flex-basis: 50%;">
+                        <label for="ampSlider">Genlik (Yükseklik)</label>
+                        <input type="range" id="ampSlider" min="0" max="1" value="0.5" step="0.01">
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="panel" id="trigPanel">
-             <div class="layout-container"> <div>
-                    <h3>📉 Noktasal Akış Hızı (Eğim)</h3>
-                    <pre id="analysisData" class="monospace">
-<span class="label">Tıkladığın Nokta:</span>
-  <span class="label">Zaman (t):</span>  <span class="value">---</span>
-  <span class="label">Genlik (y):</span> <span class="value">---</span>
-
-<span class="label">Nokta Eğim (Teğet) Bilgileri:</span>
-  <span class="label">Eğim (m) - **AKIŞ HIZI**:</span> <span class="value-emphasis">---</span>
-  <span class="label">Açı (θ) [Radyan]:</span>       <span class="value">---</span>
-  <span class="label">Açı (θ) [Derece]:</span>       <span class="value">---</span>
-
-<span class="label">Trigonometrik Değerler:</span>
-  <span class="label">tan(θ):</span> <span class="value">---</span>
-  <span class="label">sin(θ):</span> <span class="value">---</span>
-  <span class="label">cos(θ):</span> <span class="value">---</span>
-  <span class="label">cot(θ):</span> <span class="value">---</span>
-                    </pre>
-                </div>
-
-                <div>
-                    <h3>🧮 Referans Dalga Bilgisi</h3>
-                    <pre id="refWaveData" class="monospace">
-<span class="label">Ayarlar:</span>
-  <span class="label">Frekans (f):</span> <span class="value-emphasis">--- (Döngü/Ekran)</span>
-  <span class="label">Genlik (A):</span>  <span class="value-emphasis">---</span>
-
-<span class="label">Hesaplamalar:</span>
-  <span class="label">Periyot (T):</span> <span class="value-emphasis">--- (Ekran Genişliği / f)</span>
-  
-<span class="label">Dalga Denklemi:</span>
-  <span class="label">y(t) = A * sin(2 * π * f * t)</span>
-                    </pre>
-                </div>
-            </div>
-        </div>
-
     </div>
-    
+
+    <div class="panel" id="trigPanel" style="max-width: 1250px; margin-left: auto; margin-right: auto;">
+        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+            <div style="flex: 1; min-width: 300px;">
+                <h3>📉 Noktasal Akış Hızı (Eğim)</h3>
+                <pre id="analysisData">
+Tıkladığın Nokta:
+  Zaman (t): ---
+  Genlik (y): ---
+
+Nokta Eğim (Teğet) Bilgileri:
+  Eğim (m) - **AKIŞ HIZI**: ---
+  Açı (θ) [Radyan]: ---
+  Açı (θ) [Derece]: ---
+
+Trigonometrik Değerler:
+  tan(θ) = Eğim (m)
+  sin(θ) = ---
+  cos(θ) = ---
+  cot(θ) = ---
+                </pre>
+            </div>
+            <div style="flex: 1; min-width: 300px;">
+                <h3>🧮 Referans Dalga Bilgisi</h3>
+                <pre id="refWaveData">
+Ayarlar:
+  Frekans (f): --- (Döngü/Ekran)
+  Genlik (A): ---
+
+Hesaplamalar:
+  Periyot (T): --- (Ekran Genişliği / f)
+  Dalga Denklemi:
+    y(t) = A * sin(2 * π * f * t)
+                </pre>
+            </div>
+        </div>
+    </div>
+
     <script>
         "use strict";
 
         // === 1. DOM ELEMANLARI ve AYARLAR ===
-        const style = getComputedStyle(document.body);
-        const LIVE_WAVE_RENK = style.getPropertyValue('--wave-live').trim() || "#007bff";
-        const CAPTURED_WAVE_RENK = style.getPropertyValue('--wave-captured').trim() || "#343a40";
-        const REF_WAVE_RENK = style.getPropertyValue('--wave-reference').trim() || "#e83e8c";
-        const GRID_RENK_ANA = style.getPropertyValue('--border-color').trim() || "#dee2e6";
-        const GRID_RENK_IKINCIL = style.getPropertyValue('--bg-color').trim() || "#f8f9fa";
-
-        const startStopButton = document.getElementById('startStopButton');
+        const ANA_RENK = "#32CD32"; 
+        const startStopButton = document.getElementById('startStopButton'); // DÜZELTME: ID'yi 'startButton' değil 'startStopButton' olarak aldım (HTML'deki ile eşleşti)
         const captureButton = document.getElementById('captureButton');
+        const downloadButton = document.getElementById('downloadButton'); // YENİ: İndirme butonu
         const liveCanvas = document.getElementById('liveCanvas');
         const analysisCanvas = document.getElementById('analysisCanvas');
         const analysisDataPre = document.getElementById('analysisData');
@@ -493,6 +391,7 @@
         const liveInfo = document.getElementById('liveInfo');
         const analysisInfo = document.getElementById('analysisInfo');
         
+        // Analiz Kaydıraçları
         const scrollSlider = document.getElementById('scrollSlider');
         const showRefWaveCheck = document.getElementById('showRefWave');
         const freqSlider = document.getElementById('freqSlider');
@@ -504,30 +403,26 @@
         // === 2. DEĞİŞKENLER ===
         let audioContext;
         let analyser;
-        let sourceNode;
-        let liveDataArray;
+        let sourceNode; // Mikrofon kaynağı
+        let liveDataArray; // Canlı akış için (Float32)
         
-        const CAPTURE_BUFFER_SIZE = 8192;
-        const ANALYSIS_VIEW_WIDTH = 2048;
-        let capturedDataBuffer = new Float32Array(CAPTURE_BUFFER_SIZE);
-        let analysisOffset = 0;
+        const CAPTURE_BUFFER_SIZE = 8192; // Yakalanacak toplam örnek (sabit)
+        const ANALYSIS_VIEW_WIDTH = 2048; // Ekranda bir anda gösterilecek örnek (sabit)
+        let capturedDataBuffer = new Float32Array(CAPTURE_BUFFER_SIZE); // Tüm yakalanan ses
+        let analysisOffset = 0; // Kaydırma çubuğundan gelen kayma miktarı
 
         let liveAnimationId;
         let isListening = false;
         
         const fftMap = [512, 1024, 2048, 4096, 8192, 16384];
-        let currentLiveFftSize = fftMap[fftSlider.value];
+        let currentLiveFftSize = fftMap[fftSlider.value]; 
         
-        function resizeCanvases() {
-            [liveCanvas, analysisCanvas].forEach(c => {
-                const rect = c.getBoundingClientRect();
-                c.width = rect.width;
-                c.height = 250; // CSS'teki yüksekliği sabit al
-            });
-            drawGrid(liveCtx, "Başlat'a bas.");
-            drawGrid(analysisCtx, "Yakalanan ses buraya gelir.");
-            if (capturedDataBuffer[0] !== 0) drawAnalysisWave();
-        }
+        const canvasWidth = 600;
+        const canvasHeight = 200;
+        [liveCanvas, analysisCanvas].forEach(c => {
+            c.width = canvasWidth;
+            c.height = canvasHeight;
+        });
 
         // === 3. ÇALIŞMA MANTIĞI: MİKROFON ===
 
@@ -542,13 +437,14 @@
                     sourceNode = audioContext.createMediaStreamSource(stream);
                     analyser = audioContext.createAnalyser();
                     
-                    updateLiveFftSize();
+                    updateLiveFftSize(); // Canlı akış için FFT'yi ayarla
+
                     sourceNode.connect(analyser);
                     
                     isListening = true;
                     startStopButton.textContent = "🛑 Durdur";
-                    startStopButton.classList.add("stop-mode");
                     captureButton.disabled = false;
+                    downloadButton.disabled = true; // YENİ: Başlangıçta indirme butonu pasif
                     
                     drawLiveWave(); 
                 } catch (err) {
@@ -572,118 +468,137 @@
             }
             isListening = false;
             startStopButton.textContent = "🎙️ Mikrofonu Başlat";
-            startStopButton.classList.remove("stop-mode");
             captureButton.disabled = true;
+            downloadButton.disabled = true; // YENİ: Durunca indirme butonu pasif
             drawGrid(liveCtx, "Akış Durdu. Başlat'a bas.");
         }
 
+        // Canlı akışın detayını/hızını günceller
         function updateLiveFftSize() {
             currentLiveFftSize = fftMap[fftSlider.value];
             if (analyser) {
                 analyser.fftSize = currentLiveFftSize;
-                liveDataArray = new Float32Array(analyser.frequencyBinCount);
+                liveDataArray = new Float32Array(analyser.frequencyBinCount); // frequencyBinCount = fftSize / 2
             }
             liveInfo.textContent = `Detay (FFT): ${currentLiveFftSize}`;
         }
         
+        // Anlık Sesi Yakala Fonksiyonu
         function captureAudio() {
             if (!isListening || !analyser) return;
             
+            // Geçici olarak FFT boyutunu YÜKSELT (daha fazla veri yakalamak için)
             try {
-                analyser.fftSize = CAPTURE_BUFFER_SIZE * 2;
+                analyser.fftSize = CAPTURE_BUFFER_SIZE * 2; // (frequencyBinCount = fftSize / 2)
+                // Veriyi yakala
                 analyser.getFloatTimeDomainData(capturedDataBuffer); 
             } catch(e) {
                 console.error("FFT hatası:", e);
             } finally {
+                // Canlı akış için FFT boyutunu HEMEN geri ayarla
                 analyser.fftSize = currentLiveFftSize;
             }
             
+            // Yakalanan toplam süreyi hesapla ve ekrana yaz
             const totalTimeMs = (CAPTURE_BUFFER_SIZE / audioContext.sampleRate) * 1000;
             analysisInfo.textContent = `Toplam Yakalanan Süre: ${totalTimeMs.toFixed(1)} ms`;
 
+            // Kaydırma çubuğunu ayarla (Maksimum kaydırma miktarı)
             scrollSlider.max = CAPTURE_BUFFER_SIZE - ANALYSIS_VIEW_WIDTH;
             scrollSlider.value = 0;
             analysisOffset = 0;
 
+            // Analiz ekranını çiz
             drawAnalysisWave();
+            
+            // YENİ: İndirme butonunu aktifleştir
+            downloadButton.disabled = false;
         }
 
         // === 4. GÖRSELLEŞTİRME VE ÇİZİM ===
         
+        // Canlı dalgayı çizen döngü (Float32 verisi ile)
         function drawLiveWave() {
             if (!isListening) return;
             liveAnimationId = requestAnimationFrame(drawLiveWave);
             
-            analyser.getFloatTimeDomainData(liveDataArray);
+            analyser.getFloatTimeDomainData(liveDataArray); // Float veri (-1.0 ile 1.0 arası)
 
-            liveCtx.fillStyle = '#000';
-            liveCtx.fillRect(0, 0, liveCanvas.width, liveCanvas.height);
+            liveCtx.fillStyle = 'rgb(0, 0, 0)';
+            liveCtx.fillRect(0, 0, canvasWidth, canvasHeight);
             drawGrid(liveCtx);
             liveCtx.lineWidth = 2;
-            liveCtx.strokeStyle = LIVE_WAVE_RENK; 
+            liveCtx.strokeStyle = ANA_RENK; 
             liveCtx.beginPath();
 
-            const sliceWidth = liveCanvas.width * 1.0 / liveDataArray.length;
+            const sliceWidth = canvasWidth * 1.0 / liveDataArray.length;
             let x = 0;
 
             for (let i = 0; i < liveDataArray.length; i++) {
-                const v = liveDataArray[i];
-                const y = (v * liveCanvas.height / 2) + (liveCanvas.height / 2);
+                const v = liveDataArray[i]; // Veri zaten -1 ile 1 arasında
+                const y = (v * canvasHeight / 2) + (canvasHeight / 2); // Koordianata çevir
 
                 if (i === 0) liveCtx.moveTo(x, y);
                 else liveCtx.lineTo(x, y);
                 x += sliceWidth;
             }
-            liveCtx.lineTo(liveCanvas.width, liveCanvas.height / 2);
+            liveCtx.lineTo(canvasWidth, canvasHeight / 2);
             liveCtx.stroke();
         }
 
+        // Yakalanan (dondurulmuş) dalgayı çizen fonksiyon
         function drawAnalysisWave() {
-            analysisCtx.fillStyle = '#000';
-            analysisCtx.fillRect(0, 0, analysisCanvas.width, analysisCanvas.height);
+            analysisCtx.fillStyle = 'rgb(0, 0, 0)';
+            analysisCtx.fillRect(0, 0, canvasWidth, canvasHeight);
             drawGrid(analysisCtx, "İncelemek için tıkla");
 
+            // 1. Ana Yakalanan Ses Dalgası (İleri/Geri Sarma özellikli)
             analysisCtx.lineWidth = 2;
-            analysisCtx.strokeStyle = CAPTURED_WAVE_RENK;
+            analysisCtx.strokeStyle = 'rgb(255, 165, 0)'; // Turuncu-Sarı
             analysisCtx.beginPath();
 
-            const sliceWidth = analysisCanvas.width * 1.0 / ANALYSIS_VIEW_WIDTH; 
+            // Sadece ANALYSIS_VIEW_WIDTH (2048) kadar örnek çiz
+            const sliceWidth = canvasWidth * 1.0 / ANALYSIS_VIEW_WIDTH; 
             let x = 0;
 
             for (let i = 0; i < ANALYSIS_VIEW_WIDTH; i++) {
+                // Kaydırma miktarı (offset) + o anki index
                 const dataIndex = analysisOffset + i; 
                 if (dataIndex >= capturedDataBuffer.length) break;
 
                 const v = capturedDataBuffer[dataIndex];
-                const y = (v * analysisCanvas.height / 2) + (analysisCanvas.height / 2);
+                const y = (v * canvasHeight / 2) + (canvasHeight / 2);
 
                 if (i === 0) analysisCtx.moveTo(x, y);
                 else analysisCtx.lineTo(x, y);
                 x += sliceWidth;
             }
-            analysisCtx.lineTo(analysisCanvas.width, analysisCanvas.height / 2);
+            analysisCtx.lineTo(canvasWidth, canvasHeight / 2);
             analysisCtx.stroke();
 
+            // 2. Referans sinüs dalgası (varsa)
             if (showRefWaveCheck.checked) {
                 drawReferenceSineWave();
             }
         }
         
+        // Tam Kontrollü Referans Sinüs Dalgası
         function drawReferenceSineWave() {
-            const freq = parseFloat(freqSlider.value);
-            const amp = parseFloat(ampSlider.value);
+            const freq = parseFloat(freqSlider.value); // Döngü Sayısı
+            const amp = parseFloat(ampSlider.value); // Genlik (0.0 - 1.0)
             
-            analysisCtx.lineWidth = 1.5; 
-            analysisCtx.strokeStyle = REF_WAVE_RENK;
+            analysisCtx.lineWidth = 1;
+            analysisCtx.strokeStyle = 'rgb(255, 0, 255)'; // Pembe (referans)
             analysisCtx.beginPath();
             
-            const sliceWidth = analysisCanvas.width * 1.0 / ANALYSIS_VIEW_WIDTH;
+            const sliceWidth = canvasWidth * 1.0 / ANALYSIS_VIEW_WIDTH;
             let x = 0;
 
             for (let i = 0; i < ANALYSIS_VIEW_WIDTH; i++) {
+                // t = 0'dan 1'e giden göreceli zaman (ekran boyunca)
                 const t = i / ANALYSIS_VIEW_WIDTH; 
                 const v = amp * Math.sin(2 * Math.PI * freq * t);
-                const y = (v * analysisCanvas.height / 2) + (analysisCanvas.height / 2);
+                const y = (v * canvasHeight / 2) + (canvasHeight / 2);
                 
                 if (i === 0) analysisCtx.moveTo(x, y);
                 else analysisCtx.lineTo(x, y);
@@ -691,45 +606,37 @@
             }
             analysisCtx.stroke();
             
-            // Veriyi HTML olarak güncelle
+            // Referans dalga bilgisini güncelle
             const periyot = 1 / freq;
-            refWaveDataPre.innerHTML = `
-<span class="label">Ayarlar:</span>
-  <span class="label">Frekans (f):</span> <span class="value-emphasis">${freq.toFixed(1)} (Döngü/Ekran)</span>
-  <span class="label">Genlik (A):</span>  <span class="value-emphasis">${amp.toFixed(2)}</span>
+            refWaveDataPre.textContent = `
+Ayarlar:
+  Frekans (f): ${freq.toFixed(1)} (Döngü/Ekran)
+  Genlik (A): ${amp.toFixed(2)}
 
-<span class="label">Hesaplamalar:</span>
-  <span class="label">Periyot (T):</span> <span class="value-emphasis">${periyot.toFixed(3)} (Ekran Genişliği / f)</span>
-  
-<span class="label">Dalga Denklemi:</span>
-  <span class="label">y(t) = ${amp.toFixed(2)} * sin(2 * π * ${freq.toFixed(1)} * t)</span>
+Hesaplamalar:
+  Periyot (T): ${periyot.toFixed(3)} (Ekran Genişliği / f)
+  Dalga Denklemi:
+    y(t) = ${amp.toFixed(2)} * sin(2 * π * ${freq.toFixed(1)} * t)
             `;
         }
 
+        // Izgara Çizim Fonksiyonu
         function drawGrid(ctx, message = null) {
-            const w = ctx.canvas.width;
-            const h = ctx.canvas.height;
-            
             ctx.lineWidth = 1;
-            // Minimalist grid: Ana arka plandan SADECE BİRAZ daha koyu
-            ctx.strokeStyle = "rgba(0,0,0,0.1)"; 
-            
-            for (let x = 50; x < w; x += 50) { // 0'ı atla
-                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+            ctx.strokeStyle = 'rgba(50, 205, 50, 0.3)'; 
+            for (let x = 0; x < canvasWidth; x += 50) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvasHeight); ctx.stroke();
             }
-            for (let y = 50; y < h; y += 50) { // 0'ı atla
-                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+            for (let y = 0; y < canvasHeight; y += 50) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvasWidth, y); ctx.stroke();
             }
-            
-            // Ana eksen (daha belirgin)
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.4)"; 
-            ctx.beginPath(); ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2); ctx.stroke();
-            
+            ctx.strokeStyle = 'rgba(50, 205, 50, 0.7)';
+            ctx.beginPath(); ctx.moveTo(0, canvasHeight / 2); ctx.lineTo(canvasWidth, canvasHeight / 2); ctx.stroke();
             if (message) {
                 ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
                 ctx.textAlign = "center";
-                ctx.font = "16px 'Inter'";
-                ctx.fillText(message, w / 2, h / 2 - 20);
+                ctx.font = "16px 'Segoe UI'";
+                ctx.fillText(message, canvasWidth / 2, canvasHeight / 2 - 20);
             }
         }
 
@@ -738,71 +645,157 @@
         function analyzeClick(event) {
             const rect = analysisCanvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
-            const viewIndex = Math.round((x / analysisCanvas.width) * ANALYSIS_VIEW_WIDTH);
+
+            // X koordinatını GÖRÜNÜMDEKİ index'e çevir
+            const viewIndex = Math.round((x / canvasWidth) * ANALYSIS_VIEW_WIDTH);
+            
+            // Gerçek Ana Tampon (Buffer) Index'ini bul (Kaydırmayı hesaba kat)
             const bufferIndex = analysisOffset + viewIndex;
 
-            if (!capturedDataBuffer || capturedDataBuffer[0] === 0 || bufferIndex >= CAPTURE_BUFFER_SIZE || bufferIndex < 1 || !audioContext) {
+            if (!capturedDataBuffer || capturedDataBuffer[0] === 0 || bufferIndex >= CAPTURE_BUFFER_SIZE || bufferIndex < 1) {
                 alert("Lütfen önce 'Anlık Ses Yakala' butonuna basın.");
                 return; 
             }
 
+            // Değerleri Ana Tampondan al
             const y_val = capturedDataBuffer[bufferIndex];
             const y_prev = capturedDataBuffer[bufferIndex - 1];
             const y_next = capturedDataBuffer[bufferIndex + 1];
 
+            // EĞİM (Hız) HESAPLAMA
             const slope_m = (y_next - y_prev) / 2.0;
+
+            // TRİG HESAPLAMALARI
             const angle_rad = Math.atan(slope_m);
             const angle_deg = angle_rad * (180 / Math.PI);
             const sin_val = Math.sin(angle_rad);
             const cos_val = Math.cos(angle_rad);
             const cot_val = 1.0 / slope_m; 
             
+            // Yakalanan toplam süreyi bil
             const totalTimeMs = (CAPTURE_BUFFER_SIZE / audioContext.sampleRate) * 1000;
+            // Tıkladığın anın gerçek zamanını (ms) hesapla
             const clickTimeMs = (bufferIndex / CAPTURE_BUFFER_SIZE) * totalTimeMs;
 
-            // Sonuçları HTML olarak yazdır
-            analysisDataPre.innerHTML = `
-<span class="label">Tıkladığın Nokta:</span>
-  <span class="label">Zaman (t):</span>  <span class="value">${clickTimeMs.toFixed(2)} ms</span>
-  <span class="label">Genlik (y):</span> <span class="value">${y_val.toFixed(4)}</span>
+            // Sonuçları ekrana yazdır
+            analysisDataPre.textContent = `
+Tıkladığın Nokta:
+  Zaman (t): ${clickTimeMs.toFixed(2)} ms
+  Genlik (y): ${y_val.toFixed(4)}
 
-<span class="label">Nokta Eğim (Teğet) Bilgileri:</span>
-  <span class="label">Eğim (m) - **AKIŞ HIZI**:</span> <span class="value-emphasis">${slope_m.toFixed(4)}</span>
-  <span class="label">Açı (θ) [Radyan]:</span>       <span class="value">${angle_rad.toFixed(4)}</span>
-  <span class="label">Açı (θ) [Derece]:</span>       <span class="value">${angle_deg.toFixed(2)}°</span>
+Nokta Eğim (Teğet) Bilgileri:
+  Eğim (m) - **AKIŞ HIZI**: ${slope_m.toFixed(4)}
+  Açı (θ) [Radyan]: ${angle_rad.toFixed(4)}
+  Açı (θ) [Derece]: ${angle_deg.toFixed(2)}
 
-<span class="label">Trigonometrik Değerler:</span>
-  <span class="label">tan(θ):</span> <span class="value">${slope_m.toFixed(4)}</span>
-  <span class="label">sin(θ):</span> <span class="value">${sin_val.toFixed(4)}</span>
-  <span class="label">cos(θ):</span> <span class="value">${cos_val.toFixed(4)}</span>
-  <span class="label">cot(θ):</span> <span class="value">${cot_val.toFixed(4)}</span>
+Trigonometrik Değerler:
+  tan(θ) = ${slope_m.toFixed(4)}
+  sin(θ) = ${sin_val.toFixed(4)}
+  cos(θ) = ${cos_val.toFixed(4)}
+  cot(θ) = ${cot_val.toFixed(4)}
             `;
 
             drawAnalysisWave(); // Ana dalgayı tekrar çiz
+            // Tıklanan noktayı işaretle
             analysisCtx.fillStyle = 'red';
             analysisCtx.beginPath();
-            const canvas_y = (y_val * analysisCanvas.height / 2) + (analysisCanvas.height / 2);
-            analysisCtx.arc(x, canvas_y, 5, 0, 2 * Math.PI);
+            const canvas_y = (y_val * canvasHeight / 2) + (canvasHeight / 2);
+            analysisCtx.arc(x, canvas_y, 5, 0, 2 * Math.PI); // x'i (tıklanan yeri) kullan
             analysisCtx.fill();
         }
 
-        // === 6. OLAY DİNLEYİCİLERİ VE AKORDİYON ===
+        // === 6. YENİ: WAV İNDİRME FONKSİYONLARI ===
+
+        function exportWAV() {
+            if (!capturedDataBuffer || capturedDataBuffer[0] === 0 || !audioContext) {
+                alert("İndirilecek yakalanmış ses verisi yok.");
+                return;
+            }
+            
+            const sampleRate = audioContext.sampleRate;
+            const wavBuffer = encodeWAV(capturedDataBuffer, sampleRate);
+            const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+            
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `osiloskop_yakalama_${new Date().getTime()}.wav`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }
+
+        function encodeWAV(samples, sampleRate) {
+            // Float32'yi 16-bit PCM'ye dönüştür
+            const pcmSamples = new Int16Array(samples.length);
+            for (let i = 0; i < samples.length; i++) {
+                let s = Math.max(-1, Math.min(1, samples[i]));
+                pcmSamples[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+            }
+            
+            const dataSize = pcmSamples.length * 2; // 16 bit = 2 byte
+            const fileSize = 44 + dataSize; // 44 byte header
+            
+            const buffer = new ArrayBuffer(fileSize);
+            const view = new DataView(buffer);
+
+            // RIFF chunk
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, fileSize - 8, true); // (fileSize - 8)
+            writeString(view, 8, 'WAVE');
+            
+            // "fmt " chunk
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true); // chunk size
+            view.setUint16(20, 1, true); // audio format (1 = PCM)
+            view.setUint16(22, 1, true); // num channels (1 = Mono)
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true); // byte rate (SampleRate * NumChannels * BitsPerSample/8)
+            view.setUint16(32, 2, true); // block align (NumChannels * BitsPerSample/8)
+            view.setUint16(34, 16, true); // bits per sample
+            
+            // "data" chunk
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataSize, true);
+            
+            // Veriyi (PCM) yaz
+            let offset = 44;
+            for (let i = 0; i < pcmSamples.length; i++, offset += 2) {
+                view.setInt16(offset, pcmSamples[i], true);
+            }
+            
+            return buffer;
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        // === 7. OLAY DİNLEYİCİLERİ VE AKORDİYON ===
         
         startStopButton.addEventListener('click', toggleListening);
         captureButton.addEventListener('click', captureAudio);
+        downloadButton.addEventListener('click', exportWAV); // YENİ: İndirme listener'ı
         analysisCanvas.addEventListener('click', analyzeClick);
+        
+        // Canlı dalga hızı kaydıracını dinle
         fftSlider.addEventListener('input', updateLiveFftSize);
 
+        // İleri/Geri Sarma Kaydıracını Dinle
         scrollSlider.addEventListener('input', (e) => {
             analysisOffset = parseInt(e.target.value);
+            // Sadece veri varsa yeniden çiz
             if (capturedDataBuffer[0] !== 0) drawAnalysisWave(); 
         });
 
+        // Referans dalga kontrollerini dinle
         [showRefWaveCheck, freqSlider, ampSlider].forEach(el => el.addEventListener('input', () => {
              if (capturedDataBuffer[0] !== 0) drawAnalysisWave();
-             else if (showRefWaveCheck.checked) drawReferenceSineWave();
         }));
 
+        // Akordiyon (Çalışma Mantığı) Kontrolü
         document.querySelectorAll(".accordion").forEach(button => {
             button.addEventListener("click", function() {
                 this.classList.toggle("active");
@@ -815,9 +808,11 @@
             });
         });
 
-        window.addEventListener('load', resizeCanvases);
-        window.addEventListener('resize', resizeCanvases);
-
+        // Sayfa yüklendiğinde varsayılan ekranı çiz
+        window.addEventListener('load', () => {
+             drawGrid(liveCtx, "Başlat'a bas.");
+             drawGrid(analysisCtx, "Yakalanan ses buraya gelir.");
+        });
     </script>
 </body>
 </html>
