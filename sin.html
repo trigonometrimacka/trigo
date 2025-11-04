@@ -317,7 +317,7 @@
                         <input type="range" id="freqSlider" min="1" max="50" value="5">
                     </div>
                     <div style="flex-basis: 50%;">
-                        <label for="ampSlider">Genlik (Yükseklik)</label>
+                        <label for="ampSlider">Genlik (Yüksekik)</label>
                         <input type="range" id="ampSlider" min="0" max="1" value="0.5" step="0.01">
                     </div>
                 </div>
@@ -480,16 +480,21 @@ Hesaplamalar:
             
             // Geçici olarak FFT boyutunu YÜKSELT
             try {
+                // frequencyBinCount = fftSize / 2 olduğu için, 8192'lik veri için 16384 fft gerekir
                 analyser.fftSize = CAPTURE_BUFFER_SIZE * 2; 
                 analyser.getFloatTimeDomainData(capturedDataBuffer); 
             } catch(e) {
                 console.error("FFT hatası:", e);
+                // Hata olursa bile devam et, ama buffer'ı sıfırla
+                capturedDataBuffer.fill(0);
             } finally {
                 // Canlı akış için FFT boyutunu HEMEN geri ayarla
                 analyser.fftSize = currentLiveFftSize;
             }
             
-            const totalTimeMs = (CAPTURE_BUFFER_SIZE / audioContext.sampleRate) * 1000;
+            // sampleRate (örnekleme hızı) bilgisi sadece audioContext'ten alınabilir
+            const sampleRate = audioContext.sampleRate;
+            const totalTimeMs = (CAPTURE_BUFFER_SIZE / sampleRate) * 1000;
             analysisInfo.textContent = `Toplam Yakalanan Süre: ${totalTimeMs.toFixed(1)} ms`;
 
             scrollSlider.max = CAPTURE_BUFFER_SIZE - ANALYSIS_VIEW_WIDTH;
@@ -620,6 +625,12 @@ Hesaplamalar:
         // === 5. TRİGONOMETRİK HESAPLAMA (EĞİM/HIZ) ===
 
         function analyzeClick(event) {
+            // AudioContext başlamadıysa, sampleRate'i bilemeyiz, hata verir.
+            if (!audioContext) {
+                alert("Lütfen önce 'Mikrofonu Başlat' butonuna basın.");
+                return;
+            }
+            
             const rect = analysisCanvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
 
@@ -642,7 +653,8 @@ Hesaplamalar:
             const cos_val = Math.cos(angle_rad);
             const cot_val = 1.0 / slope_m; 
             
-            const totalTimeMs = (CAPTURE_BUFFER_SIZE / audioContext.sampleRate) * 1000;
+            const sampleRate = audioContext.sampleRate;
+            const totalTimeMs = (CAPTURE_BUFFER_SIZE / sampleRate) * 1000;
             const clickTimeMs = (bufferIndex / CAPTURE_BUFFER_SIZE) * totalTimeMs;
 
             analysisDataPre.textContent = `
@@ -659,7 +671,7 @@ Trigonometrik Değerler:
   tan(θ) = ${slope_m.toFixed(4)}
   sin(θ) = ${sin_val.toFixed(4)}
   cos(θ) = ${cos_val.toFixed(4)}
-  cot(θ) = ${cot_val.toFixed(4)}
+  cot(θ) = ${isFinite(cot_val) ? cot_val.toFixed(4) : '±∞'}
             `;
 
             drawAnalysisWave(); 
@@ -685,9 +697,24 @@ Trigonometrik Değerler:
 
         [showRefWaveCheck, freqSlider, ampSlider].forEach(el => el.addEventListener('input', () => {
              // Sadece veri varsa (veya checkbox kapalıysa) yeniden çiz
-             if (capturedDataBuffer[0] !== 0 || !showRefWaveCheck.checked) drawAnalysisWave();
+             if (capturedDataBuffer[0] !== 0 || !showRefWaveCheck.checked) {
+                 drawAnalysisWave();
+             }
              // Sadece referans dalga hesaplamasını checkbox açıkken yap
-             if (showRefWaveCheck.checked) drawReferenceSineWave();
+             if (showRefWaveCheck.checked) {
+                 drawReferenceSineWave(); // Bu zaten drawAnalysisWave içinde çağrılıyor ama hesaplama için burada
+             } else {
+                 refWaveDataPre.textContent = `
+Ayarlar:
+  Frekans (f): --- (Döngü/Ekran)
+  Genlik (A): ---
+
+Hesaplamalar:
+  Periyot (T): --- (Ekran Genişliği / f)
+  Dalga Denklemi:
+    y(t) = A * sin(2 * π * f * t)
+                 `;
+             }
         }));
 
         document.querySelectorAll(".accordion").forEach(button => {
