@@ -1,168 +1,388 @@
-<!DOCTYPE html>
+!doctype html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gözle Görülmeyen Denge: Trigonometri</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root { --brand: #5A32E0; --bg: #fdfbff; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--brand); color: #2d3748; overflow-x: hidden; }
-        .main-container { background: var(--bg); border-radius: 40px 0 0 40px; min-height: 100vh; margin-left: 260px; padding: 40px; }
-        .sidebar { width: 260px; position: fixed; left: 0; top: 0; height: 100%; color: white; padding: 30px 20px; }
-        .formula-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; transition: all 0.3s; }
-        .formula-card:hover { border-color: var(--brand); box-shadow: 0 10px 25px -5px rgba(90, 50, 224, 0.1); }
-        .math-text { font-family: 'Cambria Math', serif; font-style: italic; color: var(--brand); font-weight: bold; }
-        .app-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .unit-circle-viz { background: radial-gradient(circle, #f8f7ff 0%, #ffffff 100%); border: 2px dashed #cbd5e1; }
-        .region-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Açı + Kamera: Canlı Yükseklik Ölçer</title>
+<style>
+  :root{
+    --bg1:#012E40; --bg2:#026773; --accent:#3CA6A6; --text:#F2E3D5;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter, Poppins, system-ui, sans-serif;
+    background: linear-gradient(135deg,var(--bg1),var(--bg2));
+    color:var(--text); -webkit-font-smoothing:antialiased;
+  }
+  .app {
+    max-width:980px; margin:18px auto; padding:18px;
+  }
+  header {display:flex; gap:12px; align-items:center; justify-content:space-between}
+  h1{margin:0;font-size:1.25rem;color:var(--accent)}
+  .controls{
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    margin-top:12px;
+  }
+  .card{
+    background: rgba(242,227,213,0.06);
+    border:1px solid rgba(60,166,166,0.12);
+    padding:10px;border-radius:12px;
+  }
+  input[type="number"], select, button {
+    padding:8px 10px; border-radius:8px; border:none; font-size:0.95rem;
+  }
+  button { background:var(--accent); color:var(--bg1); cursor:pointer }
+  button.secondary { background:transparent; border:1px solid rgba(242,227,213,0.12); color:var(--text) }
+  .stage {
+    margin-top:14px; display:grid; grid-template-columns: 1fr 360px; gap:14px;
+  }
+  .preview {
+    position:relative; border-radius:12px; overflow:hidden; min-height:360px;
+    border:1px solid rgba(242,227,213,0.06);
+  }
+  video, canvas { width:100%; height:100%; display:block; object-fit:cover }
+  .panel { padding:12px; height:100%; overflow:auto; border-radius:12px; }
+  .guides { font-size:0.92rem; line-height:1.4; }
+  .big {
+    font-size:1.1rem; color:var(--accent); font-weight:600;
+  }
+  .readout { margin-top:10px; display:flex; gap:8px; flex-direction:column; }
+  .readout .row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(242,227,213,0.04) }
+  .log { margin-top:10px; font-size:0.9rem; max-height:180px; overflow:auto; border-radius:8px; padding:8px; background:rgba(0,0,0,0.08) }
+  .hint { font-size:0.85rem; color:rgba(242,227,213,0.8) }
+
+  .btn-row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  .footer { margin-top:12px; font-size:0.8rem; color:rgba(242,227,213,0.66) }
+  @media (max-width:900px){
+    .stage { grid-template-columns: 1fr; }
+    .panel { order:2 }
+  }
+</style>
 </head>
-<body class="flex">
+<body>
+  <div class="app">
+    <header>
+      <h1>Açı + Kamera: Canlı Yükseklik Ölçer</h1>
+      <div class="card hint">Proje: Trigonometrinin Günlük Kullanımı — Canlı demo</div>
+    </header>
 
-    <aside class="sidebar">
-        <div class="mb-10 px-4">
-            <h1 class="text-xl font-black tracking-tighter">TRIGONOMETRİ<br><span class="text-indigo-300">LABV2</span></h1>
+    <div class="controls">
+      <div class="card">
+        <label>Mesafe (hedefe olan yatay uzaklık): </label>
+        <input id="distance" type="number" step="0.01" value="2" style="width:90px">
+        <select id="unit">
+          <option value="m">m</option>
+          <option value="cm">cm</option>
+          <option value="mm">mm</option>
+        </select>
+        <div style="margin-top:8px" class="hint">Telefon yüksekliğinizi (z) girin veya kalibre edin (ör. 1.6 m) — hesap lamada kullanılır.</div>
+        <div style="margin-top:6px">
+          <input id="deviceHeight" type="number" step="0.01" value="1.6" style="width:90px"> <span class="hint">m (telefonun yerden yüksekliği)</span>
         </div>
-        <nav class="space-y-2">
-            <button onclick="showSection('theory')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition">📖 Temel Kavramlar</button>
-            <button onclick="showSection('applications')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition">🌉 Uygulama Alanları</button>
-            <button onclick="showSection('performance')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition">📊 Performans Analizi</button>
-            <button onclick="showSection('calculator')" class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition">📐 Ölçüm Araçları</button>
-        </nav>
-        <div class="absolute bottom-10 px-4 text-xs opacity-50">
-            KAYNAKÇA: Stewart Calculus, <br>W3C Audio API, MEB Müfredat.
+      </div>
+
+      <div class="card">
+        <div class="big">Mod</div>
+        <div class="btn-row">
+          <button id="camModeBtn">Kamera Modu</button>
+          <button id="sensorModeBtn" class="secondary">Sadece Açı</button>
+          <button id="calibrateBtn" class="secondary">Kalibrasyon</button>
         </div>
-    </aside>
+      </div>
 
-    <main class="main-container flex-1">
-        
-        <section id="sec-theory" class="space-y-10">
-            <header>
-                <h2 class="text-4xl font-black text-gray-900 mb-2">Gözle Görülmeyen Denge</h2>
-                <p class="text-gray-500 max-w-2xl text-lg">Trigonometri, üçgenlerin kenarları ve açıları arasındaki derin ilişkiyi inceler. "Trigonon" (üçgen) ve "metron" (ölçü) kelimelerinden türetilmiştir.</p>
-            </header>
+      <div class="card">
+        <div class="big">İşlem</div>
+        <div class="btn-row">
+          <button id="startBtn">Başlat (izin iste)</button>
+          <button id="stopBtn" class="secondary">Durdur</button>
+          <button id="saveBtn" class="secondary">Kaydet (log)</button>
+        </div>
+        <div class="hint" style="margin-top:6px">Not: iPhone/Safari için HTTPS gerekir. Tarayıcı izin isteyecektir.</div>
+      </div>
+    </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="formula-card p-8 flex items-center justify-between">
-                    <div class="space-y-4">
-                        <h3 class="font-bold text-xl mb-4">Dik Üçgen Oranları</h3>
-                        <div class="grid grid-cols-2 gap-x-12 gap-y-4 text-lg">
-                            <div><span class="math-text">sin α</span> = Karşı / Hip</div>
-                            <div><span class="math-text">cos α</span> = Komşu / Hip</div>
-                            <div><span class="math-text">tan α</span> = Karşı / Komşu</div>
-                            <div><span class="math-text">cot α</span> = Komşu / Karşı</div>
-                        </div>
-                    </div>
-                    <svg width="150" height="120" viewBox="0 0 150 120" class="text-indigo-600">
-                        <path d="M10 110 L140 110 L140 10 Z" fill="none" stroke="currentColor" stroke-width="3" />
-                        <text x="70" y="118" font-size="10" fill="gray">KOMŞU</text>
-                        <text x="145" y="60" font-size="10" fill="gray" style="writing-mode: vertical-lr;">KARŞI</text>
-                    </svg>
-                </div>
+    <div class="stage">
+      <div class="preview card" id="previewWrap">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="overlay"></canvas>
+      </div>
 
-                <div class="formula-card p-8 bg-indigo-50 border-none">
-                    <h3 class="font-bold text-xl mb-4 text-indigo-900">Türetilmiş Fonksiyonlar</h3>
-                    <div class="grid grid-cols-2 gap-6 text-indigo-800">
-                        <div class="p-4 bg-white rounded-lg">tan α = <span class="math-text">sin α / cos α</span></div>
-                        <div class="p-4 bg-white rounded-lg">cot α = <span class="math-text">cos α / sin α</span></div>
-                        <div class="p-4 bg-white rounded-lg">sec α = <span class="math-text">1 / cos α</span></div>
-                        <div class="p-4 bg-white rounded-lg">csc α = <span class="math-text">1 / sin α</span></div>
-                    </div>
-                </div>
-            </div>
+      <div class="panel card">
+        <div class="guides">
+          <strong>Yönergeler (kısaca)</strong>
+          <ol>
+            <li>Mesafeyi (d) gir. Telefon yüksekliğini (z) gir veya kalibre et.</li>
+            <li>"Başlat" ile kamera + sensör izinlerini ver.</li>
+            <li>Kamerada cismin tepesine dokun (veya ortayı kullan). Seçilen noktaya kırmızı işaret gelecek.</li>
+            <li>Telefonu yere paralel tutup yavaşça tepeye doğrult. Ekranda çizgi ve anlık yükseklik gözükecek.</li>
+            <li>Sonucu kaydetmek için "Kaydet"e bas.</li>
+          </ol>
+          <div class="hint">Bilimsel not: hesaplama trigonometrik olarak <code>h = z + tan(β) * d</code> formülüyle yapılır (z = telefon yüksekliği).</div>
+        </div>
 
-            <div class="formula-card p-8">
-                <h3 class="font-bold text-2xl mb-6">Birim Çember Analizi (r = 1)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="p-4 rounded-xl border border-blue-100 bg-blue-50/50">
-                        <span class="region-badge bg-blue-500 text-white">I. BÖLGE (0°-90°)</span>
-                        <p class="mt-2 text-sm font-semibold">Tüm değerler (+) pozitiftir.</p>
-                    </div>
-                    <div class="p-4 rounded-xl border border-emerald-100 bg-emerald-50/50">
-                        <span class="region-badge bg-emerald-500 text-white">II. BÖLGE (90°-180°)</span>
-                        <p class="mt-2 text-sm font-semibold">Sadece Sin (+) pozitiftir.</p>
-                    </div>
-                    <div class="p-4 rounded-xl border border-orange-100 bg-orange-50/50">
-                        <span class="region-badge bg-orange-500 text-white">III. BÖLGE (180°-270°)</span>
-                        <p class="mt-2 text-sm font-semibold">Tan ve Cot (+) pozitiftir.</p>
-                    </div>
-                    <div class="p-4 rounded-xl border border-red-100 bg-red-50/50">
-                        <span class="region-badge bg-red-500 text-white">IV. BÖLGE (270°-360°)</span>
-                        <p class="mt-2 text-sm font-semibold">Sadece Cos (+) pozitiftir.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="readout">
+          <div class="row"><div>Açı (β)</div><div id="angleVal">— °</div></div>
+          <div class="row"><div>Hesaplanan yükseklik</div><div id="heightVal">—</div></div>
+          <div class="row"><div>Seçilen nokta (px)</div><div id="targetVal">—</div></div>
+        </div>
 
-        <section id="sec-applications" class="hidden mt-12 space-y-10">
-            <h2 class="text-3xl font-bold">Gerçek Dünya Uygulamaları</h2>
-            <div class="app-grid">
-                <div class="formula-card overflow-hidden">
-                    <div class="h-40 bg-slate-900 flex items-center justify-center text-white text-3xl">🔭</div>
-                    <div class="p-6">
-                        <h4 class="font-bold text-indigo-600 uppercase text-xs tracking-widest mb-1">Uzay ve Havacılık</h4>
-                        <p class="text-sm">Gezegenlerin konumları ve yörünge hesaplamaları trigonometrik modelleme ile yapılır.</p>
-                    </div>
-                </div>
-                <div class="formula-card overflow-hidden">
-                    <div class="h-40 bg-red-50 flex items-center justify-center text-red-500 text-3xl">❤️</div>
-                    <div class="p-6">
-                        <h4 class="font-bold text-indigo-600 uppercase text-xs tracking-widest mb-1">Tıp (EKG)</h4>
-                        <p class="text-sm">Kalp atış hızı ve dalga boyu analizlerinde sinüs dalgaları temel alınır.</p>
-                    </div>
-                </div>
-                <div class="formula-card overflow-hidden">
-                    <div class="h-40 bg-amber-50 flex items-center justify-center text-amber-600 text-3xl">🌉</div>
-                    <div class="p-6">
-                        <h4 class="font-bold text-indigo-600 uppercase text-xs tracking-widest mb-1">Mimarlık ve Mühendislik</h4>
-                        <p class="text-sm">Köprülerin eğimi ve binaların statik dengesi sin-cos hesaplamalarına dayanır.</p>
-                    </div>
-                </div>
-                <div class="formula-card overflow-hidden">
-                    <div class="h-40 bg-purple-50 flex items-center justify-center text-purple-600 text-3xl">🎵</div>
-                    <div class="p-6">
-                        <h4 class="font-bold text-indigo-600 uppercase text-xs tracking-widest mb-1">Müzik ve Ses</h4>
-                        <p class="text-sm">Ses dalgalarının frekans ve genlik ayarları trigonometrik fonksiyonlardır.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div style="margin-top:10px">
+          <strong>Kayıtlar</strong>
+          <div class="log" id="log"></div>
+        </div>
 
-        <section id="sec-performance" class="hidden mt-12">
-             <div class="card p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
-                <h3 class="text-2xl font-bold mb-6">Öğrenci Akademik Grafiği</h3>
-                <canvas id="performanceChart" height="100"></canvas>
-             </div>
-        </section>
+        <div class="footer">Not: Sonuçlar, mesafe/kalibrasyon doğruluğuna bağlıdır. Demo için tolerans bekle.</div>
+      </div>
+    </div>
+  </div>
 
-    </main>
+<script>
+/*
+  Canlı Kamera + DeviceOrientation ile çalışan ölçüm.
+  Mantık:
+   - Kullanıcı yatay mesafeyi (d) ve telefonun yerden yüksekliğini (z) girer.
+   - Telefonun eğimi (beta) ölçülür: cismin tepe noktasına bakarken tan(beta)*d yüksekliği elde edilir.
+   - Toplam yükseklik = z + tan(beta) * d
+   - Kullanıcı kamerada tepenin koordinatına dokunur/aynar; canvas'ta çizgi ve marker gösterilir.
+   - Birim seçimi (m, cm, mm) desteklenir.
+*/
 
-    <script>
-        function showSection(id) {
-            document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
-            document.getElementById('sec-' + id).classList.remove('hidden');
-        }
+const video = document.getElementById('video');
+const canvas = document.getElementById('overlay');
+const ctx = canvas.getContext('2d');
 
-        // Başlangıç Grafiği
-        window.onload = () => {
-            const ctx = document.getElementById('performanceChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Hafta 1', 'Hafta 2', 'Hafta 3', 'Hafta 4'],
-                    datasets: [{
-                        label: 'Trigonometri Başarımı',
-                        data: [40, 65, 85, 95],
-                        borderColor: '#5A32E0',
-                        backgroundColor: 'rgba(90, 50, 224, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                }
-            });
-        }
-    </script>
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const saveBtn = document.getElementById('saveBtn');
+const camModeBtn = document.getElementById('camModeBtn');
+const sensorModeBtn = document.getElementById('sensorModeBtn');
+const calibrateBtn = document.getElementById('calibrateBtn');
+
+const distanceInput = document.getElementById('distance');
+const unitSelect = document.getElementById('unit');
+const deviceHeightInput = document.getElementById('deviceHeight');
+
+const angleVal = document.getElementById('angleVal');
+const heightVal = document.getElementById('heightVal');
+const targetVal = document.getElementById('targetVal');
+const logEl = document.getElementById('log');
+
+let stream = null;
+let running = false;
+let useCamera = true;
+let currentBeta = 0;
+let target = null; // {x,y} in canvas coords
+let records = [];
+
+function fitCanvas() {
+  canvas.width = video.clientWidth;
+  canvas.height = video.clientHeight;
+}
+window.addEventListener('resize', fitCanvas);
+
+async function startAll() {
+  if (running) return;
+  try {
+    // kamera başlat
+    if (useCamera) {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio:false });
+      video.srcObject = stream;
+      await video.play();
+      fitCanvas();
+    }
+  } catch (err) {
+    alert('Kamera açılamadı: ' + err.message);
+  }
+
+  // sensör izni (iOS)
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    try {
+      const r = await DeviceOrientationEvent.requestPermission();
+      if (r !== 'granted') {
+        alert('Sensör izni reddedildi. Bazı veriler gelmeyebilir.');
+      }
+    } catch (e) {
+      console.warn('DeviceOrientation izin hatası', e);
+    }
+  }
+
+  window.addEventListener('deviceorientation', handleOrientation, true);
+  running = true;
+  startRenderLoop();
+}
+
+function stopAll() {
+  running = false;
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+  window.removeEventListener('deviceorientation', handleOrientation);
+  cancelAnimationFrame(renderId);
+  clearCanvas();
+  video.srcObject = null;
+}
+
+let renderId = null;
+function startRenderLoop() {
+  function loop(){
+    drawOverlay();
+    renderId = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+function handleOrientation(e) {
+  // e.beta: -180..180 (öne/arkaya). Kullanım: pozitif yukarı bakma/negatif aşağı?
+  // Cihazların referansı farklı olabilir, bu yüzden calibrate ile offset ekleyebilirsin.
+  currentBeta = e.beta || 0;
+  angleVal.innerText = currentBeta.toFixed(1) + ' °';
+}
+
+function clearCanvas(){
+  ctx.clearRect(0,0,canvas.width, canvas.height);
+}
+
+function drawOverlay(){
+  clearCanvas();
+  // biraz karartma göster
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // çizgi: alt merkezden hedefe
+  const sx = canvas.width/2;
+  const sy = canvas.height;
+  ctx.lineWidth = 3;
+  if (target) {
+    ctx.strokeStyle = 'rgba(255,80,80,0.95)';
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(target.x, target.y);
+    ctx.stroke();
+
+    // hedef işareti
+    ctx.fillStyle = 'rgba(255,80,80,0.95)';
+    ctx.beginPath();
+    ctx.arc(target.x, target.y, 8, 0, Math.PI*2);
+    ctx.fill();
+
+    // hesap: beta açısından hesaplama göster
+    computeHeightAndShow();
+  } else {
+    // çapraz kılavuz: merkez hedef
+    ctx.strokeStyle = 'rgba(60,166,166,0.6)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(sx-20, sy);
+    ctx.lineTo(sx+20, sy-120);
+    ctx.moveTo(sx+20, sy);
+    ctx.lineTo(sx-20, sy-120);
+    ctx.stroke();
+
+    // Açıklama: dokun
+    ctx.fillStyle = 'rgba(242,227,213,0.9)';
+    ctx.font = '14px Poppins, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Tepeye dokun veya ortayı hedefle', sx, 30);
+  }
+}
+
+function computeHeightAndShow(){
+  // Gerçek fiziksel mapping: canvas piksellerinden gerçek mesafeye dönüşüm
+  // Biz kolaylık için: kullanıcı yatay mesafeyi (d) metre girer; beta açısını alırız.
+  // Formül: h_total = z + tan(beta) * d
+  const d_raw = parseFloat(distanceInput.value) || 1;
+  const unit = unitSelect.value;
+  const z = parseFloat(deviceHeightInput.value) || 0; // metre
+
+  // beta: e.beta is degrees. Ancak dikkat: e.beta ölçümü cihaz referansına göre değişir.
+  // Burada kullanıcı telefonu paralel tutup tepeye doğrultmalı — pilot kullanım için en iyisi.
+  const betaDeg = currentBeta;
+  const betaRad = betaDeg * Math.PI / 180;
+
+  // Önemli: e.beta'nin 0 olduğu durum cihaz dik ise farklı davranır. Kullanıcıya kalibrasyon tavsiye edilir.
+  const delta = Math.tan(betaRad) * d_raw; // metre
+  let h_total_m = z + delta;
+
+  // Birim dönüşümü
+  let display = '';
+  if (unit === 'm') display = h_total_m.toFixed(3) + ' m';
+  else if (unit === 'cm') display = (h_total_m*100).toFixed(1) + ' cm';
+  else display = (h_total_m*1000).toFixed(0) + ' mm';
+
+  heightVal.innerText = display;
+
+  // ayrıca canvas'ta küçük tooltip göster
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.fillRect(8,8,220,56);
+  ctx.fillStyle = 'white';
+  ctx.font = '12px Poppins, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Açı β: ' + betaDeg.toFixed(1) + '°', 16, 26);
+  ctx.fillText('Yükseklik: ' + display, 16, 46);
+
+  // target px info
+  targetVal.innerText = target ? Math.round(target.x) + ' , ' + Math.round(target.y) : '—';
+}
+
+canvas.addEventListener('click', (ev)=>{
+  // canvas üzerine tıklayınca hedef (touch friendly)
+  const rect = canvas.getBoundingClientRect();
+  const x = (ev.clientX - rect.left) * (canvas.width / rect.width);
+  const y = (ev.clientY - rect.top) * (canvas.height / rect.height);
+  target = { x, y };
+});
+
+video.addEventListener('loadedmetadata', fitCanvas);
+
+// Basit kayıt fonksiyonu
+saveBtn.addEventListener('click', ()=>{
+  if (!target) { alert('Önce hedef seç (kamera modunda)'); return; }
+  const entry = {
+    time: new Date().toLocaleString(),
+    angle: currentBeta,
+    distance: parseFloat(distanceInput.value)||0,
+    deviceHeight: parseFloat(deviceHeightInput.value)||0,
+    unit: unitSelect.value,
+    heightDisplay: heightVal.innerText
+  };
+  records.push(entry);
+  renderLog();
+});
+
+function renderLog(){
+  logEl.innerHTML = '';
+  records.slice().reverse().forEach(r=>{
+    const div = document.createElement('div');
+    div.style.padding='6px'; div.style.borderBottom='1px solid rgba(255,255,255,0.03)';
+    div.innerHTML = `<strong>${r.time}</strong><div style="font-size:0.9rem">${r.heightDisplay} — açı: ${r.angle.toFixed(1)}° — d:${r.distance}${r.unit}</div>`;
+    logEl.appendChild(div);
+  });
+}
+
+// Mod butonları
+camModeBtn.addEventListener('click', ()=>{ useCamera=true; camModeBtn.disabled=true; sensorModeBtn.disabled=false; });
+sensorModeBtn.addEventListener('click', ()=>{ useCamera=false; camModeBtn.disabled=false; sensorModeBtn.disabled=true; stopAll(); /* will not use camera */ alert('Sadece açı modunda kamera kapalıdır. "Başlat" ile sensör başlat.'); });
+
+// Başlat / Durdur
+startBtn.addEventListener('click', async ()=>{
+  await startAll();
+});
+stopBtn.addEventListener('click', ()=>{
+  stopAll();
+});
+
+// Kalibrasyon - basit: kullanıcı telefonu yerde yatay tutup "Sıfırla" diyebilir.
+// Burada daha gelişmiş kalibrasyon ekleyebilirsin (offset store).
+calibrateBtn.addEventListener('click', ()=>{
+  const z = parseFloat(deviceHeightInput.value) || 0;
+  alert('Kalibrasyon: Telefon yüksekliğini doğru gir. Ör: 1.6 m (okul sırası seviyesine göre). Bu değer ölçüm formülünde z olarak kullanılır.');
+});
+
+// başlangıç buton durumları
+camModeBtn.disabled = true;
+sensorModeBtn.disabled = false;
+
+</script>
 </body>
 </html>
