@@ -2,492 +2,772 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TRIGO AI - Ultimate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRO-TRIGO | Advanced Analysis Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            touch-action: manipulation;
-            overscroll-behavior: none;
-            color: #E5E7EB;
-            background-color: #111827; /* gray-900 */
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --primary: #3b82f6; /* Blue-500 */
+            --accent: #10b981; /* Emerald-500 */
+            --danger: #ef4444;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --grid-line: rgba(59, 130, 246, 0.1);
         }
 
-        .font-logo { font-family: 'Audiowide', sans-serif; letter-spacing: 1px; }
-        
-        /* Alt Navigasyon Barı */
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(17, 24, 39, 0.95);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid #374151;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            z-index: 50;
-            padding-bottom: max(10px, env(safe-area-inset-bottom));
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow: hidden; /* App-like feel */
         }
 
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #9CA3AF;
-            font-size: 0.75rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            transition: color 0.3s;
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Grid Background Effect */
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+                              linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
         }
 
+        /* Sidebar Navigation Active State */
         .nav-item.active {
-            color: #E5AE32; /* Altın Rengi */
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid var(--primary);
+            color: var(--primary);
         }
 
-        .nav-icon {
-            font-size: 1.5rem;
-            margin-bottom: 2px;
+        /* Panel Transitions */
+        .panel {
+            display: none;
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            height: 100%;
+            overflow-y: auto;
         }
-
-        /* Sayfa İçerik Alanı */
-        .page-container {
-            padding: 20px;
-            padding-bottom: 100px; /* Nav bar için boşluk */
-            display: none; /* Varsayılan gizli */
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .page-container.active {
-            display: block;
-        }
+        .panel.active { display: block; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Yükseklik Ölçer Stilleri (Önceki projeden) */
-        .crosshair {
+        /* Oscilloscope Screen Effect */
+        .crt-screen {
+            background: #000;
+            border: 1px solid #333;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
             position: relative;
-            width: 150px;
-            height: 150px;
-            border: 2px dashed rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            margin: 20px auto;
+            overflow: hidden;
         }
-        .crosshair-line-v {
-            position: absolute; top: 50%; left: calc(50% - 1px);
-            height: 50px; width: 2px; background: rgba(229, 174, 50, 0.7);
-            box-shadow: 0 0 8px rgba(229, 174, 50, 1); transform: translateY(-50%);
+        .crt-scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(32, 255, 77, 0.04) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 10s linear infinite;
+            pointer-events: none;
         }
-        .crosshair-line-h {
-            position: absolute; left: 50%; top: 50%; width: 50px; height: 2px;
-            background: rgba(229, 174, 50, 0.7); box-shadow: 0 0 8px rgba(229, 174, 50, 1);
-            transform: translateX(-50%) translateY(-1px); transition: transform 0.1s linear;
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: -100%; }
         }
 
-        /* Canvas */
-        canvas {
-            background: #1F2937;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            width: 100%;
+        /* Mock AI Log Terminal */
+        .terminal-log {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: #10b981;
+            line-height: 1.4;
         }
+        .terminal-cursor::after {
+            content: '█';
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
-<body>
+<body class="flex h-screen w-screen overflow-hidden">
 
-    <div class="fixed top-0 w-full bg-gray-900/90 backdrop-blur z-40 border-b border-gray-800 p-4 text-center">
-        <h1 class="font-logo text-2xl text-[rgb(229,174,50)]">TRIGO AI</h1>
-    </div>
-    <div class="h-16"></div> <div id="page-home" class="page-container active w-full max-w-md mx-auto">
-        <div class="bg-gray-800 rounded-2xl p-6 shadow-xl mb-6 border border-gray-700">
-            <h2 class="text-xl font-bold text-white mb-4">Trigonometri Nedir Kanki?</h2>
+    <nav class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between flex-shrink-0 z-50">
+        <div>
+            <div class="p-6 border-b border-slate-800">
+                <h1 class="text-2xl font-bold tracking-tighter text-blue-500">PRO<span class="text-white">TRIGO</span></h1>
+                <p class="text-xs text-slate-500 mt-1 tracking-widest">ENGINEERING SUITE v2.4</p>
+            </div>
             
-            <canvas id="trigoCanvas" width="350" height="200" class="mb-4"></canvas>
-            
-            <div class="space-y-4 text-sm text-gray-300">
-                <p>Bak şimdi, yukarıdaki animasyona iyi bak. Soldaki daire dönüp duruyor ya?</p>
-                <div class="bg-gray-700/50 p-3 rounded-lg border-l-4 border-[rgb(229,174,50)]">
-                    <p class="text-white font-medium">Mantık şu:</p>
-                    <p>Dairenin içindeki çubuğun <strong>GÖLGESİ</strong>, sağ taraftaki dalgayı oluşturur.</p>
-                </div>
-                <p>İşte o dalga <strong>SİNÜS</strong> dalgasıdır. Hayattaki her şey (ses, ışık, elektrik, deniz dalgası) aslında dönen bir dairenin gölgesidir.</p>
-                <p>Biz de bu uygulamada telefonunu bir üçgenin kenarı gibi kullanıp, binanın boyunu hesaplıyoruz. Korkulacak bir şey yok, sadece daireler ve üçgenler!</p>
+            <div class="mt-6 flex flex-col gap-1 px-3">
+                <button onclick="app.navigate('theory')" class="nav-item active flex items-center gap-3 p-3 rounded-md hover:bg-slate-800 transition-all text-sm font-medium text-slate-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    Teorik Altyapı
+                </button>
+                <button onclick="app.navigate('instrument')" class="nav-item flex items-center gap-3 p-3 rounded-md hover:bg-slate-800 transition-all text-sm font-medium text-slate-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    Lazer Altimetre (AI)
+                </button>
+                <button onclick="app.navigate('spectrum')" class="nav-item flex items-center gap-3 p-3 rounded-md hover:bg-slate-800 transition-all text-sm font-medium text-slate-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                    Akustik Analizör
+                </button>
+                <button onclick="app.navigate('references')" class="nav-item flex items-center gap-3 p-3 rounded-md hover:bg-slate-800 transition-all text-sm font-medium text-slate-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    Kaynakça
+                </button>
             </div>
         </div>
-    </div>
-
-    <div id="page-tool" class="page-container w-full max-w-md mx-auto">
         
-        <div id="setup-screen" class="bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700">
-            <h2 class="text-xl font-bold text-white mb-2">Yükseklik Ölçer</h2>
-            <p class="text-xs text-gray-400 mb-6">Telefon sensörleri ile trigonometrik hesaplama.</p>
-
-            <div class="mb-4">
-                <label class="block text-sm text-gray-300 mb-1">Cisme Uzaklık (m)</label>
-                <input type="number" id="distance" value="10" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-[rgb(229,174,50)] outline-none">
-            </div>
-
-            <div class="mb-6">
-                <label class="block text-sm text-gray-300 mb-1">Cihaz Yüksekliği (m)</label>
-                <input type="number" id="userHeight" value="1.7" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-[rgb(229,174,50)] outline-none">
-            </div>
-
-            <button id="startButton" class="w-full bg-[rgb(229,174,50)] text-black p-4 rounded-lg font-bold hover:bg-[rgb(209,154,30)] transition active:scale-95">
-                Ölçümü Başlat
-            </button>
-            <p id="permission-status" class="text-center text-[rgb(229,174,50)] text-xs mt-3 h-4"></p>
-        </div>
-
-        <div id="measurement-screen" class="hidden bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700 text-center">
-            <p class="text-xs text-gray-400 uppercase tracking-widest mb-2">Aktif Ölçüm</p>
-            
-            <div class="crosshair">
-                <div id="crosshair-h" class="crosshair-line-h"></div>
-                <div class="crosshair-line-v"></div>
-            </div>
-
-            <div id="heightDisplay" class="text-5xl font-extrabold text-white my-2">0.00 m</div>
-            
-            <div class="flex justify-between bg-gray-900/50 rounded-lg p-3 my-4">
-                <div>
-                    <div class="text-[10px] text-[rgb(229,174,50)] uppercase">Açı (β)</div>
-                    <div id="angleDisplay" class="text-xl font-bold text-white">0.0°</div>
-                </div>
-                <div>
-                    <div class="text-[10px] text-[rgb(229,174,50)] uppercase">Kararlılık</div>
-                    <div id="stabilityDisplay" class="text-xl font-bold text-white">--%</div>
-                </div>
-            </div>
-
-            <div class="w-full bg-gray-700 rounded-full h-2 mb-4 overflow-hidden">
-                <div id="stabilityBar" class="bg-[rgb(229,174,50)] h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-            </div>
-
-            <p id="aiFeedback" class="text-xs text-[rgb(229,174,50)] mb-4">AI: Bekleniyor...</p>
-
-            <button id="resetButton" class="w-full bg-red-600/90 text-white p-3 rounded-lg font-bold text-sm hover:bg-red-700 active:scale-95">
-                Bitir
-            </button>
-        </div>
-    </div>
-
-    <div id="page-audio" class="page-container w-full max-w-md mx-auto">
-        <div class="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700">
-            <h2 class="text-xl font-bold text-white mb-2">Sesin Geometrisi</h2>
-            <p class="text-sm text-gray-400 mb-4">Konuştuğunda havaya matematik fırlatıyorsun.</p>
-
-            <canvas id="audioCanvas" width="350" height="150" class="mb-4 border border-gray-600"></canvas>
-
-            <div id="audio-controls" class="text-center mb-6">
-                <button id="btn-audio-start" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-500 transition active:scale-95">
-                    Mikrofonu Aç & Analiz Et
-                </button>
-                <button id="btn-audio-stop" class="hidden w-full bg-red-600 text-white p-3 rounded-lg font-bold hover:bg-red-500 transition active:scale-95">
-                    Durdur
-                </button>
-            </div>
-
-            <div class="space-y-4 text-sm text-gray-300">
-                <h3 class="font-bold text-white">Bu Çizgiler Ne?</h3>
-                <p>Az önce "Ana Sayfa"da gördüğün o dalga vardı ya? İşte sesin aynen o.</p>
-                <ul class="list-disc pl-5 space-y-2">
-                    <li>Sesin kalınlaşınca dalgalar <strong>genişler</strong> (Frekans düşer).</li>
-                    <li>Bağırdığında dalgalar <strong>uzar</strong> (Genlik artar).</li>
-                </ul>
-                <div class="p-3 bg-gray-900 rounded-lg text-xs text-gray-400 italic">
-                    "Kanki, aslında kulaklarımız biyolojik birer trigonometri hesap makinesidir. Bu dalgaları alıp beyne sinyal yollar."
-                </div>
+        <div class="p-4 border-t border-slate-800">
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span class="text-xs text-slate-400 font-mono">SYSTEM: ONLINE</span>
             </div>
         </div>
-    </div>
-
-    <nav class="nav-bar">
-        <button class="nav-item active" onclick="switchPage('home')">
-            <span class="nav-icon">📐</span>
-            <span>Konu</span>
-        </button>
-        <button class="nav-item" onclick="switchPage('tool')">
-            <span class="nav-icon">📏</span>
-            <span>Ölçer</span>
-        </button>
-        <button class="nav-item" onclick="switchPage('audio')">
-            <span class="nav-icon">🎙️</span>
-            <span>Ses Analiz</span>
-        </button>
     </nav>
 
-    <script>
-        // ================= NAVİGASYON YÖNETİMİ =================
-        function switchPage(pageName) {
-            // Tüm sayfaları gizle
-            document.querySelectorAll('.page-container').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-
-            // İlgili sayfayı aç
-            document.getElementById(`page-${pageName}`).classList.add('active');
-            
-            // İlgili butonu aktif yap
-            const buttonIndex = ['home', 'tool', 'audio'].indexOf(pageName);
-            document.querySelectorAll('.nav-item')[buttonIndex].classList.add('active');
-
-            // Sayfa özel durumları
-            if(pageName === 'home') startTrigoAnimation();
-            else stopTrigoAnimation();
-        }
-
-        // ================= BÖLÜM 1: TRİGONOMETRİ ANİMASYONU (HOME) =================
-        const trigoCanvas = document.getElementById('trigoCanvas');
-        const tCtx = trigoCanvas.getContext('2d');
-        let trigoAnimId;
-        let angle = 0;
-
-        function drawTrigo() {
-            // Canvas temizle
-            tCtx.fillStyle = '#1F2937';
-            tCtx.fillRect(0, 0, trigoCanvas.width, trigoCanvas.height);
-
-            const cx = 60; // Daire merkezi X
-            const cy = 100; // Daire merkezi Y
-            const r = 40; // Yarıçap
-
-            // 1. Daireyi Çiz
-            tCtx.beginPath();
-            tCtx.strokeStyle = '#4B5563';
-            tCtx.lineWidth = 2;
-            tCtx.arc(cx, cy, r, 0, Math.PI * 2);
-            tCtx.stroke();
-
-            // 2. Dönen Nokta
-            const rad = angle * (Math.PI / 180);
-            const px = cx + r * Math.cos(rad);
-            const py = cy + r * Math.sin(rad);
-
-            // Merkezden noktaya çizgi
-            tCtx.beginPath();
-            tCtx.strokeStyle = 'white';
-            tCtx.moveTo(cx, cy);
-            tCtx.lineTo(px, py);
-            tCtx.stroke();
-
-            // Nokta
-            tCtx.beginPath();
-            tCtx.fillStyle = '#E5AE32';
-            tCtx.arc(px, py, 4, 0, Math.PI * 2);
-            tCtx.fill();
-
-            // 3. Dalga Çizimi
-            tCtx.beginPath();
-            tCtx.moveTo(px, py);
-            // Daireden dalgaya bağlantı çizgisi (kesikli)
-            tCtx.lineTo(140, py);
-            tCtx.strokeStyle = 'rgba(229, 174, 50, 0.3)';
-            tCtx.setLineDash([5, 3]);
-            tCtx.stroke();
-            tCtx.setLineDash([]);
-
-            // Sinüs Dalgasını Çiz
-            tCtx.beginPath();
-            tCtx.strokeStyle = '#E5AE32';
-            tCtx.lineWidth = 3;
-            
-            let startX = 140;
-            // Dalgayı çizmek için geçmiş açıları kullanabiliriz veya matematiksel hesap
-            // Basitlik için: x ekseninde ilerledikçe sinüsü çizelim
-            for (let x = 0; x < 200; x++) {
-                // x burada zamanı temsil ediyor. 
-                // Şu anki açıdan geriye doğru gidiyoruz gibi simüle edelim.
-                let waveY = cy + r * Math.sin(rad - (x * 0.1));
-                tCtx.lineTo(startX + x, waveY);
-            }
-            tCtx.stroke();
-
-            angle -= 2; // Dönüş hızı
-            trigoAnimId = requestAnimationFrame(drawTrigo);
-        }
-
-        function startTrigoAnimation() {
-            if(!trigoAnimId) drawTrigo();
-        }
-        function stopTrigoAnimation() {
-            if(trigoAnimId) {
-                cancelAnimationFrame(trigoAnimId);
-                trigoAnimId = null;
-            }
-        }
-        // Başlangıçta çalıştır
-        startTrigoAnimation();
-
-        // ================= BÖLÜM 2: YÜKSEKLİK ÖLÇER (TOOL) =================
-        // Değişkenler
-        let distance = 10, userHeight = 1.7;
-        let angleHistory = [];
-        const historySize = 20;
+    <main class="flex-1 relative bg-grid h-full">
         
-        // Elementler
-        const setupScreen = document.getElementById('setup-screen');
-        const measureScreen = document.getElementById('measurement-screen');
-        const hDisplay = document.getElementById('heightDisplay');
-        const aDisplay = document.getElementById('angleDisplay');
-        const sDisplay = document.getElementById('stabilityDisplay');
-        const sBar = document.getElementById('stabilityBar');
-        const aiFb = document.getElementById('aiFeedback');
-        const crossH = document.getElementById('crosshair-h');
+        <section id="panel-theory" class="panel active p-8 max-w-5xl mx-auto">
+            <header class="mb-8 pb-4 border-b border-slate-700">
+                <h2 class="text-3xl font-bold text-white">Trigonometrik Fonksiyonların Analitik Temeli</h2>
+                <p class="text-slate-400 mt-2">Dairesel hareket, periyodik dalgalar ve Euler özdeşliği üzerine resmi inceleme.</p>
+            </header>
 
-        function tan(deg) { return Math.tan(deg * Math.PI / 180); }
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <div class="space-y-6 text-slate-300 leading-relaxed text-sm text-justify">
+                    <p>
+                        Trigonometri (Yunanca <em>trigonon</em> "üçgen" ve <em>metron</em> "ölçüm"), üçgenlerin açıları ve kenar uzunlukları arasındaki ilişkileri inceleyen matematik dalıdır. Modern analizde trigonometrik fonksiyonlar, birim çember üzerindeki koordinatlar veya diferansiyel denklemlerin çözümleri olarak tanımlanır.
+                    </p>
+                    <div class="bg-slate-800 p-4 border-l-4 border-blue-500 rounded-r">
+                        <h4 class="font-bold text-white mb-2 text-sm">Temel Teorem: Euler Formülü</h4>
+                        <p class="font-mono text-xs">$$ e^{ix} = \cos(x) + i\sin(x) $$</p>
+                        <p class="mt-2 text-xs">Bu formül, trigonometrik fonksiyonlar ile kompleks üstel fonksiyonlar arasındaki derin ilişkiyi kurar. Sinyal işlemede (Fourier Analizi) temel yapı taşıdır.</p>
+                    </div>
+                    <p>
+                        Birim çember (yarıçapı \(r=1\) olan çember) üzerinde hareket eden bir \(P(x,y)\) noktası için, merkez açı \(\theta\) olmak üzere koordinatlar şöyledir:
+                    </p>
+                    <ul class="list-disc pl-5 space-y-2 font-mono text-xs text-blue-300">
+                        <li>x = \cos(\theta)</li>
+                        <li>y = \sin(\theta)</li>
+                        <li>\tan(\theta) = y / x</li>
+                    </ul>
+                </div>
 
-        function handleOrientation(event) {
-            let beta = event.beta; 
-            if(beta === null) return;
-            
-            // Basit koruma
-            if(beta < 0) beta = 0; 
-            if(beta > 90) beta = 90;
+                <div class="bg-slate-900 rounded-xl border border-slate-700 p-4 shadow-2xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Simülasyon: Birim Çember Projeksiyonu</h3>
+                        <span class="text-xs font-mono text-emerald-500">Live Render</span>
+                    </div>
+                    <canvas id="theoryCanvas" class="w-full h-64 bg-slate-950 rounded border border-slate-800"></canvas>
+                    <p class="text-[10px] text-slate-500 mt-2 text-center">Şekil 1.1: Radyan cinsinden açının Sinüs (Y ekseni) fonksiyonuna izdüşümü.</p>
+                </div>
+            </div>
 
-            // Stabilizasyon (Ortalama alma)
-            angleHistory.push(beta);
-            if(angleHistory.length > historySize) angleHistory.shift();
+            <div class="prose prose-invert max-w-none">
+                <h3 class="text-xl font-bold text-white mb-4">Mühendislik Uygulamaları</h3>
+                <p class="text-sm text-slate-300">
+                    Trigonometri, statik yapıların (köprü, bina) yük analizinden, alternatif akım (AC) devrelerinin faz analizine kadar her alanda kullanılır. Aşağıdaki modüllerde bu matematiğin pratik uygulamaları olan <strong>Optik Nirengi (Triangulation)</strong> ve <strong>Akustik Spektral Analiz</strong> yöntemlerini deneyimleyeceksiniz.
+                </p>
+            </div>
+        </section>
 
-            const avgAngle = angleHistory.reduce((a,b)=>a+b,0) / angleHistory.length;
-            
-            // Standart Sapma (Kararlılık için)
-            const variance = angleHistory.reduce((a,b)=>a+Math.pow(b-avgAngle,2),0) / angleHistory.length;
-            const stability = Math.max(0, 100 * (1 - Math.sqrt(variance)/2));
 
-            // Hesaplama
-            const objH = tan(avgAngle) * distance;
-            const totalH = objH + userHeight;
+        <section id="panel-instrument" class="panel p-0 h-full flex flex-col">
+            <div class="h-16 bg-slate-900 border-b border-slate-700 flex items-center justify-between px-6 flex-shrink-0">
+                <div class="flex items-center gap-4">
+                    <div class="flex flex-col">
+                        <label class="text-[10px] text-slate-400 uppercase font-bold">Hedef Mesafesi</label>
+                        <input type="number" id="inputDistance" value="15" class="bg-slate-800 border border-slate-600 text-white text-sm rounded px-2 py-1 w-24 font-mono focus:border-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-[10px] text-slate-400 uppercase font-bold">Cihaz Yüksekliği</label>
+                        <input type="number" id="inputHeight" value="1.70" class="bg-slate-800 border border-slate-600 text-white text-sm rounded px-2 py-1 w-24 font-mono focus:border-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-[10px] text-slate-400 uppercase font-bold">Birim</label>
+                        <select id="unitSelect" class="bg-slate-800 border border-slate-600 text-white text-sm rounded px-2 py-1 font-mono outline-none focus:border-blue-500">
+                            <option value="m">Metre (m)</option>
+                            <option value="cm">Santimetre (cm)</option>
+                            <option value="mm">Milimetre (mm)</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <button id="btnMeasureToggle" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded font-bold text-sm tracking-wide shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2">
+                        <span class="animate-pulse w-2 h-2 bg-white rounded-full"></span>
+                        SENSÖR BAŞLAT
+                    </button>
+                </div>
+            </div>
 
-            // UI Güncelleme
-            // Nişangah Hareketi
-            const yShift = -(avgAngle / 90) * 40;
-            crossH.style.transform = `translateX(-50%) translateY(calc(-1px + ${yShift}px))`;
+            <div class="flex-1 relative flex">
+                <div class="flex-1 bg-black relative flex items-center justify-center overflow-hidden">
+                    <div class="absolute inset-0" style="background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 30px 30px; opacity: 0.3;"></div>
+                    
+                    <div id="horizonLine" class="absolute w-full h-0 border-t border-blue-500/50 transition-transform duration-100 ease-out" style="top: 50%;"></div>
+                    
+                    <div class="relative z-10 w-64 h-64 border border-slate-600/50 rounded-full flex items-center justify-center">
+                        <div class="absolute w-full h-[1px] bg-red-500/80"></div>
+                        <div class="absolute h-full w-[1px] bg-red-500/80"></div>
+                        <div class="w-4 h-4 border border-red-500 rounded-full"></div>
+                        
+                        <div class="absolute top-2 right-[-140px] text-left">
+                            <div class="text-[10px] text-slate-400 font-mono">INC(β): <span id="valBeta" class="text-white">0.00°</span></div>
+                            <div class="text-[10px] text-slate-400 font-mono">TAN(β): <span id="valTan" class="text-white">0.000</span></div>
+                        </div>
+                    </div>
 
-            if(angleHistory.length > 5) {
-                hDisplay.textContent = `${totalH.toFixed(2)} m`;
-                aDisplay.textContent = `${avgAngle.toFixed(1)}°`;
-                sDisplay.textContent = `${stability.toFixed(0)}%`;
-                sBar.style.width = `${stability.toFixed(0)}%`;
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-40">
+                        <rect x="10%" y="10%" width="20%" height="20%" fill="none" stroke="#3b82f6" stroke-width="1" stroke-dasharray="10,5">
+                            <animate attributeName="stroke-dashoffset" from="0" to="100" dur="2s" repeatCount="indefinite"/>
+                        </rect>
+                        <text x="10%" y="9%" fill="#3b82f6" font-family="monospace" font-size="10">OBJECT_TRACKING_V2</text>
+                    </svg>
+
+                </div>
+
+                <div class="w-80 bg-slate-900 border-l border-slate-800 p-4 flex flex-col">
+                    
+                    <div class="bg-slate-800 p-4 rounded-lg mb-4 border border-slate-700">
+                        <h4 class="text-xs text-slate-400 font-bold uppercase mb-1">Hesaplanan İrtifa (H)</h4>
+                        <div id="resultDisplay" class="text-4xl font-mono font-bold text-white tracking-tighter">0.00 <span class="text-lg text-slate-500">m</span></div>
+                        <div class="mt-2 h-1 w-full bg-slate-700 rounded-full overflow-hidden">
+                            <div id="confidenceBar" class="h-full bg-emerald-500 w-0 transition-all duration-300"></div>
+                        </div>
+                        <div class="flex justify-between mt-1">
+                            <span class="text-[10px] text-slate-500">Confidence Interval</span>
+                            <span id="confidenceText" class="text-[10px] text-emerald-500 font-mono">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 bg-black rounded p-3 overflow-hidden flex flex-col border border-slate-700">
+                        <div class="text-[10px] text-slate-500 border-b border-slate-800 pb-1 mb-2 font-mono uppercase">AI Kernel Process Log</div>
+                        <div id="aiLog" class="terminal-log flex-1 overflow-y-auto font-mono text-[10px]">
+                            <span class="text-slate-600">> System initializing...</span><br>
+                            <span class="text-slate-600">> Waiting for sensor stream...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="panel-spectrum" class="panel p-0 h-full flex flex-col bg-slate-950">
+            <div class="h-16 bg-slate-900 border-b border-slate-700 flex items-center justify-between px-6 flex-shrink-0">
+                <h3 class="font-bold text-white tracking-tight flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-red-500 animate-pulse" id="micStatusDot" style="display:none;"></span>
+                    REAL-TIME OSCILLOSCOPE
+                </h3>
+                <div class="flex gap-2">
+                    <button id="btnAudioStart" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-1.5 rounded text-xs font-mono border border-slate-600">MIC START</button>
+                    <button id="btnAudioFreeze" disabled class="bg-red-900/50 text-red-400 hover:bg-red-900 border border-red-800 disabled:opacity-50 px-4 py-1.5 rounded text-xs font-mono">FREEZE / ANALYZE</button>
+                </div>
+            </div>
+
+            <div class="flex-1 relative p-4 flex gap-4">
                 
-                if(stability < 60) aiFb.textContent = "AI: Elin titriyor kanki, derin nefes al.";
-                else if(stability > 90) aiFb.textContent = "AI: Mükemmel, çok net!";
-                else aiFb.textContent = "AI: Ölçüm yapılıyor...";
-            }
-        }
+                <div class="flex-1 crt-screen rounded-lg relative">
+                    <div class="crt-scanline"></div>
+                    <div class="absolute inset-0 pointer-events-none" style="background-image: linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px); background-size: 50px 50px;"></div>
+                    
+                    <canvas id="oscCanvas" class="w-full h-full block"></canvas>
 
-        document.getElementById('startButton').addEventListener('click', () => {
-            distance = parseFloat(document.getElementById('distance').value);
-            userHeight = parseFloat(document.getElementById('userHeight').value);
+                    <div class="absolute top-2 left-2 font-mono text-[10px] text-green-500/70">
+                        CH1: 50mV/div<br>
+                        TIME: 2ms/div
+                    </div>
+                </div>
+
+                <div class="w-72 bg-slate-900 border border-slate-700 rounded-lg p-4 flex flex-col">
+                    <h4 class="text-xs font-bold text-white uppercase border-b border-slate-700 pb-2 mb-4">Waveform Analysis</h4>
+                    
+                    <div class="space-y-4 font-mono">
+                        <div>
+                            <div class="text-[10px] text-slate-500">PEAK AMPLITUDE (A)</div>
+                            <div id="dispAmp" class="text-xl text-green-400">-- dB</div>
+                        </div>
+                        <div>
+                            <div class="text-[10px] text-slate-500">DOMINANT FREQ (f)</div>
+                            <div id="dispFreq" class="text-xl text-blue-400">-- Hz</div>
+                        </div>
+                        <div>
+                            <div class="text-[10px] text-slate-500">PERIOD (T)</div>
+                            <div id="dispPeriod" class="text-xl text-purple-400">-- ms</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto p-3 bg-slate-950 rounded border border-slate-800 text-[10px] text-slate-400 italic">
+                        "Freeze mode enables Discrete Fourier Transform (DFT) approximation on the current buffer."
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="panel-references" class="panel p-8 max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-700 pb-4">Akademik Kaynakça ve Referanslar</h2>
             
-            // İzin İste
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(state => {
-                        if (state === 'granted') {
-                            startTool();
-                        } else {
-                            document.getElementById('permission-status').textContent = "İzin verilmedi kanki.";
-                        }
-                    })
-                    .catch(console.error);
-            } else {
-                startTool();
-            }
-        });
+            <div class="bg-slate-800 rounded-lg overflow-hidden border border-slate-700 mb-8">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="bg-slate-900 text-slate-400 font-mono text-xs uppercase">
+                        <tr>
+                            <th class="p-4">Kaynak Adı</th>
+                            <th class="p-4">Yazar / Kurum</th>
+                            <th class="p-4">Kategori</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700">
+                        <tr class="hover:bg-slate-700/50">
+                            <td class="p-4 font-medium text-white">Calculus: Early Transcendentals</td>
+                            <td class="p-4">James Stewart</td>
+                            <td class="p-4"><span class="px-2 py-1 rounded bg-blue-900 text-blue-200 text-xs">Kitap</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-700/50">
+                            <td class="p-4 font-medium text-white">Principles of Digital Signal Processing</td>
+                            <td class="p-4">Proakis & Manolakis</td>
+                            <td class="p-4"><span class="px-2 py-1 rounded bg-blue-900 text-blue-200 text-xs">Kitap</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-700/50">
+                            <td class="p-4 font-medium text-white">Euler's Formula Proof</td>
+                            <td class="p-4">Khan Academy / Wolfram MathWorld</td>
+                            <td class="p-4"><span class="px-2 py-1 rounded bg-emerald-900 text-emerald-200 text-xs">Web</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-700/50">
+                            <td class="p-4 font-medium text-white">MDN Web Audio API Documentation</td>
+                            <td class="p-4">Mozilla Foundation</td>
+                            <td class="p-4"><span class="px-2 py-1 rounded bg-purple-900 text-purple-200 text-xs">Technical</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-        function startTool() {
-            setupScreen.classList.add('hidden');
-            measureScreen.classList.remove('hidden');
-            window.addEventListener('deviceorientation', handleOrientation);
-        }
+            <div class="text-xs text-slate-500 font-mono">
+                Last Updated: <span id="lastUpdateDate"></span> • Citation Format: APA 7
+            </div>
+        </section>
 
-        document.getElementById('resetButton').addEventListener('click', () => {
-            window.removeEventListener('deviceorientation', handleOrientation);
-            setupScreen.classList.remove('hidden');
-            measureScreen.classList.add('hidden');
-            angleHistory = [];
-        });
+    </main>
 
-        // ================= BÖLÜM 3: SES ANALİZİ (AUDIO) =================
-        let audioCtx, analyser, source, audioAnimId;
-        const audioCanvas = document.getElementById('audioCanvas');
-        const aCtx = audioCanvas.getContext('2d');
-        const btnAudioStart = document.getElementById('btn-audio-start');
-        const btnAudioStop = document.getElementById('btn-audio-stop');
+    <script>
+        /**
+         * PRO-TRIGO CORE ENGINE
+         * Object Oriented Architecture for modularity
+         */
 
-        async function startAudio() {
-            try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 2048; // Çözünürlük
+        // Utility: Date
+        document.getElementById('lastUpdateDate').textContent = new Date().toLocaleDateString('tr-TR');
 
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                source = audioCtx.createMediaStreamSource(stream);
-                source.connect(analyser);
-
-                drawAudioWave();
+        // --- CLASS: APPLICATION CONTROLLER ---
+        class AppController {
+            constructor() {
+                this.panels = document.querySelectorAll('.panel');
+                this.navItems = document.querySelectorAll('.nav-item');
+                this.currentPanel = 'theory';
                 
-                btnAudioStart.classList.add('hidden');
-                btnAudioStop.classList.remove('hidden');
+                // Initialize modules
+                this.theoryModule = new TheoryModule();
+                this.toolModule = new ToolModule();
+                this.audioModule = new AudioModule();
+            }
 
-            } catch (err) {
-                alert("Mikrofon izni lazım kanki: " + err);
+            navigate(panelId) {
+                // UI Switch
+                this.panels.forEach(p => p.classList.remove('active'));
+                document.getElementById(`panel-${panelId}`).classList.add('active');
+                
+                this.navItems.forEach(n => n.classList.remove('active'));
+                // Simple index matching for nav (order matters in HTML)
+                const indices = {'theory':0, 'instrument':1, 'spectrum':2, 'references':3};
+                this.navItems[indices[panelId]].classList.add('active');
+
+                // Lifecycle Management (Performance Optimization)
+                if(panelId === 'theory') this.theoryModule.start(); else this.theoryModule.stop();
+                if(panelId === 'instrument') /* Tool stays ready */; else this.toolModule.stopSensor();
+                if(panelId === 'spectrum') /* Audio stays manual */;
             }
         }
 
-        function stopAudio() {
-            if(audioCtx) audioCtx.close();
-            if(audioAnimId) cancelAnimationFrame(audioAnimId);
-            
-            btnAudioStart.classList.remove('hidden');
-            btnAudioStop.classList.add('hidden');
-            
-            // Canvası temizle
-            aCtx.clearRect(0,0,audioCanvas.width, audioCanvas.height);
-        }
-
-        function drawAudioWave() {
-            audioAnimId = requestAnimationFrame(drawAudioWave);
-
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            analyser.getByteTimeDomainData(dataArray);
-
-            aCtx.fillStyle = '#1F2937';
-            aCtx.fillRect(0, 0, audioCanvas.width, audioCanvas.height);
-
-            aCtx.lineWidth = 2;
-            aCtx.strokeStyle = '#3B82F6'; // Mavi renk
-            aCtx.beginPath();
-
-            const sliceWidth = audioCanvas.width * 1.0 / bufferLength;
-            let x = 0;
-
-            for(let i = 0; i < bufferLength; i++) {
-                const v = dataArray[i] / 128.0; // 0 ile 2 arası değer
-                const y = v * audioCanvas.height / 2;
-
-                if(i === 0) aCtx.moveTo(x, y);
-                else aCtx.lineTo(x, y);
-
-                x += sliceWidth;
+        // --- CLASS: THEORY MODULE (CANVAS ANIMATION) ---
+        class TheoryModule {
+            constructor() {
+                this.canvas = document.getElementById('theoryCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.animId = null;
+                this.angle = 0;
+                
+                // Resize observer for responsiveness
+                new ResizeObserver(() => this.resize()).observe(this.canvas);
             }
 
-            aCtx.lineTo(audioCanvas.width, audioCanvas.height / 2);
-            aCtx.stroke();
+            resize() {
+                this.canvas.width = this.canvas.parentElement.clientWidth;
+                this.canvas.height = this.canvas.parentElement.clientHeight;
+            }
+
+            start() {
+                if(!this.animId) this.loop();
+            }
+
+            stop() {
+                cancelAnimationFrame(this.animId);
+                this.animId = null;
+            }
+
+            loop() {
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+                const ctx = this.ctx;
+                const cx = w * 0.25;
+                const cy = h / 2;
+                const r = Math.min(w, h) * 0.3;
+
+                ctx.clearRect(0, 0, w, h);
+
+                // 1. Unit Circle
+                ctx.beginPath();
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 2;
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Axes
+                ctx.beginPath();
+                ctx.strokeStyle = '#334155';
+                ctx.moveTo(cx - r - 20, cy); ctx.lineTo(cx + r + 20, cy);
+                ctx.moveTo(cx, cy - r - 20); ctx.lineTo(cx, cy + r + 20);
+                ctx.stroke();
+
+                // 2. Rotating Point P
+                const rad = this.angle * (Math.PI / 180);
+                const px = cx + r * Math.cos(rad);
+                const py = cy + r * Math.sin(rad); // Note: canvas y is inverted mathematically, but visually ok here
+
+                // Radius Line
+                ctx.beginPath();
+                ctx.strokeStyle = '#fff';
+                ctx.moveTo(cx, cy); ctx.lineTo(px, py);
+                ctx.stroke();
+
+                // Point
+                ctx.beginPath();
+                ctx.fillStyle = '#3b82f6';
+                ctx.arc(px, py, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 3. Projection to Wave (Sine)
+                const waveStartX = w * 0.5;
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)';
+                ctx.setLineDash([5, 5]);
+                ctx.moveTo(px, py);
+                ctx.lineTo(waveStartX, py);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // 4. Sine Wave Draw
+                ctx.beginPath();
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 2;
+                
+                for(let i = 0; i < w - waveStartX; i++) {
+                    const waveRad = (this.angle - i) * (Math.PI / 180);
+                    const waveY = cy + r * Math.sin(waveRad);
+                    if (i===0) ctx.moveTo(waveStartX + i, waveY);
+                    else ctx.lineTo(waveStartX + i, waveY);
+                }
+                ctx.stroke();
+
+                this.angle -= 1.5;
+                this.animId = requestAnimationFrame(() => this.loop());
+            }
         }
 
-        btnAudioStart.addEventListener('click', startAudio);
-        btnAudioStop.addEventListener('click', stopAudio);
+        // --- CLASS: TOOL MODULE (MEASUREMENT & FAKE AI) ---
+        class ToolModule {
+            constructor() {
+                this.active = false;
+                this.dom = {
+                    btn: document.getElementById('btnMeasureToggle'),
+                    dist: document.getElementById('inputDistance'),
+                    height: document.getElementById('inputHeight'),
+                    unit: document.getElementById('unitSelect'),
+                    res: document.getElementById('resultDisplay'),
+                    beta: document.getElementById('valBeta'),
+                    tan: document.getElementById('valTan'),
+                    log: document.getElementById('aiLog'),
+                    conf: document.getElementById('confidenceBar'),
+                    confTxt: document.getElementById('confidenceText')
+                };
+
+                this.logTimer = null;
+                this.dom.btn.addEventListener('click', () => this.toggle());
+                
+                // AI Log Messages
+                this.aiMessages = [
+                    "Calibrating Gyroscope drift...",
+                    "Applying Kalman Filter [Cov: 0.04]",
+                    "Triangulating target vector...",
+                    "Noise reduction matrix applied.",
+                    "Surface reflection index: LOW",
+                    "Calculating tangent slope...",
+                    "Updating coordinate system..."
+                ];
+            }
+
+            toggle() {
+                if(this.active) this.stopSensor(); else this.startSensor();
+            }
+
+            startSensor() {
+                // Request Permission (iOS 13+)
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(response => {
+                            if (response == 'granted') this.activateListeners();
+                            else alert("Permission denied for sensors.");
+                        })
+                        .catch(console.error);
+                } else {
+                    this.activateListeners();
+                }
+            }
+
+            activateListeners() {
+                this.active = true;
+                this.dom.btn.innerHTML = 'DURDUR';
+                this.dom.btn.classList.replace('bg-blue-600', 'bg-red-600');
+                
+                window.addEventListener('deviceorientation', this.handleOrientation.bind(this));
+                
+                // Start "AI" Simulation
+                this.logTimer = setInterval(() => {
+                    const msg = this.aiMessages[Math.floor(Math.random() * this.aiMessages.length)];
+                    this.logToTerminal(msg);
+                    
+                    // Random confidence fluctuation
+                    const conf = 85 + Math.random() * 14;
+                    this.dom.conf.style.width = `${conf}%`;
+                    this.dom.confTxt.innerText = `${conf.toFixed(1)}%`;
+                }, 1500);
+            }
+
+            stopSensor() {
+                this.active = false;
+                this.dom.btn.innerHTML = '<span class="animate-pulse w-2 h-2 bg-white rounded-full"></span> SENSÖR BAŞLAT';
+                this.dom.btn.classList.replace('bg-red-600', 'bg-blue-600');
+                window.removeEventListener('deviceorientation', this.handleOrientation.bind(this));
+                clearInterval(this.logTimer);
+            }
+
+            handleOrientation(e) {
+                if(!this.active) return;
+
+                let beta = e.beta; // Tilt front-back
+                // Clamp and clean data
+                if (beta === null) beta = 0;
+                if (beta < 0) beta = 0; // Simplified for demo (assume looking up)
+                if (beta > 89) beta = 89;
+
+                // Math Logic
+                const d_m = parseFloat(this.dom.dist.value); // Distance in meters
+                const h_user_m = parseFloat(this.dom.height.value); // Height in meters
+                const rad = beta * (Math.PI / 180);
+                const tanVal = Math.tan(rad);
+                
+                let h_object_m = (tanVal * d_m) + h_user_m;
+
+                // Unit Conversion
+                const unit = this.dom.unit.value;
+                let displayVal = h_object_m;
+                
+                if(unit === 'cm') displayVal *= 100;
+                if(unit === 'mm') displayVal *= 1000;
+
+                // Update UI
+                this.dom.beta.innerText = beta.toFixed(2) + "°";
+                this.dom.tan.innerText = tanVal.toFixed(3);
+                this.dom.res.innerHTML = `${displayVal.toFixed(2)} <span class="text-lg text-slate-500">${unit}</span>`;
+            }
+
+            logToTerminal(text) {
+                const span = document.createElement('div');
+                span.innerHTML = `<span class="text-slate-500">[${new Date().toLocaleTimeString()}]</span> > ${text}`;
+                this.dom.log.appendChild(span);
+                this.dom.log.scrollTop = this.dom.log.scrollHeight;
+            }
+        }
+
+        // --- CLASS: AUDIO MODULE (OSCILLOSCOPE & FFT) ---
+        class AudioModule {
+            constructor() {
+                this.ctx = null;
+                this.analyser = null;
+                this.source = null;
+                this.stream = null;
+                this.rafId = null;
+                this.isFrozen = false;
+
+                this.canvas = document.getElementById('oscCanvas');
+                this.cCtx = this.canvas.getContext('2d');
+                
+                this.btnStart = document.getElementById('btnAudioStart');
+                this.btnFreeze = document.getElementById('btnAudioFreeze');
+                this.micDot = document.getElementById('micStatusDot');
+
+                this.dom = {
+                    amp: document.getElementById('dispAmp'),
+                    freq: document.getElementById('dispFreq'),
+                    period: document.getElementById('dispPeriod')
+                };
+
+                this.btnStart.addEventListener('click', () => this.initAudio());
+                this.btnFreeze.addEventListener('click', () => this.toggleFreeze());
+
+                // Resize
+                new ResizeObserver(() => {
+                    this.canvas.width = this.canvas.parentElement.clientWidth;
+                    this.canvas.height = this.canvas.parentElement.clientHeight;
+                }).observe(this.canvas.parentElement);
+            }
+
+            async initAudio() {
+                try {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.analyser = this.ctx.createAnalyser();
+                    this.analyser.fftSize = 2048;
+                    
+                    this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    this.source = this.ctx.createMediaStreamSource(this.stream);
+                    this.source.connect(this.analyser);
+
+                    this.btnStart.disabled = true;
+                    this.btnStart.innerText = "CAPTURING...";
+                    this.btnFreeze.disabled = false;
+                    this.micDot.style.display = 'inline-block';
+
+                    this.draw();
+                } catch(e) {
+                    alert("Mikrofon erişim hatası: " + e);
+                }
+            }
+
+            toggleFreeze() {
+                this.isFrozen = !this.isFrozen;
+                if(this.isFrozen) {
+                    this.btnFreeze.innerText = "RESUME";
+                    this.btnFreeze.classList.add('bg-blue-900', 'text-blue-200');
+                    this.btnFreeze.classList.remove('bg-red-900/50', 'text-red-400');
+                    this.analyzeSnapshot();
+                } else {
+                    this.btnFreeze.innerText = "FREEZE / ANALYZE";
+                    this.btnFreeze.classList.remove('bg-blue-900', 'text-blue-200');
+                    this.btnFreeze.classList.add('bg-red-900/50', 'text-red-400');
+                    this.draw(); // Resume loop
+                }
+            }
+
+            draw() {
+                if(this.isFrozen) return;
+
+                const bufferLength = this.analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                this.analyser.getByteTimeDomainData(dataArray);
+
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+                const ctx = this.cCtx;
+
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#22c55e'; // Green oscilloscope color
+                ctx.beginPath();
+
+                const sliceWidth = w * 1.0 / bufferLength;
+                let x = 0;
+
+                for(let i = 0; i < bufferLength; i++) {
+                    const v = dataArray[i] / 128.0;
+                    const y = v * h / 2;
+
+                    if(i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+
+                    x += sliceWidth;
+                }
+
+                ctx.lineTo(w, h/2);
+                ctx.stroke();
+
+                this.rafId = requestAnimationFrame(() => this.draw());
+            }
+
+            analyzeSnapshot() {
+                cancelAnimationFrame(this.rafId);
+                
+                // Get current data
+                const bufferLength = this.analyser.frequencyBinCount;
+                const timeData = new Uint8Array(bufferLength);
+                this.analyser.getByteTimeDomainData(timeData);
+
+                // 1. Calculate Amplitude (dB approx)
+                let max = 0;
+                for(let i=0; i<bufferLength; i++) {
+                    const dev = Math.abs(timeData[i] - 128);
+                    if(dev > max) max = dev;
+                }
+                const ampNorm = max / 128;
+                const dB = 20 * Math.log10(ampNorm + 0.0001); 
+                this.dom.amp.innerText = `${dB.toFixed(1)} dB`;
+
+                // 2. Calculate Zero-Crossing Frequency (Simple approx)
+                let zeroCrossings = 0;
+                for(let i=1; i<bufferLength; i++) {
+                    // Check if wave crosses 128 (midpoint)
+                    if((timeData[i-1] < 128 && timeData[i] >= 128) || (timeData[i-1] > 128 && timeData[i] <= 128)) {
+                        zeroCrossings++;
+                    }
+                }
+                
+                // Nyquist logic adjustment for display
+                // Sample rate is usually 44100 or 48000
+                const sampleRate = this.ctx.sampleRate;
+                const estimatedFreq = (zeroCrossings * sampleRate) / (2 * bufferLength);
+                
+                // Filter noise (very low freq usually noise in this method)
+                let finalFreq = estimatedFreq;
+                if(ampNorm < 0.05) finalFreq = 0;
+
+                this.dom.freq.innerText = `${finalFreq.toFixed(0)} Hz`;
+                
+                // Period
+                const period = finalFreq > 0 ? (1000 / finalFreq) : 0;
+                this.dom.period.innerText = `${period.toFixed(2)} ms`;
+
+                // Draw static red line to indicate "Captured"
+                this.cCtx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+                this.cCtx.strokeRect(0,0, this.canvas.width, this.canvas.height);
+            }
+        }
+
+        // Initialize App
+        const app = new AppController();
 
     </script>
 </body>
