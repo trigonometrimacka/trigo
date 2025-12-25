@@ -1,388 +1,726 @@
-!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>Açı + Kamera: Canlı Yükseklik Ölçer</title>
-<style>
-  :root{
-    --bg1:#012E40; --bg2:#026773; --accent:#3CA6A6; --text:#F2E3D5;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0; font-family:Inter, Poppins, system-ui, sans-serif;
-    background: linear-gradient(135deg,var(--bg1),var(--bg2));
-    color:var(--text); -webkit-font-smoothing:antialiased;
-  }
-  .app {
-    max-width:980px; margin:18px auto; padding:18px;
-  }
-  header {display:flex; gap:12px; align-items:center; justify-content:space-between}
-  h1{margin:0;font-size:1.25rem;color:var(--accent)}
-  .controls{
-    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-    margin-top:12px;
-  }
-  .card{
-    background: rgba(242,227,213,0.06);
-    border:1px solid rgba(60,166,166,0.12);
-    padding:10px;border-radius:12px;
-  }
-  input[type="number"], select, button {
-    padding:8px 10px; border-radius:8px; border:none; font-size:0.95rem;
-  }
-  button { background:var(--accent); color:var(--bg1); cursor:pointer }
-  button.secondary { background:transparent; border:1px solid rgba(242,227,213,0.12); color:var(--text) }
-  .stage {
-    margin-top:14px; display:grid; grid-template-columns: 1fr 360px; gap:14px;
-  }
-  .preview {
-    position:relative; border-radius:12px; overflow:hidden; min-height:360px;
-    border:1px solid rgba(242,227,213,0.06);
-  }
-  video, canvas { width:100%; height:100%; display:block; object-fit:cover }
-  .panel { padding:12px; height:100%; overflow:auto; border-radius:12px; }
-  .guides { font-size:0.92rem; line-height:1.4; }
-  .big {
-    font-size:1.1rem; color:var(--accent); font-weight:600;
-  }
-  .readout { margin-top:10px; display:flex; gap:8px; flex-direction:column; }
-  .readout .row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(242,227,213,0.04) }
-  .log { margin-top:10px; font-size:0.9rem; max-height:180px; overflow:auto; border-radius:8px; padding:8px; background:rgba(0,0,0,0.08) }
-  .hint { font-size:0.85rem; color:rgba(242,227,213,0.8) }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TRIGO AI - Akıllı Yükseklik Ölçer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Projeye özel stiller */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            touch-action: manipulation;
+            overscroll-behavior: none;
+            transition: background-color 0.3s, color 0.3s;
+        }
 
-  .btn-row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
-  .footer { margin-top:12px; font-size:0.8rem; color:rgba(242,227,213,0.66) }
-  @media (max-width:900px){
-    .stage { grid-template-columns: 1fr; }
-    .panel { order:2 }
-  }
-</style>
+        /* Dinamik Renkler için CSS Değişkenleri */
+        :root {
+            /* Light Theme (Varsayılan) */
+            --bg-primary: #ffffff;      /* Beyaz */
+            --bg-secondary: #f3f4f6;    /* Gray-100 */
+            --bg-tertiary: #e5e7eb;     /* Gray-200 */
+            --text-primary: #111827;    /* Gray-900 */
+            --text-secondary: #4b5563;  /* Gray-600 */
+            --ring-color: #d1d5db;      /* Gray-300 */
+            --input-bg: #ffffff;
+            --input-border: #d1d5db;
+        }
+
+        /* Dark Theme Sınıfı */
+        .dark-theme {
+            --bg-primary: #111827;      /* Gray-900 */
+            --bg-secondary: #1f2937;    /* Gray-800 */
+            --bg-tertiary: #374151;     /* Gray-700 */
+            --text-primary: #f9fafb;    /* Gray-50 */
+            --text-secondary: #9ca3af;  /* Gray-400 */
+            --ring-color: #374151;      /* Gray-700 */
+            --input-bg: #1f2937;        /* Gray-800 */
+            --input-border: #374151;    /* Gray-700 */
+        }
+        
+        /* Tema Uygulaması */
+        .app-bg {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .app-card {
+            background: linear-gradient(to bottom right, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid var(--ring-color);
+            color: var(--text-primary);
+        }
+        .app-text-secondary {
+            color: var(--text-secondary);
+        }
+        .app-input {
+            background-color: var(--input-bg);
+            border-color: var(--input-border);
+            color: var(--text-primary);
+        }
+
+        /* Logo için özel font sınıfı (Audiowide) */
+        .font-logo {
+            font-family: 'Audiowide', sans-serif;
+            letter-spacing: 1.5px;
+        }
+        
+        /* Dinamik Altın Rengi */
+        .color-gold {
+            color: rgb(229, 174, 50);
+        }
+        
+        /* Nişangah (Crosshair) Stili - Altın Rengi */
+        .crosshair {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border: 2px dashed var(--ring-color);
+            border-radius: 50%;
+            margin: 20px auto;
+        }
+        /* Dikey çizgi (Sabit) */
+        .crosshair-line-v {
+            position: absolute;
+            top: 50%;
+            left: calc(50% - 1px);
+            height: 50px;
+            width: 2px;
+            background: rgba(229, 174, 50, 0.7);
+            box-shadow: 0 0 8px rgba(229, 174, 50, 1);
+            transform: translateY(-50%);
+        }
+        /* Yatay çizgi (DİNAMİK) */
+        .crosshair-line-h {
+            position: absolute;
+            left: 50%;
+            top: 50%; 
+            width: 50px;
+            height: 2px;
+            background: rgba(229, 174, 50, 0.7);
+            box-shadow: 0 0 8px rgba(229, 174, 50, 1);
+            transform: translateX(-50%) translateY(-1px); 
+            transition: transform 0.1s linear; 
+        }
+
+        /* Number input'lardaki okları gizle */
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        /* Aktif sekme stili - Altın Rengi */
+        .tab-btn {
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            background-color: var(--bg-tertiary);
+        }
+        .tab-btn.active {
+            background-color: rgb(229, 174, 50);
+            color: black;
+        }
+
+        /* Birim Butonları Stili */
+        .unit-btn {
+            background-color: var(--bg-tertiary); 
+            color: var(--text-secondary); 
+            border: 1px solid var(--ring-color); 
+            transition: all 0.1s;
+            font-weight: 500;
+        }
+        .unit-btn:hover:not(.active-unit) {
+            background-color: var(--input-border); 
+        }
+        .active-unit {
+            background-color: rgb(229, 174, 50); /* color-gold */
+            color: black;
+            border-color: rgb(229, 174, 50);
+            box-shadow: 0 0 5px rgba(229, 174, 50, 0.5);
+        }
+        
+        /* Tema Değiştirme Butonu (Switch) */
+        .theme-switch {
+            width: 56px;
+            height: 30px;
+            background: var(--bg-tertiary);
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .theme-switch::after {
+            content: '☀️';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            background: #fef3c7; /* Amber-100 */
+            border-radius: 50%;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .dark-theme .theme-switch::after {
+            transform: translateX(26px);
+            content: '🌙';
+            background: #1f2937; /* Gray-800 */
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+        }
+    </style>
 </head>
-<body>
-  <div class="app">
-    <header>
-      <h1>Açı + Kamera: Canlı Yükseklik Ölçer</h1>
-      <div class="card hint">Proje: Trigonometrinin Günlük Kullanımı — Canlı demo</div>
-    </header>
+<body class="app-bg flex items-center justify-center min-h-screen p-4">
 
-    <div class="controls">
-      <div class="card">
-        <label>Mesafe (hedefe olan yatay uzaklık): </label>
-        <input id="distance" type="number" step="0.01" value="2" style="width:90px">
-        <select id="unit">
-          <option value="m">m</option>
-          <option value="cm">cm</option>
-          <option value="mm">mm</option>
-        </select>
-        <div style="margin-top:8px" class="hint">Telefon yüksekliğinizi (z) girin veya kalibre edin (ör. 1.6 m) — hesap lamada kullanılır.</div>
-        <div style="margin-top:6px">
-          <input id="deviceHeight" type="number" step="0.01" value="1.6" style="width:90px"> <span class="hint">m (telefonun yerden yüksekliği)</span>
-        </div>
-      </div>
+    <div id="app-container" class="w-full max-w-md mx-auto">
 
-      <div class="card">
-        <div class="big">Mod</div>
-        <div class="btn-row">
-          <button id="camModeBtn">Kamera Modu</button>
-          <button id="sensorModeBtn" class="secondary">Sadece Açı</button>
-          <button id="calibrateBtn" class="secondary">Kalibrasyon</button>
-        </div>
-      </div>
+        <div id="setup-screen" class="app-card p-6 rounded-2xl shadow-2xl transition-all duration-300">
+            
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="font-logo text-4xl font-bold color-gold mb-0">TRIGO AI</h1>
+                    <p class="text-sm app-text-secondary">Akıllı Yükseklik Asistanı</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="app-text-secondary text-sm font-medium hidden sm:inline">Koyu Tema</span>
+                    <div id="themeToggle" class="theme-switch"></div>
+                </div>
+            </div>
+            
+            <div class="flex mb-4 rounded-lg p-1 text-sm" style="background-color: var(--bg-tertiary);">
+                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all active" data-tab="tab-input">
+                    Giriş
+                </button>
+                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all" data-tab="tab-simple">
+                    Basit Anlatım
+                </button>
+                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all" data-tab="tab-purpose">
+                    Proje Amacı
+                </button>
+                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all" data-tab="tab-how">
+                    Nasıl Çalışır?
+                </button>
+            </div>
 
-      <div class="card">
-        <div class="big">İşlem</div>
-        <div class="btn-row">
-          <button id="startBtn">Başlat (izin iste)</button>
-          <button id="stopBtn" class="secondary">Durdur</button>
-          <button id="saveBtn" class="secondary">Kaydet (log)</button>
+            <div id="tab-content">
+                <div id="tab-input" class="tab-panel">
+                    <p class="text-sm app-text-secondary mb-4">Lütfen ölçüm yapmak için aşağıdaki bilgileri girin:</p>
+                    
+                    <div class="mb-4">
+                        <label for="distance" class="block text-sm font-medium app-text-secondary mb-1">1. Cisme Yatay Uzaklık</label>
+                        <input type="number" id="distance" value="10" class="app-input w-full p-3 border rounded-lg text-lg focus:ring-2 focus:ring-[rgb(229,174,50)] focus:outline-none" placeholder="Örn: 10">
+                        
+                        <div class="unit-selector-group flex space-x-2 mt-2" data-target="distance">
+                            <button data-unit="m" class="unit-btn flex-1 p-1 rounded-lg text-sm active-unit">metre (m)</button>
+                            <button data-unit="cm" class="unit-btn flex-1 p-1 rounded-lg text-sm">santimetre (cm)</button>
+                            <button data-unit="mm" class="unit-btn flex-1 p-1 rounded-lg text-sm">milimetre (mm)</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="userHeight" class="block text-sm font-medium app-text-secondary mb-1">2. Cihaz Yüksekliği</label>
+                        <input type="number" id="userHeight" value="1.7" class="app-input w-full p-3 border rounded-lg text-lg focus:ring-2 focus:ring-[rgb(229,174,50)] focus:outline-none" placeholder="Örn: 1.7">
+                        
+                        <div class="unit-selector-group flex space-x-2 mt-2" data-target="userHeight">
+                            <button data-unit="m" class="unit-btn flex-1 p-1 rounded-lg text-sm active-unit">metre (m)</button>
+                            <button data-unit="cm" class="unit-1 flex-1 p-1 rounded-lg text-sm">santimetre (cm)</button>
+                            <button data-unit="mm" class="unit-btn flex-1 p-1 rounded-lg text-sm">milimetre (mm)</button>
+                        </div>
+
+                        <p class="text-xs app-text-secondary mt-1 opacity-70">Telefonu tuttuğunuz yükseklik (göz hizanız).</p>
+                    </div>
+
+                    <button id="startButton" class="w-full bg-[rgb(229,174,50)] text-black p-4 rounded-lg font-bold text-lg hover:bg-[rgb(209,154,30)] transition-all duration-200 shadow-lg active:scale-95">
+                        Ölçümü Başlat
+                    </button>
+                    <p id="permission-status" class="text-center color-gold text-sm mt-4 h-5"></p>
+                </div>
+
+                <div id="tab-simple" class="tab-panel hidden app-text-secondary text-sm space-y-3">
+                    <h3 class="font-semibold text-lg text-gray-900 dark:text-white mb-2">Bu Alet Ne İşe Yarıyor? (Mala Anlatır Gibi)</h3>
+                    <p>Diyelim karşıdaki binanın boyunu merak ettin. Bu alet, telefonunu **süper akıllı bir metreye** dönüştürür.</p>
+                    <p>Olay basit:</p>
+                    <ul class="list-disc list-outside space-y-2 pl-5">
+                        <li>
+                            <strong class="app-text-primary">1. Uzaklığı Söyle:</strong> Sen programa "Ben binadan 15 metre uzaktayım" diyorsun (mm, cm, m olarak girebilirsin).
+                        </li>
+                        <li>
+                            <strong class="app-text-primary">2. Nişan Al:</strong> Telefonunu binanın <strong class="color-gold">tepesine</strong> doğrultuyorsun.
+                        </li>
+                        <li>
+                            <strong class="app-text-primary">3. Bitti:</strong> Program, telefonu ne kadar <strong class="color-gold">yukarı</strong> kaldırdığını anlıyor, basit bir matematik yapıyor ve "O BİNA 25 METREYMİŞ" diyor.
+                        </li>
+                    </ul>
+                    <p class="font-medium app-text-secondary mt-3 opacity-80">"AI" (Yapay Zekâ) ise senin <strong class="app-text-primary">el titremeni</strong> yok sayıp ölçümü tertemiz yapıyor. O kadar.</p>
+                </div>
+
+                <div id="tab-purpose" class="tab-panel hidden app-text-secondary text-sm space-y-3">
+                    <h3 class="font-semibold text-lg app-text-primary mb-2">Trigonometri Göz Hizanızda</h3>
+                    <p>TRIGO AI, bir binanın, bir ağacın veya herhangi bir yüksek nesnenin boyunu ölçmek için telefonunuzun sensörlerini ve temel trigonometriyi kullanır.</p>
+                    <p>Amacımız, matematiği kağıt üzerindeki bir formül olmaktan çıkarıp, onu herkesin kullanabileceği, AI (Yapay Zekâ) destekli pratik bir ölçüm aracına dönüştürmektir.</p>
+                    <p class="font-medium color-gold">Artık mm, cm ve m birimlerinde hassas girişler yapabilir, ister koyu ister açık temada çalışabilirsiniz.</p>
+                </div>
+                
+                <div id="tab-how" class="tab-panel hidden app-text-secondary text-sm space-y-3">
+                    <h3 class="font-semibold text-lg app-text-primary mb-2">Hayatı Kolaylaştıran Formül</h3>
+                    <p>Sizden tek istediğimiz, ölçtüğünüz nesneye olan yatay uzaklığınızı ($d$) bilmeniz. Girilen tüm birimler, hesaplama öncesinde metreye çevrilir.</p>
+                    <p>Siz hedefin tepesine nişan aldığınızda, telefonunuzun eğim sensörü (jiroskop) $\beta$ (beta) açısını ölçer.</p>
+                    <p>Uygulama, bu iki bilgiyi kullanarak anında o meşhur formülü uygular:</p>
+                    <div class="text-center p-3 rounded-lg my-2" style="background-color: var(--bg-tertiary);">
+                        <code class="text-base color-gold">Yükseklik = tan(β) × Uzaklık (d) + Cihaz Yüksekliği</code>
+                    </div>
+                    <p>AI'nın rolü ise, el titremesi gibi sensör hatalarını filtreleyerek $\beta$ açısını stabilize etmek ve size en doğru sonucu sunmaktır.</p>
+                </div>
+            </div>
         </div>
-        <div class="hint" style="margin-top:6px">Not: iPhone/Safari için HTTPS gerekir. Tarayıcı izin isteyecektir.</div>
-      </div>
+
+        <div id="measurement-screen" class="hidden app-card p-6 md:p-8 rounded-2xl shadow-2xl text-center transition-all duration-300">
+            
+            <p id="liveMeasurementHeader" class="text-sm app-text-secondary mb-2">Cismin tepesine nişan alın</p>
+            
+            <div id="liveDisplayArea">
+                <div class="crosshair">
+                    <div id="crosshair-h" class="crosshair-line-h"></div>
+                    <div class="crosshair-line-v"></div>
+                </div>
+
+                <h2 class="app-text-secondary text-lg font-semibold uppercase tracking-wider">Tahmini Yükseklik</h2>
+                <div id="heightDisplay" class="text-6xl font-extrabold app-text-primary my-2">0.00 m</div>
+                
+                <div class="flex justify-around rounded-lg p-4 my-4 ring-1" style="background-color: var(--bg-primary); border-color: var(--ring-color);">
+                    <div>
+                        <div class="text-xs color-gold uppercase">Eğim Açısı (β)</div>
+                        <div id="angleDisplay" class="text-2xl font-bold app-text-primary">0.0°</div>
+                    </div>
+                    <div>
+                        <div class="text-xs color-gold uppercase">Kararlılık</div>
+                        <div id="stabilityDisplay" class="text-2xl font-bold app-text-primary">--%</div>
+                    </div>
+                </div>
+
+                <div class="w-full rounded-full h-2.5 mb-4 overflow-hidden" style="background-color: var(--bg-tertiary);">
+                    <div id="stabilityBar" class="bg-[rgb(229,174,50)] h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                
+                <div class="p-3 rounded-lg min-h-[50px] flex items-center justify-center ring-1" style="background-color: var(--bg-tertiary); border-color: var(--ring-color);">
+                    <p id="aiFeedback" class="text-sm color-gold">AI Asistan: Başlatılıyor...</p>
+                </div>
+            </div>
+            
+            <div id="resultSummary" class="hidden my-6 p-4 rounded-lg ring-1" style="background-color: var(--bg-tertiary); border-color: var(--ring-color);">
+                <h3 class="text-xl font-bold color-gold mb-2">✅ Ölçüm Tamamlandı!</h3>
+                <p class="text-sm app-text-secondary">Kesinleşmiş Yükseklik:</p>
+                <p id="finalHeightText" class="text-4xl font-extrabold app-text-primary mb-4">0.00 m</p>
+                
+                <button id="geminiInsightButton" class="w-full bg-green-600 text-white p-3 rounded-lg font-bold text-md hover:bg-green-700 transition-all duration-200 shadow-lg active:scale-95 flex items-center justify-center">
+                    <span class="mr-2">✨</span> Yükseklik Analizi Al
+                </button>
+                
+                <div id="aiInsightOutput" class="mt-4 text-left text-sm app-text-secondary space-y-2">
+                    </div>
+            </div>
+
+            <button id="resetButton" class="w-full bg-red-600 text-white p-3 rounded-lg font-bold text-md hover:bg-red-700 transition-all duration-200 shadow-lg mt-6 active:scale-95">
+                Sıfırla ve Geri Dön
+            </button>
+        </div>
     </div>
 
-    <div class="stage">
-      <div class="preview card" id="previewWrap">
-        <video id="video" autoplay playsinline muted></video>
-        <canvas id="overlay"></canvas>
-      </div>
+    <script>
+        // --- GEMINI API SABİTLERİ VE YARDIMCI FONKSİYONLAR ---
+        const apiKey = ""; 
+        const modelName = "gemini-2.5-flash-preview-09-2025";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
-      <div class="panel card">
-        <div class="guides">
-          <strong>Yönergeler (kısaca)</strong>
-          <ol>
-            <li>Mesafeyi (d) gir. Telefon yüksekliğini (z) gir veya kalibre et.</li>
-            <li>"Başlat" ile kamera + sensör izinlerini ver.</li>
-            <li>Kamerada cismin tepesine dokun (veya ortayı kullan). Seçilen noktaya kırmızı işaret gelecek.</li>
-            <li>Telefonu yere paralel tutup yavaşça tepeye doğrult. Ekranda çizgi ve anlık yükseklik gözükecek.</li>
-            <li>Sonucu kaydetmek için "Kaydet"e bas.</li>
-          </ol>
-          <div class="hint">Bilimsel not: hesaplama trigonometrik olarak <code>h = z + tan(β) * d</code> formülüyle yapılır (z = telefon yüksekliği).</div>
-        </div>
+        async function fetchWithBackoff(url, options, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.status !== 429) { 
+                        if (!response.ok) {
+                             throw new Error(`API call failed with status ${response.status}`);
+                        }
+                        return response;
+                    }
+                    console.warn(`Rate limit (429) encountered. Retrying in ${2 ** i}s...`);
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error;
+                    console.error(`Fetch error: ${error.message}. Retrying...`);
+                }
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+            }
+            throw new Error("Maximum retry attempts reached.");
+        }
 
-        <div class="readout">
-          <div class="row"><div>Açı (β)</div><div id="angleVal">— °</div></div>
-          <div class="row"><div>Hesaplanan yükseklik</div><div id="heightVal">—</div></div>
-          <div class="row"><div>Seçilen nokta (px)</div><div id="targetVal">—</div></div>
-        </div>
+        async function fetchGeminiInsight(height) {
+            const insightOutput = document.getElementById('aiInsightOutput');
+            const button = document.getElementById('geminiInsightButton');
+            
+            button.disabled = true;
+            button.innerHTML = '<span class="mr-2">🔄</span> Analiz Yükleniyor...';
+            insightOutput.innerHTML = '<p class="text-center app-text-secondary opacity-50">Analiz oluşturuluyor, lütfen bekleyin...</p>';
 
-        <div style="margin-top:10px">
-          <strong>Kayıtlar</strong>
-          <div class="log" id="log"></div>
-        </div>
+            const userQuery = `${height.toFixed(2)} metre yüksekliğindeki bir nesnenin (bina, ağaç vb.) yüksekliğini karşılaştırın. Bu yüksekliğin kaç katlı bir binaya denk geldiğini ve dünyadaki bilinen popüler yapılarla (örneğin, Eyfel Kulesi) karşılaştırmasını yapın. Ayrıca bu yüksekliği ölçmek için kullanılan trigonometri (yükseklik açısı) hakkında kısa bir bilgi verin. Yanıtınızı Türkçe olarak verin.`;
+            
+            const systemPrompt = "Sen, ölçüm sonuçlarını analize eden, bilgili ve eğlenceli bir AI Asistanısın. Ölçülen yüksekliği (örneğin 45m) kullanarak, 3-4 cümlelik, karşılaştırmalı ve ilgi çekici bir analiz sun. Bu analizi Google Search sonuçlarını temel alarak oluştur.";
+            
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
 
-        <div class="footer">Not: Sonuçlar, mesafe/kalibrasyon doğruluğuna bağlıdır. Demo için tolerans bekle.</div>
-      </div>
-    </div>
-  </div>
+            try {
+                const response = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-<script>
-/*
-  Canlı Kamera + DeviceOrientation ile çalışan ölçüm.
-  Mantık:
-   - Kullanıcı yatay mesafeyi (d) ve telefonun yerden yüksekliğini (z) girer.
-   - Telefonun eğimi (beta) ölçülür: cismin tepe noktasına bakarken tan(beta)*d yüksekliği elde edilir.
-   - Toplam yükseklik = z + tan(beta) * d
-   - Kullanıcı kamerada tepenin koordinatına dokunur/aynar; canvas'ta çizgi ve marker gösterilir.
-   - Birim seçimi (m, cm, mm) desteklenir.
-*/
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
 
-const video = document.getElementById('video');
-const canvas = document.getElementById('overlay');
-const ctx = canvas.getContext('2d');
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const text = candidate.content.parts[0].text;
+                    let sources = [];
+                    const groundingMetadata = candidate.groundingMetadata;
+                    
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        sources = groundingMetadata.groundingAttributions
+                            .map(attribution => ({
+                                uri: attribution.web?.uri,
+                                title: attribution.web?.title,
+                            }))
+                            .filter(source => source.uri && source.title);
+                    }
 
-const startBtn = document.getElementById('startBtn');
-const stopBtn = document.getElementById('stopBtn');
-const saveBtn = document.getElementById('saveBtn');
-const camModeBtn = document.getElementById('camModeBtn');
-const sensorModeBtn = document.getElementById('sensorModeBtn');
-const calibrateBtn = document.getElementById('calibrateBtn');
+                    // Analiz sonucunu göster
+                    let outputHTML = `<p class="font-medium color-gold mb-2">Gemini Analizi:</p>`;
+                    outputHTML += `<p>${text.replace(/\n/g, '<br>')}</p>`;
 
-const distanceInput = document.getElementById('distance');
-const unitSelect = document.getElementById('unit');
-const deviceHeightInput = document.getElementById('deviceHeight');
+                    if (sources.length > 0) {
+                        outputHTML += `<p class="mt-3 text-xs app-text-secondary opacity-50">Kaynaklar:`;
+                        sources.slice(0, 3).forEach((source, index) => {
+                            outputHTML += `<br><a href="${source.uri}" target="_blank" class="hover:underline color-gold">${index + 1}. ${source.title}</a>`;
+                        });
+                        outputHTML += `</p>`;
+                    }
 
-const angleVal = document.getElementById('angleVal');
-const heightVal = document.getElementById('heightVal');
-const targetVal = document.getElementById('targetVal');
-const logEl = document.getElementById('log');
+                    insightOutput.innerHTML = outputHTML;
+                    button.classList.add('bg-gray-500', 'hover:bg-gray-500');
+                    button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    button.innerHTML = '<span class="mr-2">✅</span> Analiz Tamamlandı';
 
-let stream = null;
-let running = false;
-let useCamera = true;
-let currentBeta = 0;
-let target = null; // {x,y} in canvas coords
-let records = [];
+                } else {
+                    insightOutput.innerHTML = '<p class="text-red-400">Analiz alınamadı. Lütfen daha sonra tekrar deneyin.</p>';
+                }
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                insightOutput.innerHTML = '<p class="text-red-400">API bağlantı hatası oluştu. Konsolu kontrol edin.</p>';
+            } finally {
+                button.disabled = false;
+                if (!button.classList.contains('bg-gray-500')) {
+                    button.classList.add('bg-green-600', 'hover:bg-green-700');
+                    button.innerHTML = '<span class="mr-2">✨</span> Yükseklik Analizi Al';
+                }
+            }
+        }
 
-function fitCanvas() {
-  canvas.width = video.clientWidth;
-  canvas.height = video.clientHeight;
-}
-window.addEventListener('resize', fitCanvas);
+        // --- UYGULAMA MANTIĞI VE SENSÖR İŞLEMLERİ ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elementlerini Seçme ---
+            const setupScreen = document.getElementById('setup-screen');
+            const measurementScreen = document.getElementById('measurement-screen');
+            const liveDisplayArea = document.getElementById('liveDisplayArea');
+            const resultSummary = document.getElementById('resultSummary');
+            
+            const distanceInput = document.getElementById('distance');
+            const userHeightInput = document.getElementById('userHeight');
+            const startButton = document.getElementById('startButton');
+            const permissionStatus = document.getElementById('permission-status');
+            
+            const heightDisplay = document.getElementById('heightDisplay');
+            const angleDisplay = document.getElementById('angleDisplay');
+            const stabilityDisplay = document.getElementById('stabilityDisplay');
+            const stabilityBar = document.getElementById('stabilityBar');
+            const aiFeedback = document.getElementById('aiFeedback');
+            const resetButton = document.getElementById('resetButton');
+            const crosshairH = document.getElementById('crosshair-h');
+            
+            const finalHeightText = document.getElementById('finalHeightText');
+            const geminiInsightButton = document.getElementById('geminiInsightButton');
+            const aiInsightOutput = document.getElementById('aiInsightOutput');
 
-async function startAll() {
-  if (running) return;
-  try {
-    // kamera başlat
-    if (useCamera) {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio:false });
-      video.srcObject = stream;
-      await video.play();
-      fitCanvas();
-    }
-  } catch (err) {
-    alert('Kamera açılamadı: ' + err.message);
-  }
+            const themeToggle = document.getElementById('themeToggle'); // Tema butonu
 
-  // sensör izni (iOS)
-  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-    try {
-      const r = await DeviceOrientationEvent.requestPermission();
-      if (r !== 'granted') {
-        alert('Sensör izni reddedildi. Bazı veriler gelmeyebilir.');
-      }
-    } catch (e) {
-      console.warn('DeviceOrientation izin hatası', e);
-    }
-  }
+            // Sekme elementleri ve birim butonları
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+            const unitSelectorGroups = document.querySelectorAll('.unit-selector-group');
 
-  window.addEventListener('deviceorientation', handleOrientation, true);
-  running = true;
-  startRenderLoop();
-}
+            // --- Uygulama Değişkenleri ---
+            let distance = 0;       
+            let userHeight = 0;     
+            let angleHistory = [];  
+            let finalMeasuredHeight = 0;
+            const historySize = 20; 
+            const NEGATIVE_ANGLE_THRESHOLD = -3; 
+            const STABILITY_THRESHOLD = 95; 
+            let measurementCompleted = false;
 
-function stopAll() {
-  running = false;
-  if (stream) {
-    stream.getTracks().forEach(t => t.stop());
-    stream = null;
-  }
-  window.removeEventListener('deviceorientation', handleOrientation);
-  cancelAnimationFrame(renderId);
-  clearCanvas();
-  video.srcObject = null;
-}
+            // --- TEMA YÖNETİMİ ---
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-theme');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                    localStorage.setItem('theme', 'light');
+                }
+            }
 
-let renderId = null;
-function startRenderLoop() {
-  function loop(){
-    drawOverlay();
-    renderId = requestAnimationFrame(loop);
-  }
-  loop();
-}
+            // Sayfa yüklendiğinde temayı uygula
+            applyTheme(currentTheme);
 
-function handleOrientation(e) {
-  // e.beta: -180..180 (öne/arkaya). Kullanım: pozitif yukarı bakma/negatif aşağı?
-  // Cihazların referansı farklı olabilir, bu yüzden calibrate ile offset ekleyebilirsin.
-  currentBeta = e.beta || 0;
-  angleVal.innerText = currentBeta.toFixed(1) + ' °';
-}
+            themeToggle.addEventListener('click', () => {
+                const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+                applyTheme(newTheme);
+            });
 
-function clearCanvas(){
-  ctx.clearRect(0,0,canvas.width, canvas.height);
-}
+            // --- Birim Dönüşüm Fonksiyonu ---
+            function convertValueToMeters(value, unit) {
+                value = parseFloat(value);
+                if (isNaN(value) || value <= 0) return 0;
+                
+                if (unit === 'mm') {
+                    return value / 1000; 
+                }
+                if (unit === 'cm') {
+                    return value / 100; 
+                }
+                return value; 
+            }
 
-function drawOverlay(){
-  clearCanvas();
-  // biraz karartma göster
-  ctx.fillStyle = 'rgba(0,0,0,0.12)';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+            // --- Sekme Yönetimi ---
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    tabPanels.forEach(panel => panel.classList.add('hidden'));
+                    document.getElementById(button.getAttribute('data-tab')).classList.remove('hidden');
+                });
+            });
 
-  // çizgi: alt merkezden hedefe
-  const sx = canvas.width/2;
-  const sy = canvas.height;
-  ctx.lineWidth = 3;
-  if (target) {
-    ctx.strokeStyle = 'rgba(255,80,80,0.95)';
-    ctx.beginPath();
-    ctx.moveTo(sx, sy);
-    ctx.lineTo(target.x, target.y);
-    ctx.stroke();
+            // --- Birim Butonu Yönetimi ---
+            unitSelectorGroups.forEach(group => {
+                group.addEventListener('click', (e) => {
+                    const clickedButton = e.target.closest('.unit-btn');
+                    if (!clickedButton) return;
 
-    // hedef işareti
-    ctx.fillStyle = 'rgba(255,80,80,0.95)';
-    ctx.beginPath();
-    ctx.arc(target.x, target.y, 8, 0, Math.PI*2);
-    ctx.fill();
+                    group.querySelectorAll('.unit-btn').forEach(btn => {
+                        btn.classList.remove('active-unit');
+                    });
 
-    // hesap: beta açısından hesaplama göster
-    computeHeightAndShow();
-  } else {
-    // çapraz kılavuz: merkez hedef
-    ctx.strokeStyle = 'rgba(60,166,166,0.6)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(sx-20, sy);
-    ctx.lineTo(sx+20, sy-120);
-    ctx.moveTo(sx+20, sy);
-    ctx.lineTo(sx-20, sy-120);
-    ctx.stroke();
+                    clickedButton.classList.add('active-unit');
+                });
+            });
 
-    // Açıklama: dokun
-    ctx.fillStyle = 'rgba(242,227,213,0.9)';
-    ctx.font = '14px Poppins, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Tepeye dokun veya ortayı hedefle', sx, 30);
-  }
-}
 
-function computeHeightAndShow(){
-  // Gerçek fiziksel mapping: canvas piksellerinden gerçek mesafeye dönüşüm
-  // Biz kolaylık için: kullanıcı yatay mesafeyi (d) metre girer; beta açısını alırız.
-  // Formül: h_total = z + tan(beta) * d
-  const d_raw = parseFloat(distanceInput.value) || 1;
-  const unit = unitSelect.value;
-  const z = parseFloat(deviceHeightInput.value) || 0; // metre
+            // --- Trigonometri ve Yardımcı Fonksiyonlar ---
+            function toRadians(degrees) {
+                return degrees * (Math.PI / 180);
+            }
+            function tan(degrees) {
+                return Math.tan(toRadians(degrees));
+            }
 
-  // beta: e.beta is degrees. Ancak dikkat: e.beta ölçümü cihaz referansına göre değişir.
-  // Burada kullanıcı telefonu paralel tutup tepeye doğrultmalı — pilot kullanım için en iyisi.
-  const betaDeg = currentBeta;
-  const betaRad = betaDeg * Math.PI / 180;
+            // --- AI PROTOTİP FONKSİYONLARI ---
+            function stabilizeData(newAngle) {
+                angleHistory.push(newAngle);
+                if (angleHistory.length > historySize) {
+                    angleHistory.shift(); 
+                }
+                const sum = angleHistory.reduce((a, b) => a + b, 0);
+                const stableAngle = sum / angleHistory.length;
+                if (angleHistory.length < 2) {
+                    return { stableAngle, stabilityPercent: 0 };
+                }
+                const mean = stableAngle;
+                const variance = angleHistory.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / angleHistory.length;
+                const stdDev = Math.sqrt(variance);
+                let stabilityPercent = 100 * (1 - Math.min(stdDev / 3, 1)); 
+                stabilityPercent = Math.max(0, Math.min(100, stabilityPercent)); 
+                return { stableAngle, stabilityPercent };
+            }
 
-  // Önemli: e.beta'nin 0 olduğu durum cihaz dik ise farklı davranır. Kullanıcıya kalibrasyon tavsiye edilir.
-  const delta = Math.tan(betaRad) * d_raw; // metre
-  let h_total_m = z + delta;
+            function getAIFeedback(angle, stability) {
+                if (angleHistory.length < historySize) return "Kalibrasyon yapılıyor... Lütfen sabit tutun.";
+                if (stability < 75) return "Eliniz titriyor. Cihazı sabit tutmaya çalışın.";
+                if (angle < 5) return "Daha yukarı nişan alın.";
+                if (angle > 85) return "Cihaz çok dik, hedefi kontrol edin.";
+                if (stability > 95) return "Ölçüm stabil. Sonuç hazır!";
+                return "Hedefin tepesine nişan alınıyor...";
+            }
 
-  // Birim dönüşümü
-  let display = '';
-  if (unit === 'm') display = h_total_m.toFixed(3) + ' m';
-  else if (unit === 'cm') display = (h_total_m*100).toFixed(1) + ' cm';
-  else display = (h_total_m*1000).toFixed(0) + ' mm';
+            // --- ANA UYGULAMA MANTIĞI ---
+            function handleOrientation(event) {
+                if(measurementCompleted) return;
 
-  heightVal.innerText = display;
+                let rawAngle = event.beta; 
+                
+                if (rawAngle === null || rawAngle === undefined || rawAngle < NEGATIVE_ANGLE_THRESHOLD) {
+                    stopCalculation("Cihaz aşağı bakıyor veya sensör hatası var!");
+                    return;
+                }
 
-  // ayrıca canvas'ta küçük tooltip göster
-  ctx.fillStyle = 'rgba(0,0,0,0.6)';
-  ctx.fillRect(8,8,220,56);
-  ctx.fillStyle = 'white';
-  ctx.font = '12px Poppins, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('Açı β: ' + betaDeg.toFixed(1) + '°', 16, 26);
-  ctx.fillText('Yükseklik: ' + display, 16, 46);
+                let positiveAngle = Math.max(0, rawAngle); 
+                positiveAngle = Math.min(90, positiveAngle); 
+                
+                const { stableAngle, stabilityPercent } = stabilizeData(positiveAngle);
+                
+                const objectHeightAboveDevice = tan(stableAngle) * distance;
+                const totalHeight = objectHeightAboveDevice + userHeight;
+                const feedback = getAIFeedback(stableAngle, stabilityPercent);
 
-  // target px info
-  targetVal.innerText = target ? Math.round(target.x) + ' , ' + Math.round(target.y) : '—';
-}
+                updateLiveUI(stableAngle, totalHeight, stabilityPercent, feedback);
 
-canvas.addEventListener('click', (ev)=>{
-  // canvas üzerine tıklayınca hedef (touch friendly)
-  const rect = canvas.getBoundingClientRect();
-  const x = (ev.clientX - rect.left) * (canvas.width / rect.width);
-  const y = (ev.clientY - rect.top) * (canvas.height / rect.height);
-  target = { x, y };
-});
+                if (stabilityPercent >= STABILITY_THRESHOLD && angleHistory.length === historySize) {
+                    finalMeasuredHeight = totalHeight;
+                    completeMeasurement(finalMeasuredHeight);
+                }
+            }
 
-video.addEventListener('loadedmetadata', fitCanvas);
+            function completeMeasurement(finalHeight) {
+                measurementCompleted = true;
+                stopListening(); 
 
-// Basit kayıt fonksiyonu
-saveBtn.addEventListener('click', ()=>{
-  if (!target) { alert('Önce hedef seç (kamera modunda)'); return; }
-  const entry = {
-    time: new Date().toLocaleString(),
-    angle: currentBeta,
-    distance: parseFloat(distanceInput.value)||0,
-    deviceHeight: parseFloat(deviceHeightInput.value)||0,
-    unit: unitSelect.value,
-    heightDisplay: heightVal.innerText
-  };
-  records.push(entry);
-  renderLog();
-});
+                liveDisplayArea.classList.add('hidden');
+                resultSummary.classList.remove('hidden');
+                finalHeightText.textContent = `${finalHeight.toFixed(2)} m`;
+                
+                geminiInsightButton.onclick = () => fetchGeminiInsight(finalHeight);
+                geminiInsightButton.classList.remove('bg-gray-500', 'hover:bg-gray-500');
+                geminiInsightButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                geminiInsightButton.innerHTML = '<span class="mr-2">✨</span> Yükseklik Analizi Al';
+                aiInsightOutput.innerHTML = '<p class="text-sm app-text-secondary opacity-50">Analiz almak için yukarıdaki butona tıklayın.</p>';
 
-function renderLog(){
-  logEl.innerHTML = '';
-  records.slice().reverse().forEach(r=>{
-    const div = document.createElement('div');
-    div.style.padding='6px'; div.style.borderBottom='1px solid rgba(255,255,255,0.03)';
-    div.innerHTML = `<strong>${r.time}</strong><div style="font-size:0.9rem">${r.heightDisplay} — açı: ${r.angle.toFixed(1)}° — d:${r.distance}${r.unit}</div>`;
-    logEl.appendChild(div);
-  });
-}
+                document.getElementById('liveMeasurementHeader').textContent = "Ölçüm Başarıyla Tamamlandı.";
+            }
+            
+            function stopCalculation(aiMessage) {
+                if(!measurementCompleted) {
+                    heightDisplay.textContent = "--- m";
+                    angleDisplay.textContent = "---°";
+                    stabilityDisplay.textContent = "0%";
+                    stabilityBar.style.width = "0%";
+                    aiFeedback.textContent = `AI: ${aiMessage}`;
+                    angleHistory = []; 
+                    crosshairH.style.transform = `translateX(-50%) translateY(-1px)`;
+                }
+            }
+            
+            function updateLiveUI(angle, height, stability, feedback) {
+                if(measurementCompleted) return;
 
-// Mod butonları
-camModeBtn.addEventListener('click', ()=>{ useCamera=true; camModeBtn.disabled=true; sensorModeBtn.disabled=false; });
-sensorModeBtn.addEventListener('click', ()=>{ useCamera=false; camModeBtn.disabled=false; sensorModeBtn.disabled=true; stopAll(); /* will not use camera */ alert('Sadece açı modunda kamera kapalıdır. "Başlat" ile sensör başlat.'); });
+                const yShift = -(angle / 90) * 40; 
+                crosshairH.style.transform = `translateX(-50%) translateY(calc(-1px + ${yShift}px))`;
 
-// Başlat / Durdur
-startBtn.addEventListener('click', async ()=>{
-  await startAll();
-});
-stopBtn.addEventListener('click', ()=>{
-  stopAll();
-});
+                if (angleHistory.length === historySize) {
+                    heightDisplay.textContent = `${height.toFixed(2)} m`;
+                    angleDisplay.textContent = `${angle.toFixed(1)}°`;
+                    stabilityDisplay.textContent = `${stability.toFixed(0)}%`;
+                    stabilityBar.style.width = `${stability.toFixed(0)}%`;
+                } else {
+                    let calibratingText = ".".repeat(Math.floor(angleHistory.length / (historySize / 4)) + 1);
+                    heightDisplay.textContent = calibratingText;
+                    angleDisplay.textContent = '...°';
+                    stabilityDisplay.textContent = '...%';
+                    stabilityBar.style.width = '0%';
+                }
+                aiFeedback.textContent = `AI: ${feedback}`;
+            }
+            
+            function startListening() {
+                window.addEventListener('deviceorientation', handleOrientation);
+            }
 
-// Kalibrasyon - basit: kullanıcı telefonu yerde yatay tutup "Sıfırla" diyebilir.
-// Burada daha gelişmiş kalibrasyon ekleyebilirsin (offset store).
-calibrateBtn.addEventListener('click', ()=>{
-  const z = parseFloat(deviceHeightInput.value) || 0;
-  alert('Kalibrasyon: Telefon yüksekliğini doğru gir. Ör: 1.6 m (okul sırası seviyesine göre). Bu değer ölçüm formülünde z olarak kullanılır.');
-});
+            function stopListening() {
+                window.removeEventListener('deviceorientation', handleOrientation);
+            }
+            
+            function resetAppState() {
+                stopListening();
+                measurementCompleted = false;
+                angleHistory = []; 
+                finalMeasuredHeight = 0;
 
-// başlangıç buton durumları
-camModeBtn.disabled = true;
-sensorModeBtn.disabled = false;
+                setupScreen.classList.remove('hidden');
+                measurementScreen.classList.add('hidden');
+                liveDisplayArea.classList.remove('hidden');
+                resultSummary.classList.add('hidden');
+                permissionStatus.textContent = ""; 
+                document.getElementById('liveMeasurementHeader').textContent = "Cismin tepesine nişan alın";
 
-</script>
+                stopCalculation("Ölçüm durduruldu."); 
+            }
+
+            // --- OLAY DİNLEYİCİLERİ ---
+            startButton.addEventListener('click', () => {
+                const distanceUnit = document.querySelector('.unit-selector-group[data-target="distance"] .active-unit').getAttribute('data-unit');
+                const userHeightUnit = document.querySelector('.unit-selector-group[data-target="userHeight"] .active-unit').getAttribute('data-unit');
+                
+                distance = convertValueToMeters(distanceInput.value, distanceUnit); 
+                userHeight = convertValueToMeters(userHeightInput.value, userHeightUnit);
+
+                if (distance <= 0) {
+                    permissionStatus.textContent = "Lütfen geçerli bir uzaklık değeri girin.";
+                    return;
+                }
+                if (userHeight < 0) { 
+                    permissionStatus.textContent = "Lütfen geçerli bir cihaz yüksekliği değeri girin.";
+                    return;
+                }
+
+                permissionStatus.textContent = "Sensör izni isteniyor...";
+
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(permissionState => {
+                            if (permissionState === 'granted') {
+                                permissionStatus.textContent = "İzin verildi. Başlatılıyor...";
+                                startListening();
+                                setupScreen.classList.add('hidden');
+                                measurementScreen.classList.remove('hidden');
+                            } else {
+                                permissionStatus.textContent = "Sensör izni reddedildi. Bu uygulama izin olmadan çalışamaz.";
+                            }
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                            permissionStatus.textContent = "Sensör izni alınırken bir hata oluştu.";
+                        });
+                } else {
+                    permissionStatus.textContent = "Başlatılıyor...";
+                    startListening();
+                    setupScreen.classList.add('hidden');
+                    measurementScreen.classList.remove('hidden');
+                }
+            });
+
+            resetButton.addEventListener('click', resetAppState);
+        });
+    </script>
 </body>
 </html>
