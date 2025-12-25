@@ -3,380 +3,457 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TRIGO MASTER - Mobile</title>
+    <title>TRIGO PRO - Mobile App</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
-    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #000000; color: #e2e8f0; touch-action: manipulation; }
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #e2e8f0; overflow: hidden; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         
-        /* Neon Efektler */
-        .neon-text { text-shadow: 0 0 10px rgba(50, 205, 50, 0.7); }
-        .neon-border { box-shadow: 0 0 15px rgba(50, 205, 50, 0.3); border-color: #32CD32; }
-        
-        /* Sekme Geçişi */
-        .tab-panel { display: none; animation: fadeIn 0.3s ease-in-out; }
-        .tab-panel.active { display: block; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Slider Özelleştirme */
-        input[type=range] {
-            -webkit-appearance: none; background: transparent; width: 100%;
+        /* Sayfa Geçiş Animasyonları */
+        .page-section {
+            display: none;
+            height: 100vh;
+            overflow-y: auto;
+            padding-bottom: 80px; /* Menü payı */
+            animation: fadeIn 0.4s ease-out;
         }
+        .page-section.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hamburger Menü Animasyonu */
+        #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-100%); }
+        #sidebar.open { transform: translateX(0); }
+        .overlay { display: none; }
+        .overlay.active { display: block; }
+
+        /* Neon Efektler */
+        .neon-green { text-shadow: 0 0 10px rgba(74, 222, 128, 0.6); }
+        
+        /* Slider Styling */
+        input[type=range] { -webkit-appearance: none; background: transparent; }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
-            background: #32CD32; margin-top: -8px; border: 2px solid #000;
+            background: #4ade80; margin-top: -8px; box-shadow: 0 0 10px #4ade80;
         }
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%; height: 4px; background: #333; border-radius: 2px;
         }
     </style>
 </head>
-<body class="flex flex-col h-screen overflow-hidden">
+<body>
 
-    <header class="p-4 bg-gray-900 border-b border-gray-800 flex justify-between items-center z-50">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tighter text-green-500 neon-text">TRIGO<span class="text-white">MASTER</span></h1>
-            <p class="text-xs text-gray-400">Math & Physics Tool</p>
+    <header class="fixed top-0 left-0 right-0 h-16 bg-black/90 backdrop-blur border-b border-gray-800 flex items-center justify-between px-5 z-50">
+        <button id="menu-btn" class="text-white text-2xl hover:text-green-400 transition">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <h1 class="text-xl font-bold tracking-wider neon-green">TRIGO<span class="text-white font-light">PRO</span></h1>
+        <div class="w-6"></div> </header>
+
+    <div id="overlay" class="overlay fixed inset-0 bg-black/80 z-40 backdrop-blur-sm" onclick="toggleMenu()"></div>
+    <aside id="sidebar" class="fixed top-0 left-0 bottom-0 w-64 bg-gray-900 border-r border-gray-800 z-50 shadow-2xl pt-20 px-4 flex flex-col">
+        <nav class="space-y-2">
+            <button onclick="navTo('home')" class="w-full text-left p-4 rounded-xl hover:bg-gray-800 transition flex items-center gap-3 text-white font-bold">
+                <i class="fa-solid fa-graduation-cap text-green-400"></i> Hikaye & Mantık
+            </button>
+            <button onclick="navTo('lab')" class="w-full text-left p-4 rounded-xl hover:bg-gray-800 transition flex items-center gap-3 text-gray-300">
+                <i class="fa-solid fa-wave-square text-blue-400"></i> Sinüs Lab & Kod
+            </button>
+            <button onclick="navTo('measure')" class="w-full text-left p-4 rounded-xl hover:bg-gray-800 transition flex items-center gap-3 text-gray-300">
+                <i class="fa-solid fa-ruler-combined text-yellow-400"></i> Saha Ölçümü
+            </button>
+        </nav>
+        <div class="mt-auto mb-8 p-4 bg-gray-800 rounded-xl">
+            <p class="text-xs text-gray-400">Geliştirici</p>
+            <p class="text-sm font-mono text-green-400">Gemini AI</p>
         </div>
-        <div class="text-xs font-mono text-green-400 bg-gray-800 px-2 py-1 rounded">v2.0</div>
-    </header>
+    </aside>
 
-    <main class="flex-1 overflow-y-auto pb-20 relative">
-        
-        <div id="tab-edu" class="tab-panel active p-4">
-            <div class="space-y-6">
-                <div class="w-full rounded-xl overflow-hidden border border-gray-700 shadow-2xl bg-black aspect-video relative group">
-                    <iframe class="w-full h-full" src="https://www.youtube.com/embed/TPz9uo9AZ10" title="Trigonometri" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <main class="pt-20 px-4 h-screen">
+
+        <section id="page-home" class="page-section active">
+            
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-white mb-2">Her Şey Gölgelerle Başladı</h2>
+                <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                    Milattan önce Mısırlılar ve Yunanlılar, piramitlerin boyunu ölçmek için güneşin oluşturduğu gölgeyi kullandılar.
+                    <br><br>
+                    <span class="text-green-400 font-bold">Mantık basitti:</span> Yere bir çubuk dik. Çubuğun boyunu ve gölgesini biliyorsan, açıyı bulabilirsin. Bu oranlara isim verdiler.
+                </p>
+                <div class="flex gap-2 text-xs overflow-x-auto pb-2">
+                    <span class="bg-gray-800 px-3 py-1 rounded-full border border-gray-700 whitespace-nowrap">📜 Thales (M.Ö 600)</span>
+                    <span class="bg-gray-800 px-3 py-1 rounded-full border border-gray-700 whitespace-nowrap">🔭 Hipparchus (Trigo'nun Babası)</span>
                 </div>
+            </div>
 
-                <div class="bg-gray-900 p-5 rounded-xl border-l-4 border-blue-500">
-                    <h2 class="text-xl font-bold text-white mb-2">Trigonometri Nedir?</h2>
-                    <p class="text-gray-300 text-sm leading-relaxed mb-3">
-                        Korkma! Trigonometri sadece <strong>"Üçgen Ölçümü"</strong> demektir. Bir dik üçgenin kenarları arasındaki oranlardır.
+            <div class="bg-gray-900 rounded-2xl border border-gray-800 p-1 mb-6 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-2 left-3 z-10">
+                    <span class="text-[10px] bg-green-900/50 text-green-400 px-2 py-1 rounded border border-green-500/30 uppercase tracking-widest font-bold">Canlı Simülasyon</span>
+                </div>
+                <canvas id="introCanvas" class="w-full h-64 bg-black rounded-xl"></canvas>
+                <div class="p-4">
+                    <h3 class="font-bold text-white text-lg">Daireden Dalgaya Geçiş</h3>
+                    <p class="text-xs text-gray-400 mt-1">
+                        Soldaki çemberde dönen nokta (açı), sağ tarafta zamanla ilerleyen bir dalgaya dönüşür. İşte <strong class="text-green-400">Sinüs</strong> budur: Dönen bir şeyin yüksekliğinin zamanla değişimi.
                     </p>
-                    <ul class="space-y-2 text-sm text-gray-400">
-                        <li>📐 <strong>Sinüs (sin):</strong> Karşı Kenar / Hipotenüs</li>
-                        <li>📏 <strong>Kosinüs (cos):</strong> Komşu Kenar / Hipotenüs</li>
-                        <li>📈 <strong>Tanjant (tan):</strong> Eğim demektir. (Karşı / Komşu)</li>
-                    </ul>
-                </div>
-
-                <div class="bg-gray-900 p-5 rounded-xl border-l-4 border-green-500">
-                    <h2 class="text-xl font-bold text-white mb-2">Kodlamada Sinüs</h2>
-                    <p class="text-gray-300 text-sm leading-relaxed">
-                        Yazılımda `Math.sin(x)` fonksiyonu bize -1 ile 1 arasında gidip gelen bir değer verir. Bu, ses dalgalarını, animasyonları ve oyunlardaki zıplama hareketlerini oluşturur.
-                    </p>
-                    <div class="mt-3 bg-black p-3 rounded font-mono text-xs text-green-400 border border-gray-700">
-                        // Sonsuz döngü (Dalga)<br>
-                        let y = Math.sin(zaman);
-                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="tab-lab" class="tab-panel p-4">
-            <div class="bg-gray-900 rounded-xl border border-gray-800 p-4 mb-4">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="font-bold text-white">🎛️ Sinüs Jeneratörü</h2>
-                    <div id="freq-display" class="font-mono text-green-400 text-sm">440 Hz</div>
+            <div class="space-y-3">
+                <div class="bg-gray-800/50 p-4 rounded-xl border-l-4 border-red-500">
+                    <h4 class="font-bold text-white text-sm">Sinüs (Sin)</h4>
+                    <p class="text-xs text-gray-400">Yükseklik demektir. Karşı / Hipotenüs.</p>
+                </div>
+                <div class="bg-gray-800/50 p-4 rounded-xl border-l-4 border-blue-500">
+                    <h4 class="font-bold text-white text-sm">Kosinüs (Cos)</h4>
+                    <p class="text-xs text-gray-400">Genişlik/Mesafe demektir. Komşu / Hipotenüs.</p>
+                </div>
+            </div>
+
+            <button onclick="navTo('lab')" class="w-full mt-8 bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-green-900/40">
+                Hadi Koda Dökelim →
+            </button>
+        </section>
+
+        <section id="page-lab" class="page-section">
+            <h2 class="text-2xl font-bold text-white mb-4">Laboratuvar</h2>
+            <p class="text-gray-400 text-sm mb-6">Yazılımda trigonometri ses, grafik ve oyun fiziği demektir. Aşağıdaki kodu çalıştır.</p>
+
+            <div class="bg-[#1e1e1e] p-4 rounded-t-xl border border-gray-700 font-mono text-xs overflow-x-auto">
+                <span class="text-purple-400">const</span> osc = ctx.<span class="text-blue-400">createOscillator</span>();<br>
+                osc.<span class="text-yellow-400">type</span> = <span class="text-green-400">'sine'</span>;<br>
+                osc.frequency.<span class="text-yellow-400">value</span> = <span id="code-freq" class="text-white font-bold">440</span>;<br>
+                osc.<span class="text-blue-400">start</span>();
+            </div>
+
+            <div class="bg-gray-900 border border-t-0 border-gray-700 rounded-b-xl p-5 mb-6">
+                
+                <canvas id="oscCanvas" class="w-full h-24 bg-black rounded-lg border border-gray-800 mb-4 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]"></canvas>
+
+                <div class="flex justify-between text-xs text-gray-500 mb-2 uppercase font-bold tracking-wider">
+                    <span>Kalın Ses</span>
+                    <span>İnce Ses</span>
+                </div>
+                <input type="range" id="freq-slider" min="100" max="1000" value="440" class="w-full mb-6">
+                
+                <button id="btn-audio" class="w-full py-4 rounded-xl font-bold bg-gray-800 text-white border border-gray-600 hover:bg-gray-700 active:scale-95 transition flex justify-center items-center gap-3">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Kodu Çalıştır & Duy</span>
+                </button>
+            </div>
+
+            <div class="bg-blue-900/20 p-4 rounded-xl border border-blue-500/30">
+                <h3 class="text-blue-400 font-bold text-sm mb-1"><i class="fa-solid fa-lightbulb"></i> Bilgi</h3>
+                <p class="text-gray-400 text-xs">Hoparlörün içindeki mıknatıs, buradaki sinüs koduna göre ileri-geri hareket ederek havayı titreştirir ve sesi oluşturur.</p>
+            </div>
+        </section>
+
+        <section id="page-measure" class="page-section h-full flex flex-col">
+            <div class="flex-none">
+                <h2 class="text-2xl font-bold text-white mb-2">Mühendis Modu</h2>
+                <p class="text-gray-400 text-sm mb-6">Telefon sensörlerini kullanarak gerçek dünya ölçümü yap.</p>
+            </div>
+
+            <div id="measure-setup" class="flex-1 bg-gray-900 rounded-2xl border border-gray-800 p-6 flex flex-col justify-center gap-4">
+                <div class="text-center mb-4">
+                    <i class="fa-solid fa-building text-4xl text-gray-600"></i>
+                </div>
+                
+                <div>
+                    <label class="text-xs text-green-400 uppercase font-bold ml-1">Hedefe Uzaklık (m)</label>
+                    <input type="number" id="dist-input" value="10" class="w-full bg-black border border-gray-700 text-white p-4 rounded-xl text-lg mt-1 focus:border-green-500 outline-none">
+                </div>
+                <div>
+                    <label class="text-xs text-green-400 uppercase font-bold ml-1">Kendi Boyun (m)</label>
+                    <input type="number" id="height-input" value="1.75" class="w-full bg-black border border-gray-700 text-white p-4 rounded-xl text-lg mt-1 focus:border-green-500 outline-none">
                 </div>
 
-                <canvas id="sineCanvas" class="w-full h-32 bg-black rounded-lg border border-gray-700 mb-4"></canvas>
+                <button onclick="startMeasure()" class="mt-4 bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-900/50">
+                    ÖLÇÜMÜ BAŞLAT
+                </button>
+            </div>
 
-                <div class="space-y-4">
-                    <div>
-                        <label class="text-xs text-gray-500 uppercase">Frekans (Sesin İnceliği)</label>
-                        <input type="range" id="freq-slider" min="50" max="1000" value="440" class="mt-2">
-                    </div>
+            <div id="measure-live" class="hidden flex-1 relative bg-black rounded-2xl border border-gray-800 overflow-hidden">
+                <div class="absolute inset-0 flex flex-col items-center justify-center z-10">
+                    <div class="w-full h-[1px] bg-red-500/50 absolute top-1/2"></div>
+                    <div class="h-full w-[1px] bg-red-500/50 absolute left-1/2"></div>
+                    <div class="w-48 h-48 border-2 border-dashed border-green-500/30 rounded-full animate-pulse"></div>
                     
-                    <button id="btn-toggle-tone" class="w-full py-3 rounded-lg font-bold bg-gray-700 text-white hover:bg-green-600 transition-all flex justify-center items-center gap-2">
-                        <span>▶️</span> Kodu Çalıştır & Sesi Duy
-                    </button>
-                </div>
-            </div>
-
-            <div class="bg-black p-4 rounded-xl border border-gray-800">
-                <h3 class="text-xs font-bold text-gray-500 uppercase mb-2">Arka Plandaki Kod</h3>
-                <pre class="font-mono text-xs text-blue-400 leading-5">
-const audioCtx = new AudioContext();
-const osilatör = audioCtx.createOscillator();
-
-// Sinüs Dalgası Seç
-osilatör.type = 'sine'; 
-osilatör.frequency.value = <span id="code-freq-val" class="text-white">440</span>;
-
-osilatör.connect(audioCtx.destination);
-osilatör.start();</pre>
-            </div>
-        </div>
-
-        <div id="tab-measure" class="tab-panel p-4 h-full flex flex-col">
-            <div id="setup-screen" class="flex-1 flex flex-col justify-center">
-                <div class="bg-gray-900 p-6 rounded-2xl border border-gray-700 text-center">
-                    <div class="text-4xl mb-4">🏗️</div>
-                    <h2 class="text-xl font-bold text-white mb-2">Yükseklik Ölçer</h2>
-                    <p class="text-gray-400 text-sm mb-6">Telefonun sensörlerini kullanarak trigonometrik hesaplama yapar.</p>
-                    
-                    <div class="text-left space-y-4 mb-6">
-                        <div>
-                            <label class="text-xs text-gray-500">Hedefe Uzaklık (Metre)</label>
-                            <input type="number" id="input-dist" value="5" class="w-full bg-black border border-gray-600 text-white p-3 rounded-lg text-lg focus:border-green-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="text-xs text-gray-500">Telefon Yüksekliği (Boyunuz)</label>
-                            <input type="number" id="input-height" value="1.70" class="w-full bg-black border border-gray-600 text-white p-3 rounded-lg text-lg focus:border-green-500 outline-none">
-                        </div>
-                    </div>
-
-                    <button id="btn-start-measure" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-900/50 transition-all">
-                        ÖLÇÜMÜ BAŞLAT
-                    </button>
-                </div>
-            </div>
-
-            <div id="live-screen" class="hidden flex-1 flex flex-col relative">
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                    <div class="w-64 h-64 border-2 border-dashed border-green-500/50 rounded-full flex items-center justify-center relative">
-                        <div class="w-full h-0.5 bg-green-500 absolute"></div> <div class="h-full w-0.5 bg-green-500 absolute"></div> </div>
-                </div>
-
-                <div class="z-10 mt-10 text-center">
-                    <div class="inline-block bg-black/80 backdrop-blur px-6 py-2 rounded-full border border-green-500/30">
-                        <span class="text-gray-400 text-xs uppercase">Eğim Açısı (Theta)</span>
-                        <div id="val-angle" class="text-3xl font-mono text-green-400 font-bold">0.0°</div>
+                    <div class="mt-32 text-center bg-black/60 backdrop-blur p-4 rounded-xl border border-gray-700">
+                        <div class="text-gray-400 text-xs">YÜKSEKLİK</div>
+                        <div id="result-meters" class="text-4xl font-mono font-bold text-white">0.00m</div>
+                        <div id="angle-debug" class="text-xs text-green-500 mt-1">Açı: 0°</div>
                     </div>
                 </div>
 
-                <div class="mt-auto mb-10 z-10">
-                    <div class="bg-gray-900/90 backdrop-blur p-6 rounded-2xl border border-gray-700 text-center mx-4 shadow-2xl">
-                        <p class="text-gray-400 text-xs mb-1">HESAPLANAN YÜKSEKLİK</p>
-                        <div id="val-result" class="text-6xl font-bold text-white tracking-tighter neon-text">0.00m</div>
-                        <div class="mt-2 text-xs font-mono text-green-600">h = tan(θ) * d + boy</div>
-                    </div>
-                    <button id="btn-stop-measure" class="mt-4 bg-red-600 text-white px-6 py-2 rounded-full text-sm font-bold mx-auto block shadow-lg">Ölçümü Durdur</button>
-                </div>
+                <div class="absolute inset-0 bg-gray-800 opacity-20"></div>
+                
+                <button onclick="stopMeasure()" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-8 py-3 rounded-full font-bold shadow-xl z-20">
+                    DURDUR
+                </button>
             </div>
-        </div>
+        </section>
 
     </main>
 
-    <nav class="bg-black border-t border-gray-800 flex justify-around items-center p-2 pb-safe sticky bottom-0 z-50">
-        <button onclick="switchTab('edu')" class="nav-btn active flex flex-col items-center p-2 text-gray-500 hover:text-green-400 transition" data-target="edu">
-            <span class="text-xl">🎓</span>
-            <span class="text-[10px] font-bold mt-1">Eğitim</span>
-        </button>
-        <button onclick="switchTab('lab')" class="nav-btn flex flex-col items-center p-2 text-gray-500 hover:text-green-400 transition" data-target="lab">
-            <span class="text-xl">∿</span>
-            <span class="text-[10px] font-bold mt-1">Sinüs Lab</span>
-        </button>
-        <button onclick="switchTab('measure')" class="nav-btn flex flex-col items-center p-2 text-gray-500 hover:text-green-400 transition" data-target="measure">
-            <span class="text-xl">📐</span>
-            <span class="text-[10px] font-bold mt-1">Ölçüm</span>
-        </button>
-    </nav>
-
     <script>
-        // --- NAVİGASYON SİSTEMİ ---
-        function switchTab(tabId) {
-            // Panelleri gizle/göster
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            
-            // Buton renklerini güncelle
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                if(btn.getAttribute('data-target') === tabId) {
-                    btn.classList.add('text-green-400');
-                    btn.classList.remove('text-gray-500');
-                } else {
-                    btn.classList.add('text-gray-500');
-                    btn.classList.remove('text-green-400');
-                }
-            });
+        // --- NAVİGASYON & UI MANTIĞI ---
+        const menuBtn = document.getElementById('menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        let currentLoop = null; // Aktif animasyon döngüsünü tutar
 
-            // Sekme değişince ölçümü durdur (pil tasarrufu)
-            if(tabId !== 'measure') stopMeasurement();
+        function toggleMenu() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+        
+        menuBtn.addEventListener('click', toggleMenu);
+
+        function navTo(pageId) {
+            // 1. Menüyü kapat
+            if(sidebar.classList.contains('open')) toggleMenu();
+
+            // 2. Sayfaları değiştir
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+
+            // 3. Önceki döngüleri/işlemleri temizle
+            cancelAnimationFrame(currentLoop);
+            stopAudio();
+            stopMeasure();
+
+            // 4. Yeni sayfa için özel başlatıcılar
+            if(pageId === 'home') startIntroAnimation();
+            if(pageId === 'lab') drawOscilloscope(); // Sadece çizim, ses değil
         }
 
-        // --- MODÜL 1: SİNÜS LAB & SES ---
-        let audioCtx = null;
-        let oscillator = null;
-        let isPlaying = false;
-        let animationId = null;
-
-        const sineCanvas = document.getElementById('sineCanvas');
-        const ctx = sineCanvas.getContext('2d');
-        // Canvas çözünürlük ayarı
-        sineCanvas.width = sineCanvas.clientWidth * 2;
-        sineCanvas.height = sineCanvas.clientHeight * 2;
-
-        document.getElementById('btn-toggle-tone').addEventListener('click', toggleTone);
-        document.getElementById('freq-slider').addEventListener('input', updateFreq);
-
-        function toggleTone() {
-            const btn = document.getElementById('btn-toggle-tone');
+        // --- SAYFA 1: INTRO ANİMASYONU (Canvas) ---
+        function startIntroAnimation() {
+            const canvas = document.getElementById('introCanvas');
+            const ctx = canvas.getContext('2d');
             
-            if (isPlaying) {
-                // Durdur
+            // Retina ekranlar için keskinlik ayarı
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            let angle = 0;
+            const history = []; // Dalga kuyruğu
+
+            function animate() {
+                const w = rect.width;
+                const h = rect.height;
+                const cx = w * 0.25; // Çember merkezi X
+                const cy = h * 0.5;  // Çember merkezi Y
+                const radius = h * 0.3;
+
+                ctx.clearRect(0, 0, w, h);
+
+                // 1. Çemberi Çiz
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // 2. Dönen Noktayı Hesapla
+                const px = cx + Math.cos(angle) * radius;
+                const py = cy + Math.sin(angle) * radius;
+
+                // 3. Yarıçap çizgisi
+                ctx.strokeStyle = '#4ade80'; // Neon Yeşil
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(px, py);
+                ctx.stroke();
+
+                // 4. Nokta
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(px, py, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 5. Karşıya İzdüşüm Çizgisi (Çemberden Dalgaya)
+                const waveStartX = w * 0.5;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                ctx.lineTo(waveStartX, py);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // 6. Dalgayı Kaydet ve Çiz
+                history.unshift(py); // Yeni Y değerini ekle
+                if(history.length > w * 0.5) history.pop(); // Çok uzarsa sil
+
+                ctx.strokeStyle = '#4ade80';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                for(let i = 0; i < history.length; i++) {
+                    ctx.lineTo(waveStartX + i, history[i]);
+                }
+                ctx.stroke();
+
+                angle -= 0.05; // Dönüş hızı
+                currentLoop = requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // --- SAYFA 2: LAB SES & SİNÜS ---
+        let audioCtx;
+        let oscillator;
+        let isPlaying = false;
+
+        const btnAudio = document.getElementById('btn-audio');
+        const freqSlider = document.getElementById('freq-slider');
+        const codeFreqDisplay = document.getElementById('code-freq');
+        const oscCanvas = document.getElementById('oscCanvas');
+        const oscCtx = oscCanvas.getContext('2d');
+
+        // Lab canvas boyutlandırma
+        oscCanvas.width = oscCanvas.clientWidth * 2;
+        oscCanvas.height = oscCanvas.clientHeight * 2;
+
+        freqSlider.addEventListener('input', (e) => {
+            codeFreqDisplay.innerText = e.target.value;
+            if(oscillator) oscillator.frequency.value = e.target.value;
+        });
+
+        btnAudio.addEventListener('click', () => {
+            if(isPlaying) stopAudio();
+            else startAudio();
+        });
+
+        function startAudio() {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            oscillator = audioCtx.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.value = freqSlider.value;
+            
+            // Sesi yumuşatmak için Gain (Ses seviyesi) Node
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // %10 ses seviyesi (kulak patlamasın)
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.start();
+            isPlaying = true;
+            
+            btnAudio.innerHTML = `<i class="fa-solid fa-stop"></i> <span>Kodu Durdur</span>`;
+            btnAudio.classList.remove('bg-gray-800');
+            btnAudio.classList.add('bg-red-600');
+            
+            drawOscilloscope();
+        }
+
+        function stopAudio() {
+            if(oscillator) {
                 oscillator.stop();
                 oscillator = null;
-                isPlaying = false;
-                btn.innerHTML = "<span>▶️</span> Kodu Çalıştır & Sesi Duy";
-                btn.classList.remove('bg-red-600');
-                btn.classList.add('bg-gray-700');
-                cancelAnimationFrame(animationId);
-                ctx.clearRect(0,0,sineCanvas.width, sineCanvas.height);
-            } else {
-                // Başlat (AudioContext başlatma - kullanıcı etkileşimi şart)
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                
-                oscillator = audioCtx.createOscillator();
-                oscillator.type = 'sine';
-                oscillator.frequency.value = document.getElementById('freq-slider').value;
-                
-                // Hoparlöre bağla
-                oscillator.connect(audioCtx.destination);
-                oscillator.start();
-                
-                isPlaying = true;
-                btn.innerHTML = "<span>⏹</span> Kodu Durdur";
-                btn.classList.remove('bg-gray-700');
-                btn.classList.add('bg-red-600');
-                
-                drawSineWave();
             }
+            isPlaying = false;
+            btnAudio.innerHTML = `<i class="fa-solid fa-play"></i> <span>Kodu Çalıştır & Duy</span>`;
+            btnAudio.classList.add('bg-gray-800');
+            btnAudio.classList.remove('bg-red-600');
         }
 
-        function updateFreq(e) {
-            const val = e.target.value;
-            document.getElementById('freq-display').innerText = val + " Hz";
-            document.getElementById('code-freq-val').innerText = val;
-            if (oscillator) {
-                oscillator.frequency.value = val;
-            }
-        }
+        function drawOscilloscope() {
+            if(document.getElementById('page-lab').style.display === 'none') return;
 
-        function drawSineWave() {
-            if (!isPlaying) return;
+            const w = oscCanvas.width;
+            const h = oscCanvas.height;
+            const freq = freqSlider.value;
             
-            const width = sineCanvas.width;
-            const height = sineCanvas.height;
-            const freq = document.getElementById('freq-slider').value;
+            oscCtx.fillStyle = 'black';
+            oscCtx.fillRect(0, 0, w, h);
             
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Hafif iz bırakma efekti
-            ctx.fillRect(0, 0, width, height);
+            oscCtx.lineWidth = 4;
+            oscCtx.strokeStyle = isPlaying ? '#4ade80' : '#333'; // Çalıyorsa yeşil, duruyorsa gri
             
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = '#32CD32'; // Neon Yeşil
-            ctx.beginPath();
-            
-            // Sinüs Çizimi
-            // y = sin(x) formülü burada görselleşiyor
+            oscCtx.beginPath();
             const time = Date.now() / 1000;
-            const waveLength = 20000 / freq; // Frekansa göre dalga boyunu ayarla
             
-            for (let x = 0; x < width; x++) {
-                // Matematiksel Sinüs Formülü:
-                // y = Amplitude * sin(Frequency * x + Phase)
-                const y = (height / 2) + Math.sin((x / waveLength) + (time * freq / 10)) * (height / 3);
-                
-                if (x === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+            for(let x = 0; x < w; x++) {
+                // Görselleştirme için suni dalga
+                const wavelength = isPlaying ? (20000 / freq) : 100;
+                const amplitude = isPlaying ? (h/3) : 5;
+                const speed = isPlaying ? (time * freq / 5) : 0;
+
+                const y = (h/2) + Math.sin((x/wavelength) + speed) * amplitude;
+                if(x===0) oscCtx.moveTo(x, y);
+                else oscCtx.lineTo(x, y);
             }
+            oscCtx.stroke();
             
-            ctx.stroke();
-            animationId = requestAnimationFrame(drawSineWave);
+            if(isPlaying) requestAnimationFrame(drawOscilloscope);
         }
 
-        // --- MODÜL 2: ÖLÇÜM (YÜKSEKLİK) ---
-        let measurementActive = false;
-        const btnStart = document.getElementById('btn-start-measure');
-        const btnStop = document.getElementById('btn-stop-measure');
-        
-        btnStart.addEventListener('click', requestSensors);
-        btnStop.addEventListener('click', stopMeasurement);
-
-        function requestSensors() {
-            // iOS 13+ için İzin İsteği
+        // --- SAYFA 3: ÖLÇÜM SENSÖRLERİ ---
+        function startMeasure() {
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
-                    .then(response => {
-                        if (response === 'granted') {
-                            startMeasurement();
-                        } else {
-                            alert("Sensör izni verilmedi.");
-                        }
+                    .then(resp => {
+                        if (resp === 'granted') initSensor();
+                        else alert('İzin verilmedi kanka, ölçemem.');
                     })
                     .catch(console.error);
             } else {
-                // Android ve eski iOS
-                startMeasurement();
+                initSensor();
             }
         }
 
-        function startMeasurement() {
-            document.getElementById('setup-screen').classList.add('hidden');
-            document.getElementById('live-screen').classList.remove('hidden');
-            document.getElementById('live-screen').classList.add('flex');
+        function initSensor() {
+            document.getElementById('measure-setup').classList.add('hidden');
+            document.getElementById('measure-live').classList.remove('hidden');
+            document.getElementById('measure-live').classList.add('flex');
             
             window.addEventListener('deviceorientation', handleOrientation);
-            measurementActive = true;
         }
 
-        function stopMeasurement() {
-            if(!measurementActive) return;
+        function stopMeasure() {
             window.removeEventListener('deviceorientation', handleOrientation);
-            
-            document.getElementById('setup-screen').classList.remove('hidden');
-            document.getElementById('live-screen').classList.add('hidden');
-            document.getElementById('live-screen').classList.remove('flex');
-            measurementActive = false;
+            document.getElementById('measure-setup').classList.remove('hidden');
+            document.getElementById('measure-live').classList.add('hidden');
+            document.getElementById('measure-live').classList.remove('flex');
         }
 
-        // Gürültü önlemek için basit filtre
-        let angleHistory = []; 
-        const MAX_HISTORY = 10;
-
-        function handleOrientation(event) {
-            let beta = event.beta; // Cihazın öne arkaya eğimi (-180, 180)
+        function handleOrientation(e) {
+            // Beta: Cihazın öne/arkaya eğimi (-180, 180)
+            let beta = e.beta;
             
-            if (beta === null) return;
+            // Basit açı sabitleme (0 ile 90 arası)
+            if(beta > 90) beta = 90;
+            if(beta < 0) beta = 0;
             
-            // Telefon dik tutulduğunda 90 derece gelir. 
-            // Biz yataydan yukarı bakış açısını istiyoruz.
-            // Bu yüzden genellikle: 90 - beta veya direkt beta (cihaza göre değişir)
-            // Bu basit versiyonda Beta'yı 0-90 arası limitliyoruz.
+            // Hesaplama
+            // Tan(açı) = Karşı(Yükseklik) / Komşu(Mesafe)
+            // Yükseklik = Tan(açı) * Mesafe + Boy
             
-            if (beta > 90) beta = 90;
-            if (beta < 0) beta = 0;
+            const dist = parseFloat(document.getElementById('dist-input').value);
+            const height = parseFloat(document.getElementById('height-input').value);
             
-            // Ortalama alma (Yumuşatma)
-            angleHistory.push(beta);
-            if (angleHistory.length > MAX_HISTORY) angleHistory.shift();
+            const radian = beta * (Math.PI / 180);
+            const calcHeight = (Math.tan(radian) * dist) + height;
             
-            const avgAngle = angleHistory.reduce((a, b) => a + b, 0) / angleHistory.length;
-            
-            updateCalculation(avgAngle);
+            document.getElementById('result-meters').innerText = calcHeight.toFixed(2) + "m";
+            document.getElementById('angle-debug').innerText = `Eğim Açısı: ${beta.toFixed(1)}°`;
         }
 
-        function updateCalculation(angle) {
-            const distance = parseFloat(document.getElementById('input-dist').value);
-            const userHeight = parseFloat(document.getElementById('input-height').value);
-            
-            // Ekrana Açıyı Yaz
-            document.getElementById('val-angle').innerText = angle.toFixed(1) + "°";
-            
-            // TRİGONOMETRİ HESABI
-            // Formül: h = tan(açı) * uzaklık + boy
-            // Not: JavaScript Math.tan() Radyan cinsinden çalışır!
-            const angleInRadians = angle * (Math.PI / 180);
-            const heightOfObject = Math.tan(angleInRadians) * distance;
-            const totalHeight = heightOfObject + userHeight;
-            
-            document.getElementById('val-result').innerText = totalHeight.toFixed(2) + "m";
-        }
+        // Başlangıç animasyonu
+        startIntroAnimation();
 
     </script>
 </body>
