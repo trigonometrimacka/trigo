@@ -2,725 +2,580 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TRIGO AI - Akıllı Yükseklik Ölçer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matematik Performans Ödevi: Trigonometrik Sinyal Analizi</title>
     
     <style>
-        /* Projeye özel stiller */
-        body { 
-            font-family: 'Inter', sans-serif; 
-            touch-action: manipulation;
-            overscroll-behavior: none;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        /* Dinamik Renkler için CSS Değişkenleri */
         :root {
-            /* Light Theme (Varsayılan) */
-            --bg-primary: #ffffff;      /* Beyaz */
-            --bg-secondary: #f3f4f6;    /* Gray-100 */
-            --bg-tertiary: #e5e7eb;     /* Gray-200 */
-            --text-primary: #111827;    /* Gray-900 */
-            --text-secondary: #4b5563;  /* Gray-600 */
-            --ring-color: #d1d5db;      /* Gray-300 */
-            --input-bg: #ffffff;
-            --input-border: #d1d5db;
+            --ana-renk: #00ff41; /* Matrix Yeşili */
+            --vurgu-renk: #ffffff;
+            --arka-plan: #0d0d0d;
+            --panel-arka-plan: #1a1a1a;
+            --border-renk: #333;
         }
 
-        /* Dark Theme Sınıfı */
-        .dark-theme {
-            --bg-primary: #111827;      /* Gray-900 */
-            --bg-secondary: #1f2937;    /* Gray-800 */
-            --bg-tertiary: #374151;     /* Gray-700 */
-            --text-primary: #f9fafb;    /* Gray-50 */
-            --text-secondary: #9ca3af;  /* Gray-400 */
-            --ring-color: #374151;      /* Gray-700 */
-            --input-bg: #1f2937;        /* Gray-800 */
-            --input-border: #374151;    /* Gray-700 */
-        }
-        
-        /* Tema Uygulaması */
-        .app-bg {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-        }
-        .app-card {
-            background: linear-gradient(to bottom right, var(--bg-secondary), var(--bg-tertiary));
-            border: 1px solid var(--ring-color);
-            color: var(--text-primary);
-        }
-        .app-text-secondary {
-            color: var(--text-secondary);
-        }
-        .app-input {
-            background-color: var(--input-bg);
-            border-color: var(--input-border);
-            color: var(--text-primary);
-        }
-
-        /* Logo için özel font sınıfı (Audiowide) */
-        .font-logo {
-            font-family: 'Audiowide', sans-serif;
-            letter-spacing: 1.5px;
-        }
-        
-        /* Dinamik Altın Rengi */
-        .color-gold {
-            color: rgb(229, 174, 50);
-        }
-        
-        /* Nişangah (Crosshair) Stili - Altın Rengi */
-        .crosshair {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            border: 2px dashed var(--ring-color);
-            border-radius: 50%;
-            margin: 20px auto;
-        }
-        /* Dikey çizgi (Sabit) */
-        .crosshair-line-v {
-            position: absolute;
-            top: 50%;
-            left: calc(50% - 1px);
-            height: 50px;
-            width: 2px;
-            background: rgba(229, 174, 50, 0.7);
-            box-shadow: 0 0 8px rgba(229, 174, 50, 1);
-            transform: translateY(-50%);
-        }
-        /* Yatay çizgi (DİNAMİK) */
-        .crosshair-line-h {
-            position: absolute;
-            left: 50%;
-            top: 50%; 
-            width: 50px;
-            height: 2px;
-            background: rgba(229, 174, 50, 0.7);
-            box-shadow: 0 0 8px rgba(229, 174, 50, 1);
-            transform: translateX(-50%) translateY(-1px); 
-            transition: transform 0.1s linear; 
-        }
-
-        /* Number input'lardaki okları gizle */
-        input[type="number"] {
-            -moz-appearance: textfield;
-        }
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none;
+        body {
+            background-color: var(--arka-plan);
+            color: #ccc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-        }
-        
-        /* Aktif sekme stili - Altın Rengi */
-        .tab-btn {
-            color: var(--text-secondary);
-            transition: all 0.2s;
-            background-color: var(--bg-tertiary);
-        }
-        .tab-btn.active {
-            background-color: rgb(229, 174, 50);
-            color: black;
+            padding: 0;
+            line-height: 1.6;
         }
 
-        /* Birim Butonları Stili */
-        .unit-btn {
-            background-color: var(--bg-tertiary); 
-            color: var(--text-secondary); 
-            border: 1px solid var(--ring-color); 
-            transition: all 0.1s;
-            font-weight: 500;
+        /* --- ÖDEV BAŞLIK VE BİLGİ ALANI --- */
+        header {
+            background: linear-gradient(180deg, #111 0%, #000 100%);
+            border-bottom: 2px solid var(--ana-renk);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
         }
-        .unit-btn:hover:not(.active-unit) {
-            background-color: var(--input-border); 
+
+        h1 {
+            color: var(--ana-renk);
+            margin: 0;
+            font-size: 2.2em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
-        .active-unit {
-            background-color: rgb(229, 174, 50); /* color-gold */
-            color: black;
-            border-color: rgb(229, 174, 50);
-            box-shadow: 0 0 5px rgba(229, 174, 50, 0.5);
+
+        .ogrenci-bilgi {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #fff;
+            background-color: #222;
+            display: inline-block;
+            padding: 10px 30px;
+            border-radius: 20px;
+            border: 1px solid #444;
+        }
+
+        .ogrenci-bilgi span {
+            color: var(--ana-renk);
+            font-weight: bold;
+            margin: 0 10px;
+        }
+
+        /* --- ANA DÜZEN --- */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .aciklama-kutu {
+            background-color: rgba(0, 255, 65, 0.05);
+            border-left: 4px solid var(--ana-renk);
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 0 5px 5px 0;
         }
         
-        /* Tema Değiştirme Butonu (Switch) */
-        .theme-switch {
-            width: 56px;
-            height: 30px;
-            background: var(--bg-tertiary);
-            border-radius: 15px;
-            position: relative;
-            cursor: pointer;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        .aciklama-kutu h3 {
+            margin-top: 0;
+            color: var(--vurgu-renk);
         }
-        .theme-switch::after {
-            content: '☀️';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 26px;
-            height: 26px;
-            background: #fef3c7; /* Amber-100 */
-            border-radius: 50%;
-            transition: 0.3s;
+
+        /* --- KONTROL PANELİ --- */
+        .kontrol-paneli {
+            background-color: var(--panel-arka-plan);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-renk);
             display: flex;
-            align-items: center;
+            flex-wrap: wrap;
             justify-content: center;
-            font-size: 14px;
+            gap: 15px;
+            margin-bottom: 20px;
         }
-        .dark-theme .theme-switch::after {
-            transform: translateX(26px);
-            content: '🌙';
-            background: #1f2937; /* Gray-800 */
-            box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        #startStopButton { background-color: var(--ana-renk); color: #000; }
+        #startStopButton:hover { background-color: #00cc33; box-shadow: 0 0 10px var(--ana-renk); }
+        
+        #captureButton { background-color: #ff9800; color: #000; }
+        #captureButton:disabled { background-color: #555; color: #888; cursor: not-allowed; }
+        
+        #downloadButton { background-color: #007bff; color: #fff; }
+        #downloadButton:disabled { background-color: #555; color: #888; cursor: not-allowed; }
+
+        /* --- GRAFİK ALANLARI --- */
+        .grafik-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .grafik-grid { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background-color: var(--panel-arka-plan);
+            border: 1px solid var(--border-renk);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            color: var(--ana-renk);
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+
+        canvas {
+            background-color: #000;
+            border: 1px solid #444;
+            width: 100%;
+            border-radius: 5px;
+            cursor: crosshair;
+        }
+
+        /* --- VERİ VE SLIDER --- */
+        .slider-container {
+            margin-top: 15px;
+        }
+        
+        input[type=range] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .data-display {
+            font-family: 'Courier New', monospace;
+            background-color: #111;
+            color: var(--ana-renk);
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px dashed #444;
+            white-space: pre-wrap;
+            font-size: 0.9em;
+            min-height: 250px;
+        }
+
+        .matematik-notu {
+            font-size: 0.85em;
+            color: #aaa;
+            font-style: italic;
+            margin-top: 5px;
         }
     </style>
 </head>
-<body class="app-bg flex items-center justify-center min-h-screen p-4">
+<body>
 
-    <div id="app-container" class="w-full max-w-md mx-auto">
+    <header>
+        <h1>Trigonometri Performans Ödevi</h1>
+        <div class="ogrenci-bilgi">
+            Öğrenci: <span>ADINIZ SOYADINIZ</span> | 
+            Sınıf: <span>11/A</span> | 
+            No: <span>1234</span>
+        </div>
+    </header>
 
-        <div id="setup-screen" class="app-card p-6 rounded-2xl shadow-2xl transition-all duration-300">
+    <div class="container">
+        
+        <div class="aciklama-kutu">
+            <h3>📐 Projenin Amacı ve Matematiksel Temeli</h3>
+            <p>
+                Bu proje, ses dalgalarının gerçek zamanlı analizi üzerinden trigonometrik fonksiyonların (Sinüs, Tanjant, Eğim) 
+                pratik uygulamasını göstermektedir. Ses dalgası üzerindeki herhangi bir anlık noktanın <strong>türevi (eğimi)</strong>, 
+                o noktadan çizilen teğetin x ekseniyle yaptığı açının tanjantına eşittir (<code>m = tan(θ)</code>).
+                <br><br>
+                Yazılım, ses dalgasını yakalar, seçilen noktanın değişim hızını (eğimini) hesaplar ve ters trigonometrik fonksiyonlar 
+                kullanarak açıyı ve sinüs değerlerini türetir.
+            </p>
+        </div>
+
+        <div class="kontrol-paneli">
+            <button id="startStopButton">🎙️ Mikrofonu Başlat</button>
+            <button id="captureButton" disabled>📸 Sesi Yakala (Analiz Et)</button>
+            <button id="downloadButton" disabled>💾 WAV Olarak İndir</button>
+        </div>
+
+        <div class="grafik-grid">
             
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h1 class="font-logo text-4xl font-bold color-gold mb-0">TRIGO AI</h1>
-                    <p class="text-sm app-text-secondary">Akıllı Yükseklik Asistanı</p>
+            <div class="panel">
+                <h2>1. Canlı Osiloskop (Zaman Alanı)</h2>
+                <canvas id="liveCanvas" height="200"></canvas>
+                <div class="slider-container">
+                    <label>Hassasiyet (FFT Boyutu)</label>
+                    <input type="range" id="fftSlider" min="0" max="5" value="2">
                 </div>
-                <div class="flex items-center space-x-2">
-                    <span class="app-text-secondary text-sm font-medium hidden sm:inline">Koyu Tema</span>
-                    <div id="themeToggle" class="theme-switch"></div>
+                <p class="matematik-notu">Mikrofondan gelen analog ses sinyalinin dijital genlik/zaman grafiğidir.</p>
+            </div>
+
+            <div class="panel">
+                <h2>2. Analiz ve Dondurulmuş Kare</h2>
+                <canvas id="analysisCanvas" height="200"></canvas>
+                <div class="slider-container">
+                    <label>Kaydırma / Sarma</label>
+                    <input type="range" id="scrollSlider" min="0" max="1000" value="0">
+                </div>
+                <div style="margin-top:10px;">
+                    <label><input type="checkbox" id="showRefWave"> Referans Sinüs Dalgasını (y = sin x) Göster</label>
                 </div>
             </div>
-            
-            <div class="flex mb-4 rounded-lg p-1 text-sm" style="background-color: var(--bg-tertiary);">
-                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all active" data-tab="tab-input">
-                    Giriş
-                </button>
-                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all" data-tab="tab-simple">
-                    Basit Anlatım
-                </button>
-                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all" data-tab="tab-purpose">
-                    Proje Amacı
-                </button>
-                <button class="tab-btn flex-1 p-2 rounded-md font-semibold transition-all" data-tab="tab-how">
-                    Nasıl Çalışır?
-                </button>
+
+        </div>
+
+        <div class="grafik-grid" style="margin-top: 20px;">
+            <div class="panel">
+                <h2>🧮 Trigonometrik Hesaplama Sonuçları</h2>
+                <pre id="analysisData" class="data-display">
+Grafik üzerinde bir noktaya tıklayarak analiz yapın.
+--------------------------------------------------
+Beklenen Veriler:
+1. Noktanın Koordinatları (t, y)
+2. Anlık Değişim Hızı (Eğim/Türev)
+3. Teğet Açısı (θ)
+4. Trigonometrik Oranlar (sin, cos, tan)
+                </pre>
             </div>
 
-            <div id="tab-content">
-                <div id="tab-input" class="tab-panel">
-                    <p class="text-sm app-text-secondary mb-4">Lütfen ölçüm yapmak için aşağıdaki bilgileri girin:</p>
-                    
-                    <div class="mb-4">
-                        <label for="distance" class="block text-sm font-medium app-text-secondary mb-1">1. Cisme Yatay Uzaklık</label>
-                        <input type="number" id="distance" value="10" class="app-input w-full p-3 border rounded-lg text-lg focus:ring-2 focus:ring-[rgb(229,174,50)] focus:outline-none" placeholder="Örn: 10">
-                        
-                        <div class="unit-selector-group flex space-x-2 mt-2" data-target="distance">
-                            <button data-unit="m" class="unit-btn flex-1 p-1 rounded-lg text-sm active-unit">metre (m)</button>
-                            <button data-unit="cm" class="unit-btn flex-1 p-1 rounded-lg text-sm">santimetre (cm)</button>
-                            <button data-unit="mm" class="unit-btn flex-1 p-1 rounded-lg text-sm">milimetre (mm)</button>
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <label for="userHeight" class="block text-sm font-medium app-text-secondary mb-1">2. Cihaz Yüksekliği</label>
-                        <input type="number" id="userHeight" value="1.7" class="app-input w-full p-3 border rounded-lg text-lg focus:ring-2 focus:ring-[rgb(229,174,50)] focus:outline-none" placeholder="Örn: 1.7">
-                        
-                        <div class="unit-selector-group flex space-x-2 mt-2" data-target="userHeight">
-                            <button data-unit="m" class="unit-btn flex-1 p-1 rounded-lg text-sm active-unit">metre (m)</button>
-                            <button data-unit="cm" class="unit-1 flex-1 p-1 rounded-lg text-sm">santimetre (cm)</button>
-                            <button data-unit="mm" class="unit-btn flex-1 p-1 rounded-lg text-sm">milimetre (mm)</button>
-                        </div>
-
-                        <p class="text-xs app-text-secondary mt-1 opacity-70">Telefonu tuttuğunuz yükseklik (göz hizanız).</p>
-                    </div>
-
-                    <button id="startButton" class="w-full bg-[rgb(229,174,50)] text-black p-4 rounded-lg font-bold text-lg hover:bg-[rgb(209,154,30)] transition-all duration-200 shadow-lg active:scale-95">
-                        Ölçümü Başlat
-                    </button>
-                    <p id="permission-status" class="text-center color-gold text-sm mt-4 h-5"></p>
-                </div>
-
-                <div id="tab-simple" class="tab-panel hidden app-text-secondary text-sm space-y-3">
-                    <h3 class="font-semibold text-lg text-gray-900 dark:text-white mb-2">Bu Alet Ne İşe Yarıyor? (Mala Anlatır Gibi)</h3>
-                    <p>Diyelim karşıdaki binanın boyunu merak ettin. Bu alet, telefonunu **süper akıllı bir metreye** dönüştürür.</p>
-                    <p>Olay basit:</p>
-                    <ul class="list-disc list-outside space-y-2 pl-5">
-                        <li>
-                            <strong class="app-text-primary">1. Uzaklığı Söyle:</strong> Sen programa "Ben binadan 15 metre uzaktayım" diyorsun (mm, cm, m olarak girebilirsin).
-                        </li>
-                        <li>
-                            <strong class="app-text-primary">2. Nişan Al:</strong> Telefonunu binanın <strong class="color-gold">tepesine</strong> doğrultuyorsun.
-                        </li>
-                        <li>
-                            <strong class="app-text-primary">3. Bitti:</strong> Program, telefonu ne kadar <strong class="color-gold">yukarı</strong> kaldırdığını anlıyor, basit bir matematik yapıyor ve "O BİNA 25 METREYMİŞ" diyor.
-                        </li>
-                    </ul>
-                    <p class="font-medium app-text-secondary mt-3 opacity-80">"AI" (Yapay Zekâ) ise senin <strong class="app-text-primary">el titremeni</strong> yok sayıp ölçümü tertemiz yapıyor. O kadar.</p>
-                </div>
-
-                <div id="tab-purpose" class="tab-panel hidden app-text-secondary text-sm space-y-3">
-                    <h3 class="font-semibold text-lg app-text-primary mb-2">Trigonometri Göz Hizanızda</h3>
-                    <p>TRIGO AI, bir binanın, bir ağacın veya herhangi bir yüksek nesnenin boyunu ölçmek için telefonunuzun sensörlerini ve temel trigonometriyi kullanır.</p>
-                    <p>Amacımız, matematiği kağıt üzerindeki bir formül olmaktan çıkarıp, onu herkesin kullanabileceği, AI (Yapay Zekâ) destekli pratik bir ölçüm aracına dönüştürmektir.</p>
-                    <p class="font-medium color-gold">Artık mm, cm ve m birimlerinde hassas girişler yapabilir, ister koyu ister açık temada çalışabilirsiniz.</p>
-                </div>
-                
-                <div id="tab-how" class="tab-panel hidden app-text-secondary text-sm space-y-3">
-                    <h3 class="font-semibold text-lg app-text-primary mb-2">Hayatı Kolaylaştıran Formül</h3>
-                    <p>Sizden tek istediğimiz, ölçtüğünüz nesneye olan yatay uzaklığınızı ($d$) bilmeniz. Girilen tüm birimler, hesaplama öncesinde metreye çevrilir.</p>
-                    <p>Siz hedefin tepesine nişan aldığınızda, telefonunuzun eğim sensörü (jiroskop) $\beta$ (beta) açısını ölçer.</p>
-                    <p>Uygulama, bu iki bilgiyi kullanarak anında o meşhur formülü uygular:</p>
-                    <div class="text-center p-3 rounded-lg my-2" style="background-color: var(--bg-tertiary);">
-                        <code class="text-base color-gold">Yükseklik = tan(β) × Uzaklık (d) + Cihaz Yüksekliği</code>
-                    </div>
-                    <p>AI'nın rolü ise, el titremesi gibi sensör hatalarını filtreleyerek $\beta$ açısını stabilize etmek ve size en doğru sonucu sunmaktır.</p>
+            <div class="panel">
+                <h2>📈 Referans Dalga Ayarları</h2>
+                <pre id="refWaveData" class="data-display">
+Referans dalga kapalı.
+--------------------------------------------------
+Bu bölüm, ideal bir sinüs dalgası (saf ses) ile
+gerçek sesinizi karşılaştırmanızı sağlar.
+                </pre>
+                <div class="slider-container">
+                    <label>Frekans (Döngü Sıklığı)</label>
+                    <input type="range" id="freqSlider" min="1" max="50" value="5">
+                    <br><br>
+                    <label>Genlik (Yükseklik)</label>
+                    <input type="range" id="ampSlider" min="0" max="1" value="0.5" step="0.01">
                 </div>
             </div>
         </div>
 
-        <div id="measurement-screen" class="hidden app-card p-6 md:p-8 rounded-2xl shadow-2xl text-center transition-all duration-300">
-            
-            <p id="liveMeasurementHeader" class="text-sm app-text-secondary mb-2">Cismin tepesine nişan alın</p>
-            
-            <div id="liveDisplayArea">
-                <div class="crosshair">
-                    <div id="crosshair-h" class="crosshair-line-h"></div>
-                    <div class="crosshair-line-v"></div>
-                </div>
-
-                <h2 class="app-text-secondary text-lg font-semibold uppercase tracking-wider">Tahmini Yükseklik</h2>
-                <div id="heightDisplay" class="text-6xl font-extrabold app-text-primary my-2">0.00 m</div>
-                
-                <div class="flex justify-around rounded-lg p-4 my-4 ring-1" style="background-color: var(--bg-primary); border-color: var(--ring-color);">
-                    <div>
-                        <div class="text-xs color-gold uppercase">Eğim Açısı (β)</div>
-                        <div id="angleDisplay" class="text-2xl font-bold app-text-primary">0.0°</div>
-                    </div>
-                    <div>
-                        <div class="text-xs color-gold uppercase">Kararlılık</div>
-                        <div id="stabilityDisplay" class="text-2xl font-bold app-text-primary">--%</div>
-                    </div>
-                </div>
-
-                <div class="w-full rounded-full h-2.5 mb-4 overflow-hidden" style="background-color: var(--bg-tertiary);">
-                    <div id="stabilityBar" class="bg-[rgb(229,174,50)] h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-                
-                <div class="p-3 rounded-lg min-h-[50px] flex items-center justify-center ring-1" style="background-color: var(--bg-tertiary); border-color: var(--ring-color);">
-                    <p id="aiFeedback" class="text-sm color-gold">AI Asistan: Başlatılıyor...</p>
-                </div>
-            </div>
-            
-            <div id="resultSummary" class="hidden my-6 p-4 rounded-lg ring-1" style="background-color: var(--bg-tertiary); border-color: var(--ring-color);">
-                <h3 class="text-xl font-bold color-gold mb-2">✅ Ölçüm Tamamlandı!</h3>
-                <p class="text-sm app-text-secondary">Kesinleşmiş Yükseklik:</p>
-                <p id="finalHeightText" class="text-4xl font-extrabold app-text-primary mb-4">0.00 m</p>
-                
-                <button id="geminiInsightButton" class="w-full bg-green-600 text-white p-3 rounded-lg font-bold text-md hover:bg-green-700 transition-all duration-200 shadow-lg active:scale-95 flex items-center justify-center">
-                    <span class="mr-2">✨</span> Yükseklik Analizi Al
-                </button>
-                
-                <div id="aiInsightOutput" class="mt-4 text-left text-sm app-text-secondary space-y-2">
-                    </div>
-            </div>
-
-            <button id="resetButton" class="w-full bg-red-600 text-white p-3 rounded-lg font-bold text-md hover:bg-red-700 transition-all duration-200 shadow-lg mt-6 active:scale-95">
-                Sıfırla ve Geri Dön
-            </button>
-        </div>
     </div>
 
     <script>
-        // --- GEMINI API SABİTLERİ VE YARDIMCI FONKSİYONLAR ---
-        const apiKey = ""; 
-        const modelName = "gemini-2.5-flash-preview-09-2025";
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        "use strict";
 
-        async function fetchWithBackoff(url, options, maxRetries = 5) {
-            for (let i = 0; i < maxRetries; i++) {
+        // === AYARLAR VE DEĞİŞKENLER ===
+        const startStopButton = document.getElementById('startStopButton');
+        const captureButton = document.getElementById('captureButton');
+        const downloadButton = document.getElementById('downloadButton');
+        const liveCanvas = document.getElementById('liveCanvas');
+        const analysisCanvas = document.getElementById('analysisCanvas');
+        const analysisDataPre = document.getElementById('analysisData');
+        const refWaveDataPre = document.getElementById('refWaveData');
+        const fftSlider = document.getElementById('fftSlider');
+        const scrollSlider = document.getElementById('scrollSlider');
+        const showRefWaveCheck = document.getElementById('showRefWave');
+        const freqSlider = document.getElementById('freqSlider');
+        const ampSlider = document.getElementById('ampSlider');
+
+        const liveCtx = liveCanvas.getContext('2d');
+        const analysisCtx = analysisCanvas.getContext('2d');
+        
+        // Canvas genişliklerini container'a göre ayarla
+        function resizeCanvas() {
+            liveCanvas.width = liveCanvas.parentElement.clientWidth - 32;
+            analysisCanvas.width = analysisCanvas.parentElement.clientWidth - 32;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let audioContext, analyser, sourceNode;
+        let liveDataArray;
+        let isListening = false;
+        let liveAnimationId;
+
+        const CAPTURE_BUFFER_SIZE = 8192; 
+        const ANALYSIS_VIEW_WIDTH = 2048; 
+        let capturedDataBuffer = new Float32Array(CAPTURE_BUFFER_SIZE);
+        let analysisOffset = 0;
+        const fftMap = [512, 1024, 2048, 4096, 8192, 16384];
+        let currentLiveFftSize = fftMap[2];
+
+        // === MİKROFON İŞLEMLERİ ===
+        async function toggleListening() {
+            if (isListening) {
+                stopProcessing();
+            } else {
                 try {
-                    const response = await fetch(url, options);
-                    if (response.status !== 429) { 
-                        if (!response.ok) {
-                             throw new Error(`API call failed with status ${response.status}`);
-                        }
-                        return response;
-                    }
-                    console.warn(`Rate limit (429) encountered. Retrying in ${2 ** i}s...`);
-                } catch (error) {
-                    if (i === maxRetries - 1) throw error;
-                    console.error(`Fetch error: ${error.message}. Retrying...`);
-                }
-                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
-            }
-            throw new Error("Maximum retry attempts reached.");
-        }
-
-        async function fetchGeminiInsight(height) {
-            const insightOutput = document.getElementById('aiInsightOutput');
-            const button = document.getElementById('geminiInsightButton');
-            
-            button.disabled = true;
-            button.innerHTML = '<span class="mr-2">🔄</span> Analiz Yükleniyor...';
-            insightOutput.innerHTML = '<p class="text-center app-text-secondary opacity-50">Analiz oluşturuluyor, lütfen bekleyin...</p>';
-
-            const userQuery = `${height.toFixed(2)} metre yüksekliğindeki bir nesnenin (bina, ağaç vb.) yüksekliğini karşılaştırın. Bu yüksekliğin kaç katlı bir binaya denk geldiğini ve dünyadaki bilinen popüler yapılarla (örneğin, Eyfel Kulesi) karşılaştırmasını yapın. Ayrıca bu yüksekliği ölçmek için kullanılan trigonometri (yükseklik açısı) hakkında kısa bir bilgi verin. Yanıtınızı Türkçe olarak verin.`;
-            
-            const systemPrompt = "Sen, ölçüm sonuçlarını analize eden, bilgili ve eğlenceli bir AI Asistanısın. Ölçülen yüksekliği (örneğin 45m) kullanarak, 3-4 cümlelik, karşılaştırmalı ve ilgi çekici bir analiz sun. Bu analizi Google Search sonuçlarını temel alarak oluştur.";
-            
-            const payload = {
-                contents: [{ parts: [{ text: userQuery }] }],
-                tools: [{ "google_search": {} }],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
-            };
-
-            try {
-                const response = await fetchWithBackoff(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-                const candidate = result.candidates?.[0];
-
-                if (candidate && candidate.content?.parts?.[0]?.text) {
-                    const text = candidate.content.parts[0].text;
-                    let sources = [];
-                    const groundingMetadata = candidate.groundingMetadata;
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    sourceNode = audioContext.createMediaStreamSource(stream);
+                    analyser = audioContext.createAnalyser();
+                    updateLiveFftSize();
+                    sourceNode.connect(analyser);
                     
-                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                        sources = groundingMetadata.groundingAttributions
-                            .map(attribution => ({
-                                uri: attribution.web?.uri,
-                                title: attribution.web?.title,
-                            }))
-                            .filter(source => source.uri && source.title);
-                    }
-
-                    // Analiz sonucunu göster
-                    let outputHTML = `<p class="font-medium color-gold mb-2">Gemini Analizi:</p>`;
-                    outputHTML += `<p>${text.replace(/\n/g, '<br>')}</p>`;
-
-                    if (sources.length > 0) {
-                        outputHTML += `<p class="mt-3 text-xs app-text-secondary opacity-50">Kaynaklar:`;
-                        sources.slice(0, 3).forEach((source, index) => {
-                            outputHTML += `<br><a href="${source.uri}" target="_blank" class="hover:underline color-gold">${index + 1}. ${source.title}</a>`;
-                        });
-                        outputHTML += `</p>`;
-                    }
-
-                    insightOutput.innerHTML = outputHTML;
-                    button.classList.add('bg-gray-500', 'hover:bg-gray-500');
-                    button.classList.remove('bg-green-600', 'hover:bg-green-700');
-                    button.innerHTML = '<span class="mr-2">✅</span> Analiz Tamamlandı';
-
-                } else {
-                    insightOutput.innerHTML = '<p class="text-red-400">Analiz alınamadı. Lütfen daha sonra tekrar deneyin.</p>';
-                }
-            } catch (error) {
-                console.error("Gemini API Error:", error);
-                insightOutput.innerHTML = '<p class="text-red-400">API bağlantı hatası oluştu. Konsolu kontrol edin.</p>';
-            } finally {
-                button.disabled = false;
-                if (!button.classList.contains('bg-gray-500')) {
-                    button.classList.add('bg-green-600', 'hover:bg-green-700');
-                    button.innerHTML = '<span class="mr-2">✨</span> Yükseklik Analizi Al';
+                    isListening = true;
+                    startStopButton.textContent = "🛑 Durdur";
+                    startStopButton.style.backgroundColor = "#ff4444";
+                    captureButton.disabled = false;
+                    downloadButton.disabled = true;
+                    drawLiveWave();
+                } catch (err) {
+                    alert("Mikrofon hatası: " + err.message);
                 }
             }
         }
 
-        // --- UYGULAMA MANTIĞI VE SENSÖR İŞLEMLERİ ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- DOM Elementlerini Seçme ---
-            const setupScreen = document.getElementById('setup-screen');
-            const measurementScreen = document.getElementById('measurement-screen');
-            const liveDisplayArea = document.getElementById('liveDisplayArea');
-            const resultSummary = document.getElementById('resultSummary');
+        function stopProcessing() {
+            if (liveAnimationId) cancelAnimationFrame(liveAnimationId);
+            if (audioContext) audioContext.close();
+            isListening = false;
+            startStopButton.textContent = "🎙️ Mikrofonu Başlat";
+            startStopButton.style.backgroundColor = "";
+            captureButton.disabled = true;
+            drawGrid(liveCtx, "Başlatıldı");
+        }
+
+        function updateLiveFftSize() {
+            currentLiveFftSize = fftMap[fftSlider.value];
+            if (analyser) {
+                analyser.fftSize = currentLiveFftSize;
+                liveDataArray = new Float32Array(analyser.frequencyBinCount);
+            }
+        }
+
+        // === SES YAKALAMA VE ÇİZİM ===
+        function captureAudio() {
+            if (!isListening || !analyser) return;
+            try {
+                analyser.fftSize = CAPTURE_BUFFER_SIZE * 2;
+                analyser.getFloatTimeDomainData(capturedDataBuffer);
+            } catch(e) { console.error(e); } 
+            finally { analyser.fftSize = currentLiveFftSize; }
+
+            scrollSlider.max = CAPTURE_BUFFER_SIZE - ANALYSIS_VIEW_WIDTH;
+            scrollSlider.value = 0;
+            analysisOffset = 0;
+            drawAnalysisWave();
+            downloadButton.disabled = false;
             
-            const distanceInput = document.getElementById('distance');
-            const userHeightInput = document.getElementById('userHeight');
-            const startButton = document.getElementById('startButton');
-            const permissionStatus = document.getElementById('permission-status');
+            // Kullanıcıya bilgi ver
+            analysisDataPre.textContent = "Ses yakalandı!\nŞimdi yukarıdaki turuncu grafiğe tıklayarak\ntrigonometrik değerleri incele.";
+        }
+
+        function drawLiveWave() {
+            if (!isListening) return;
+            liveAnimationId = requestAnimationFrame(drawLiveWave);
+            analyser.getFloatTimeDomainData(liveDataArray);
+
+            liveCtx.fillStyle = '#000';
+            liveCtx.fillRect(0, 0, liveCanvas.width, liveCanvas.height);
+            drawGrid(liveCtx);
+
+            liveCtx.lineWidth = 2;
+            liveCtx.strokeStyle = '#00ff41';
+            liveCtx.beginPath();
+
+            const sliceWidth = liveCanvas.width * 1.0 / liveDataArray.length;
+            let x = 0;
+            for (let i = 0; i < liveDataArray.length; i++) {
+                const v = liveDataArray[i];
+                const y = (v * liveCanvas.height / 2) + (liveCanvas.height / 2);
+                if (i === 0) liveCtx.moveTo(x, y);
+                else liveCtx.lineTo(x, y);
+                x += sliceWidth;
+            }
+            liveCtx.stroke();
+        }
+
+        function drawAnalysisWave() {
+            analysisCtx.fillStyle = '#000';
+            analysisCtx.fillRect(0, 0, analysisCanvas.width, analysisCanvas.height);
+            drawGrid(analysisCtx);
+
+            // Ana Dalga
+            analysisCtx.lineWidth = 2;
+            analysisCtx.strokeStyle = '#ff9800'; // Turuncu
+            analysisCtx.beginPath();
             
-            const heightDisplay = document.getElementById('heightDisplay');
-            const angleDisplay = document.getElementById('angleDisplay');
-            const stabilityDisplay = document.getElementById('stabilityDisplay');
-            const stabilityBar = document.getElementById('stabilityBar');
-            const aiFeedback = document.getElementById('aiFeedback');
-            const resetButton = document.getElementById('resetButton');
-            const crosshairH = document.getElementById('crosshair-h');
+            const sliceWidth = analysisCanvas.width * 1.0 / ANALYSIS_VIEW_WIDTH;
+            let x = 0;
+
+            for (let i = 0; i < ANALYSIS_VIEW_WIDTH; i++) {
+                const dataIndex = analysisOffset + i;
+                if (dataIndex >= capturedDataBuffer.length) break;
+                const v = capturedDataBuffer[dataIndex];
+                const y = (v * analysisCanvas.height / 2) + (analysisCanvas.height / 2);
+                if (i === 0) analysisCtx.moveTo(x, y);
+                else analysisCtx.lineTo(x, y);
+                x += sliceWidth;
+            }
+            analysisCtx.stroke();
+
+            if (showRefWaveCheck.checked) drawReferenceSineWave();
+        }
+
+        function drawReferenceSineWave() {
+            const freq = parseFloat(freqSlider.value);
+            const amp = parseFloat(ampSlider.value);
+            analysisCtx.lineWidth = 1;
+            analysisCtx.strokeStyle = 'rgba(255, 0, 255, 0.8)';
+            analysisCtx.beginPath();
             
-            const finalHeightText = document.getElementById('finalHeightText');
-            const geminiInsightButton = document.getElementById('geminiInsightButton');
-            const aiInsightOutput = document.getElementById('aiInsightOutput');
+            const sliceWidth = analysisCanvas.width * 1.0 / ANALYSIS_VIEW_WIDTH;
+            let x = 0;
+            for (let i = 0; i < ANALYSIS_VIEW_WIDTH; i++) {
+                const t = i / ANALYSIS_VIEW_WIDTH;
+                const v = amp * Math.sin(2 * Math.PI * freq * t);
+                const y = (v * analysisCanvas.height / 2) + (analysisCanvas.height / 2);
+                if (i === 0) analysisCtx.moveTo(x, y);
+                else analysisCtx.lineTo(x, y);
+                x += sliceWidth;
+            }
+            analysisCtx.stroke();
 
-            const themeToggle = document.getElementById('themeToggle'); // Tema butonu
+            refWaveDataPre.textContent = `Referans Dalga Denklemi:\ny = ${amp} * sin(2 * π * ${freq} * t)\n\nPeriyot: ${(1/freq).toFixed(3)} birim`;
+        }
 
-            // Sekme elementleri ve birim butonları
-            const tabButtons = document.querySelectorAll('.tab-btn');
-            const tabPanels = document.querySelectorAll('.tab-panel');
-            const unitSelectorGroups = document.querySelectorAll('.unit-selector-group');
+        function drawGrid(ctx, text = "") {
+            ctx.lineWidth = 0.5;
+            ctx.strokeStyle = '#333';
+            // Yatay orta çizgi
+            ctx.beginPath(); ctx.moveTo(0, ctx.canvas.height/2); ctx.lineTo(ctx.canvas.width, ctx.canvas.height/2); ctx.stroke();
+            if(text) {
+                ctx.fillStyle = "#555";
+                ctx.font = "20px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText(text, ctx.canvas.width/2, ctx.canvas.height/2 - 10);
+            }
+        }
 
-            // --- Uygulama Değişkenleri ---
-            let distance = 0;       
-            let userHeight = 0;     
-            let angleHistory = [];  
-            let finalMeasuredHeight = 0;
-            const historySize = 20; 
-            const NEGATIVE_ANGLE_THRESHOLD = -3; 
-            const STABILITY_THRESHOLD = 95; 
-            let measurementCompleted = false;
+        // === MATEMATİKSEL ANALİZ ===
+        function analyzeClick(event) {
+            if (!capturedDataBuffer || capturedDataBuffer[0] === 0) {
+                alert("Lütfen önce ses yakalayın."); return;
+            }
 
-            // --- TEMA YÖNETİMİ ---
-            const currentTheme = localStorage.getItem('theme') || 'light';
+            const rect = analysisCanvas.getBoundingClientRect();
+            const xClick = event.clientX - rect.left;
+            const viewIndex = Math.round((xClick / analysisCanvas.width) * ANALYSIS_VIEW_WIDTH);
+            const bufferIndex = analysisOffset + viewIndex;
+
+            if (bufferIndex < 1 || bufferIndex >= CAPTURE_BUFFER_SIZE - 1) return;
+
+            const y_val = capturedDataBuffer[bufferIndex];
+            const y_prev = capturedDataBuffer[bufferIndex - 1];
+            const y_next = capturedDataBuffer[bufferIndex + 1];
+
+            // Eğim (Türev) Hesabı: (y2 - y1) / (x2 - x1)
+            // Burada dx'i 1 birim örneklem (sample) olarak kabul ediyoruz.
+            const slope_m = (y_next - y_prev) / 2.0;
+
+            const angle_rad = Math.atan(slope_m);
+            const angle_deg = angle_rad * (180 / Math.PI);
+
+            analysisDataPre.textContent = `
+Seçilen Nokta Analizi:
+----------------------
+Zaman İndeksi: ${bufferIndex}
+Genlik (y):    ${y_val.toFixed(5)}
+
+📐 Türev ve Eğim Analizi:
+Eğim (m):      ${slope_m.toFixed(5)} (Anlık Hız)
+Açı (θ):       ${angle_deg.toFixed(2)}°
+
+📊 Trigonometrik Özdeşlikler:
+tan(θ) = ${slope_m.toFixed(5)}  <- Eğim tanjanta eşittir
+sin(θ) = ${Math.sin(angle_rad).toFixed(5)}
+cos(θ) = ${Math.cos(angle_rad).toFixed(5)}
+            `;
+
+            drawAnalysisWave();
+            // Noktayı İşaretle
+            analysisCtx.fillStyle = '#fff';
+            analysisCtx.beginPath();
+            const canvas_y = (y_val * analysisCanvas.height / 2) + (analysisCanvas.height / 2);
+            analysisCtx.arc(xClick, canvas_y, 4, 0, 2 * Math.PI);
+            analysisCtx.fill();
             
-            function applyTheme(theme) {
-                if (theme === 'dark') {
-                    document.body.classList.add('dark-theme');
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    document.body.classList.remove('dark-theme');
-                    localStorage.setItem('theme', 'light');
-                }
+            // Teğet Çizgisi (Görsel Eklenti)
+            analysisCtx.strokeStyle = 'red';
+            analysisCtx.beginPath();
+            const tangentLength = 30;
+            analysisCtx.moveTo(xClick - tangentLength, canvas_y - (slope_m * tangentLength * 100)); // 100 ölçekleme faktörü
+            analysisCtx.lineTo(xClick + tangentLength, canvas_y + (slope_m * tangentLength * 100));
+            analysisCtx.stroke();
+        }
+
+        // === DOSYA İNDİRME (WAV EXPORT) ===
+        function exportWAV() {
+            if (!capturedDataBuffer || !audioContext) return;
+            const sampleRate = audioContext.sampleRate;
+            const wavBuffer = encodeWAV(capturedDataBuffer, sampleRate);
+            const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sinyal_odevi_${new Date().getTime()}.wav`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function encodeWAV(samples, sampleRate) {
+            const buffer = new ArrayBuffer(44 + samples.length * 2);
+            const view = new DataView(buffer);
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + samples.length * 2, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, samples.length * 2, true);
+
+            let offset = 44;
+            for (let i = 0; i < samples.length; i++, offset += 2) {
+                let s = Math.max(-1, Math.min(1, samples[i]));
+                view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
             }
+            return buffer;
+        }
 
-            // Sayfa yüklendiğinde temayı uygula
-            applyTheme(currentTheme);
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) 
+                view.setUint8(offset + i, string.charCodeAt(i));
+        }
 
-            themeToggle.addEventListener('click', () => {
-                const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
-                applyTheme(newTheme);
-            });
-
-            // --- Birim Dönüşüm Fonksiyonu ---
-            function convertValueToMeters(value, unit) {
-                value = parseFloat(value);
-                if (isNaN(value) || value <= 0) return 0;
-                
-                if (unit === 'mm') {
-                    return value / 1000; 
-                }
-                if (unit === 'cm') {
-                    return value / 100; 
-                }
-                return value; 
-            }
-
-            // --- Sekme Yönetimi ---
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    tabPanels.forEach(panel => panel.classList.add('hidden'));
-                    document.getElementById(button.getAttribute('data-tab')).classList.remove('hidden');
-                });
-            });
-
-            // --- Birim Butonu Yönetimi ---
-            unitSelectorGroups.forEach(group => {
-                group.addEventListener('click', (e) => {
-                    const clickedButton = e.target.closest('.unit-btn');
-                    if (!clickedButton) return;
-
-                    group.querySelectorAll('.unit-btn').forEach(btn => {
-                        btn.classList.remove('active-unit');
-                    });
-
-                    clickedButton.classList.add('active-unit');
-                });
-            });
-
-
-            // --- Trigonometri ve Yardımcı Fonksiyonlar ---
-            function toRadians(degrees) {
-                return degrees * (Math.PI / 180);
-            }
-            function tan(degrees) {
-                return Math.tan(toRadians(degrees));
-            }
-
-            // --- AI PROTOTİP FONKSİYONLARI ---
-            function stabilizeData(newAngle) {
-                angleHistory.push(newAngle);
-                if (angleHistory.length > historySize) {
-                    angleHistory.shift(); 
-                }
-                const sum = angleHistory.reduce((a, b) => a + b, 0);
-                const stableAngle = sum / angleHistory.length;
-                if (angleHistory.length < 2) {
-                    return { stableAngle, stabilityPercent: 0 };
-                }
-                const mean = stableAngle;
-                const variance = angleHistory.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / angleHistory.length;
-                const stdDev = Math.sqrt(variance);
-                let stabilityPercent = 100 * (1 - Math.min(stdDev / 3, 1)); 
-                stabilityPercent = Math.max(0, Math.min(100, stabilityPercent)); 
-                return { stableAngle, stabilityPercent };
-            }
-
-            function getAIFeedback(angle, stability) {
-                if (angleHistory.length < historySize) return "Kalibrasyon yapılıyor... Lütfen sabit tutun.";
-                if (stability < 75) return "Eliniz titriyor. Cihazı sabit tutmaya çalışın.";
-                if (angle < 5) return "Daha yukarı nişan alın.";
-                if (angle > 85) return "Cihaz çok dik, hedefi kontrol edin.";
-                if (stability > 95) return "Ölçüm stabil. Sonuç hazır!";
-                return "Hedefin tepesine nişan alınıyor...";
-            }
-
-            // --- ANA UYGULAMA MANTIĞI ---
-            function handleOrientation(event) {
-                if(measurementCompleted) return;
-
-                let rawAngle = event.beta; 
-                
-                if (rawAngle === null || rawAngle === undefined || rawAngle < NEGATIVE_ANGLE_THRESHOLD) {
-                    stopCalculation("Cihaz aşağı bakıyor veya sensör hatası var!");
-                    return;
-                }
-
-                let positiveAngle = Math.max(0, rawAngle); 
-                positiveAngle = Math.min(90, positiveAngle); 
-                
-                const { stableAngle, stabilityPercent } = stabilizeData(positiveAngle);
-                
-                const objectHeightAboveDevice = tan(stableAngle) * distance;
-                const totalHeight = objectHeightAboveDevice + userHeight;
-                const feedback = getAIFeedback(stableAngle, stabilityPercent);
-
-                updateLiveUI(stableAngle, totalHeight, stabilityPercent, feedback);
-
-                if (stabilityPercent >= STABILITY_THRESHOLD && angleHistory.length === historySize) {
-                    finalMeasuredHeight = totalHeight;
-                    completeMeasurement(finalMeasuredHeight);
-                }
-            }
-
-            function completeMeasurement(finalHeight) {
-                measurementCompleted = true;
-                stopListening(); 
-
-                liveDisplayArea.classList.add('hidden');
-                resultSummary.classList.remove('hidden');
-                finalHeightText.textContent = `${finalHeight.toFixed(2)} m`;
-                
-                geminiInsightButton.onclick = () => fetchGeminiInsight(finalHeight);
-                geminiInsightButton.classList.remove('bg-gray-500', 'hover:bg-gray-500');
-                geminiInsightButton.classList.add('bg-green-600', 'hover:bg-green-700');
-                geminiInsightButton.innerHTML = '<span class="mr-2">✨</span> Yükseklik Analizi Al';
-                aiInsightOutput.innerHTML = '<p class="text-sm app-text-secondary opacity-50">Analiz almak için yukarıdaki butona tıklayın.</p>';
-
-                document.getElementById('liveMeasurementHeader').textContent = "Ölçüm Başarıyla Tamamlandı.";
-            }
-            
-            function stopCalculation(aiMessage) {
-                if(!measurementCompleted) {
-                    heightDisplay.textContent = "--- m";
-                    angleDisplay.textContent = "---°";
-                    stabilityDisplay.textContent = "0%";
-                    stabilityBar.style.width = "0%";
-                    aiFeedback.textContent = `AI: ${aiMessage}`;
-                    angleHistory = []; 
-                    crosshairH.style.transform = `translateX(-50%) translateY(-1px)`;
-                }
-            }
-            
-            function updateLiveUI(angle, height, stability, feedback) {
-                if(measurementCompleted) return;
-
-                const yShift = -(angle / 90) * 40; 
-                crosshairH.style.transform = `translateX(-50%) translateY(calc(-1px + ${yShift}px))`;
-
-                if (angleHistory.length === historySize) {
-                    heightDisplay.textContent = `${height.toFixed(2)} m`;
-                    angleDisplay.textContent = `${angle.toFixed(1)}°`;
-                    stabilityDisplay.textContent = `${stability.toFixed(0)}%`;
-                    stabilityBar.style.width = `${stability.toFixed(0)}%`;
-                } else {
-                    let calibratingText = ".".repeat(Math.floor(angleHistory.length / (historySize / 4)) + 1);
-                    heightDisplay.textContent = calibratingText;
-                    angleDisplay.textContent = '...°';
-                    stabilityDisplay.textContent = '...%';
-                    stabilityBar.style.width = '0%';
-                }
-                aiFeedback.textContent = `AI: ${feedback}`;
-            }
-            
-            function startListening() {
-                window.addEventListener('deviceorientation', handleOrientation);
-            }
-
-            function stopListening() {
-                window.removeEventListener('deviceorientation', handleOrientation);
-            }
-            
-            function resetAppState() {
-                stopListening();
-                measurementCompleted = false;
-                angleHistory = []; 
-                finalMeasuredHeight = 0;
-
-                setupScreen.classList.remove('hidden');
-                measurementScreen.classList.add('hidden');
-                liveDisplayArea.classList.remove('hidden');
-                resultSummary.classList.add('hidden');
-                permissionStatus.textContent = ""; 
-                document.getElementById('liveMeasurementHeader').textContent = "Cismin tepesine nişan alın";
-
-                stopCalculation("Ölçüm durduruldu."); 
-            }
-
-            // --- OLAY DİNLEYİCİLERİ ---
-            startButton.addEventListener('click', () => {
-                const distanceUnit = document.querySelector('.unit-selector-group[data-target="distance"] .active-unit').getAttribute('data-unit');
-                const userHeightUnit = document.querySelector('.unit-selector-group[data-target="userHeight"] .active-unit').getAttribute('data-unit');
-                
-                distance = convertValueToMeters(distanceInput.value, distanceUnit); 
-                userHeight = convertValueToMeters(userHeightInput.value, userHeightUnit);
-
-                if (distance <= 0) {
-                    permissionStatus.textContent = "Lütfen geçerli bir uzaklık değeri girin.";
-                    return;
-                }
-                if (userHeight < 0) { 
-                    permissionStatus.textContent = "Lütfen geçerli bir cihaz yüksekliği değeri girin.";
-                    return;
-                }
-
-                permissionStatus.textContent = "Sensör izni isteniyor...";
-
-                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    DeviceOrientationEvent.requestPermission()
-                        .then(permissionState => {
-                            if (permissionState === 'granted') {
-                                permissionStatus.textContent = "İzin verildi. Başlatılıyor...";
-                                startListening();
-                                setupScreen.classList.add('hidden');
-                                measurementScreen.classList.remove('hidden');
-                            } else {
-                                permissionStatus.textContent = "Sensör izni reddedildi. Bu uygulama izin olmadan çalışamaz.";
-                            }
-                        })
-                        .catch((error) => {
-                            console.error(error);
-                            permissionStatus.textContent = "Sensör izni alınırken bir hata oluştu.";
-                        });
-                } else {
-                    permissionStatus.textContent = "Başlatılıyor...";
-                    startListening();
-                    setupScreen.classList.add('hidden');
-                    measurementScreen.classList.remove('hidden');
-                }
-            });
-
-            resetButton.addEventListener('click', resetAppState);
+        // === EVENT LISTENERS ===
+        startStopButton.addEventListener('click', toggleListening);
+        captureButton.addEventListener('click', captureAudio);
+        downloadButton.addEventListener('click', exportWAV);
+        analysisCanvas.addEventListener('click', analyzeClick);
+        fftSlider.addEventListener('input', updateLiveFftSize);
+        scrollSlider.addEventListener('input', () => {
+            analysisOffset = parseInt(scrollSlider.value);
+            drawAnalysisWave();
         });
+        [showRefWaveCheck, freqSlider, ampSlider].forEach(el => el.addEventListener('input', () => {
+            if(capturedDataBuffer[0]!==0) drawAnalysisWave(); 
+            else if(showRefWaveCheck.checked) { // Veri yoksa bile sadece referansı çiz
+                analysisCtx.fillStyle = '#000';
+                analysisCtx.fillRect(0,0,analysisCanvas.width,analysisCanvas.height);
+                drawGrid(analysisCtx);
+                drawReferenceSineWave();
+            }
+        }));
+
     </script>
 </body>
 </html>
